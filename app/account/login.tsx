@@ -4,52 +4,30 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 
 import FormInput, { FormInputRef } from "../../components/FormInput";
+import { useSession } from "../../hooks/useSession";
 
 import { IMAGES } from "../../util/assets";
-import { apiReq } from "../../util/api";
 
 const LoginPage = () => {
     
     const router = useRouter();
 
+    const { login, isLoading } = useSession();
+    const [ error, setError ] = useState('');
+
     const usernameInputRef = useRef<FormInputRef>(null);
     const passwordInputRef = useRef<FormInputRef>(null);
-
-    const [ error, setError ] = useState('');
-    const [ isLoading, setIsLoading ] = useState(false);
+    
 
     const handleLogin = async () => {
-        
-        setIsLoading(true);
-        setError('');
-
-        const response = await apiReq({
-            path: '/accounts/login/',
-            method: 'POST',
-            body: {
-                username: usernameInputRef.current?.getValue() ?? '',
-                password: passwordInputRef.current?.getValue() ?? '',
-                useMessages: true,
-            },
-            responseType: 'json',
-            useCrsf: true,
-        });
-
-        setIsLoading(false);
-
-        if (response.success) {
-            const isLoginAttemptSuccessful = response.data?.[0]?.success === 1;
-            if (isLoginAttemptSuccessful) {
-                router.navigate("/home");
-                return;
-            } else {
-                if (response.data?.[0]?.redirect)
-                    setError('Too many login attempts. Please try again later.');
-                else 
-                    setError(response.data?.[0]?.msg);
-            }
-        } else {
-            setError('An unknown error occurred.');
+        try {
+            await login(
+                usernameInputRef.current?.getValue() ?? '',
+                passwordInputRef.current?.getValue() ?? ''
+            );
+            router.navigate("/home");
+        } catch (e: any) {
+            setError(e.message);
         }
     };
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, ScrollView, Button } from "react-native";
 import { useRouter } from "expo-router";
-import CookieManager from "@preeternal/react-native-cookie-manager";
 
+import { useSession } from "../../hooks/useSession";
 import { apiReq } from "../../util/api";
 
 const HomePage = () => {
@@ -10,23 +10,18 @@ const HomePage = () => {
     const [debugTextLoves, setDebugTextLoves] = useState('...');
     const [debugTextActivity, setDebugTextActivity] = useState('...');
 
+    const { isLoading, session, logout } = useSession();
     const router = useRouter();
 
     const handleLogout = () => {
-        CookieManager.clearAll().then(() => {
-            router.replace('/');
-        });
+        logout().then(() => router.replace('/'));
     };
 
     useEffect(() => {
+        if (isLoading || !session) return;
         (async () => {
-            const sessionRes = await apiReq({
-                path: '/session',
-                responseType: 'json',
-            });
-            if (!sessionRes.success) return;
 
-            const { user } = sessionRes.data;
+            const { user } = session;
             if (!user) return;
 
             const lovesRes = await apiReq({
@@ -52,7 +47,7 @@ const HomePage = () => {
             const activity = activityRes.data;
             setDebugTextActivity(JSON.stringify(activity, null, 2));
         })();
-    }, []);
+    }, [isLoading, session]);
 
     return (
         <View style={styles.container}>

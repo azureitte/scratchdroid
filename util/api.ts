@@ -34,7 +34,7 @@ const DEFAULT_OPTIONS: ScratchApiOptions = {
     useCrsf: false,
 };
 
-export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<ScratchApiResponse> {
+export async function apiReq <T = any>(opts: Partial<ScratchApiOptions>): Promise<ScratchApiResponse<T>> {
     const options = { ...DEFAULT_OPTIONS, ...opts };
 
     if (options.host === DEFAULT_HOST) {
@@ -96,7 +96,7 @@ export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<Scratch
             return {
                 success: true,
                 status: response.status,
-                data: await response.text(),
+                data: await response.text() as T,
             };
         }
     } catch (e: any) {
