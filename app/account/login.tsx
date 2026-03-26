@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { StyleSheet, Image, Text, Pressable, KeyboardAvoidingView } from "react-native";
+import { StyleSheet, Image, Text, KeyboardAvoidingView } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 
@@ -7,6 +7,7 @@ import FormInput, { FormInputRef } from "../../components/FormInput";
 import { useSession } from "../../hooks/useSession";
 
 import { IMAGES } from "../../util/assets";
+import Button from "../../components/Button";
 
 const LoginPage = () => {
     
@@ -21,11 +22,12 @@ const LoginPage = () => {
 
     const handleLogin = async () => {
         try {
+            setError('');
             await login(
                 usernameInputRef.current?.getValue() ?? '',
                 passwordInputRef.current?.getValue() ?? ''
             );
-            router.navigate("/home");
+            router.replace("/home");
         } catch (e: any) {
             setError(e.message);
         }
@@ -60,18 +62,14 @@ const LoginPage = () => {
 
             { error && <Text style={styles.errorText}>{error}</Text> }
 
-            <Pressable 
-                onPress={handleLogin}
-                style={[
-                    styles.button,
-                    { marginTop: 'auto' },
-                    isLoading && styles.buttonDisabled,
-                ]} 
-                android_ripple={{ color: "#fff3", foreground: true }}
-                disabled={isLoading}
-            >
-                <Text style={styles.buttonText}>Sign in</Text>
-            </Pressable>
+            <Button 
+                text="Sign In" 
+                onPress={handleLogin} 
+                role="primary" variation="big" 
+                fullWidth
+                isLoading={isLoading}
+                style={{ marginTop: 'auto' }} 
+            />
         </KeyboardAvoidingView>
         </SafeAreaView>
         </SafeAreaProvider>
@@ -99,25 +97,6 @@ const styles = StyleSheet.create({
         marginBottom: 50,
         height: 50,
         objectFit: "contain",
-    },
-
-    button: {
-        width: "100%",
-        paddingHorizontal: 24,
-        paddingVertical: 16,
-        backgroundColor: "#4177FF",
-        borderRadius: 12,
-        overflow: "hidden",
-    },
-    buttonText: {
-        color: "#fff",
-        textAlign: "center",
-        fontSize: 20,
-        fontWeight: 600,
-    },
-    buttonDisabled: {
-        opacity: 0.5,
-        pointerEvents: "none",
     },
 
     errorText: {

@@ -9,6 +9,19 @@ import icExploreActive from "../assets/icons/ic-explore-active.svg";
 import icMessagesActive from "../assets/icons/ic-messages-active.svg";
 import icMyStuffActive from "../assets/icons/ic-mystuff-active.svg";
 
+import icMenu from "../assets/icons/ic-menu.svg";
+
+import svgMessageComment from "../assets/svgs/messages/comment.svg";
+import svgMessageLove from "../assets/svgs/messages/love.svg";
+import svgMessageFavorite from "../assets/svgs/messages/favorite.svg";
+import svgMessageFollow from "../assets/svgs/messages/follow.svg";
+import svgMessageCuratorInvite from "../assets/svgs/messages/curator-invite.svg";
+import svgMessageRemix from "../assets/svgs/messages/remix.svg";
+import svgMessageStudioActivity from "../assets/svgs/messages/studio-activity.svg";
+import svgMessageForumActivity from "../assets/svgs/messages/forum-activity.svg";
+import svgMessageHostTransfer from "../assets/svgs/messages/host-transfer.svg";
+import svgMessageOwnerInvite from "../assets/svgs/messages/owner-invite.svg";
+
 export const ICONS = {
     home: icHome,
     explore: icExplore,
@@ -20,8 +33,25 @@ export const ICONS = {
     exploreActive: icExploreActive,
     messagesActive: icMessagesActive,
     mystuffActive: icMyStuffActive,
+
+    menu: icMenu,
 } as const;
 
 export const IMAGES = {
     logo: require("../assets/logo_sm.png"),
+} as const;
+
+export const SVGS = {
+    messages: {
+        comment: svgMessageComment,
+        love: svgMessageLove,
+        favorite: svgMessageFavorite,
+        follow: svgMessageFollow,
+        curatorInvite: svgMessageCuratorInvite,
+        remix: svgMessageRemix,
+        studioActivity: svgMessageStudioActivity,
+        forumActivity: svgMessageForumActivity,
+        hostTransfer: svgMessageHostTransfer,
+        ownerInvite: svgMessageOwnerInvite,
+    },
 } as const;

@@ -1,43 +1,100 @@
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { DeviceEventEmitter, FlatList, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useIsFocused } from "expo-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSession } from "../../hooks/useSession";
-import { apiReq } from "../../util/api";
+import { useUnreadMessages } from "../../hooks/useUnreadMessages";
+import { useInfiniteMessages } from "../../hooks/useInfiniteMessages";
+import { useMarkMessagesRead } from "../../hooks/useMarkMessagesRead";
+
+import MessageRow from "../../components/MessageRow";
+import Button from "../../components/Button";
 
 const MessagesPage = () => {
-    const [ debugTextMessages, setDebugTextMessages ] = useState('...');
 
-    const { isLoading, session } = useSession();
+    const insets = useSafeAreaInsets();
+    const queryClient = useQueryClient();
+    const isFocused = useIsFocused();
+
+    const messages = useInfiniteMessages();
+    const unreadCount = useUnreadMessages(true);
+    const markRead = useMarkMessagesRead();
+
+    const { session } = useSession();
+
+    const [ isRefreshing, setIsRefreshing ] = useState(true);
+
+    const listRef = useRef<FlatList<any>>(null);
 
     useEffect(() => {
-        if (isLoading || !session) return;
-        (async () => {
+        if (!messages.isLoading) setIsRefreshing(false);
+    }, [messages.isLoading]);
 
-            const { user } = session;
-            if (!user) return;
+    useEffect(() => {
+        if (!isRefreshing && !isFocused) return;
+        if (isRefreshing) markRead();
+        queryClient.invalidateQueries({ 
+            queryKey: ['unread', false, false] 
+        });
+    }, [isRefreshing, isFocused]);
 
-            const messagesRes = await apiReq({
-                host: 'https://api.scratch.mit.edu',
-                path: '/users/' + user.username + '/messages',
-                params: { limit: 10, offset: 0 },
-                auth: user.token,
-                responseType: 'json',
-            });
-            if (!messagesRes.success) return;
+    const handleRefresh = () => {
+        setIsRefreshing(true);
+        messages.resetToFirstPage();
+        queryClient.invalidateQueries({ 
+            queryKey: ['messages', false] 
+        });
+    }
 
-            const messages = messagesRes.data;
-            setDebugTextMessages(JSON.stringify(messages, null, 2));
-        })();
-    }, [isLoading, session]);
+    const handleScrollToTop = () => {
+        listRef.current?.scrollToIndex({ animated: false, index: 0 });
+    }
+
+    const pageEnd = <View style={[styles.pageEnd]}>
+                        <Button 
+                            text="Load More" 
+                            role="primary" fullWidth
+                            isLoading={messages.isLoading}
+                            onPress={messages.fetchNextPage} 
+                        />
+                    </View>;
+
+    useEffect(() => {
+        DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
+        return () => DeviceEventEmitter.removeAllListeners();
+    }, []);
 
     return (
         <View style={styles.container}>
 
-            <ScrollView style={styles.codeBlock}>
-                <Text style={styles.codeBlockText}>
-                    {debugTextMessages}
-                </Text>
-            </ScrollView>
+            <View 
+                style={[styles.messagesContainer, { marginBottom: insets.bottom + 60 }]}
+            >
+
+                <View style={[styles.pageStart, { paddingTop: insets.top + 82 }]}>
+                    <Text style={styles.headingText}>
+                        Messages
+                    </Text>
+                </View>
+
+                <FlatList
+                    data={messages.messages}
+                    renderItem={({ item: message, index: idx }) => (
+                        <MessageRow key={message.id} message={message} isUnread={idx < unreadCount} myUsername={session?.user?.username} />
+                    )}
+                    ref={listRef}
+
+                    ListFooterComponent={pageEnd}
+                    
+                    refreshControl={<RefreshControl 
+                        refreshing={isRefreshing} 
+                        onRefresh={handleRefresh}
+                    />}
+                />
+            </View>  
+
         </View>
     );
 };
@@ -47,23 +104,37 @@ export default MessagesPage;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
+        alignItems: "stretch",
+        justifyContent: "flex-start",
         backgroundColor: "#121212",
     },
 
-    codeBlock: {
-        backgroundColor: "#000",
-        maxHeight: 256,
+    messagesContainer: {
         width: "100%",
         overflow: "scroll",
-        padding: 8,
-        borderRadius: 12,
-        marginBottom: 12,
+        marginBottom: 16,
     },
     codeBlockText: {
         fontFamily: "monospace",
         fontSize: 12,
+        color: "#fff",
+    },
+
+    pageStart: {
+        backgroundColor: '#1d2b4d',
+        padding: 16,
+        zIndex: 2,
+    },
+    pageEnd: {
+        padding: 8,
+        paddingTop: 16,
+        paddingBottom: 24,
+        width: "100%",
+    },
+
+    headingText: {
+        fontSize: 28,
+        fontWeight: 900,
         color: "#fff",
     },
 });

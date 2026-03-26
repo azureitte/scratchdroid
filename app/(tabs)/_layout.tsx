@@ -1,12 +1,10 @@
 import React from "react";
 import { Tabs } from "expo-router";
-import type { BottomTabHeaderProps } from "@react-navigation/bottom-tabs";
 
 import TabBar from "../../components/TabBar";
-import Header from "../../components/Header";
 
 const TabsLayout = () => {
-    const header = (props: BottomTabHeaderProps) => <Header {...props} />;
+    const header = () => <></>;
 
     return (
         <Tabs tabBar={props => <TabBar {...props} />}>

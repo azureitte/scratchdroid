@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, ScrollView, Button } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, View, ScrollView } from "react-native";
+import { Link, useRouter } from "expo-router";
 
 import { useSession } from "../../hooks/useSession";
 import { apiReq } from "../../util/api";
+
+import Button from "../../components/Button";
 
 const HomePage = () => {
 
@@ -52,6 +54,8 @@ const HomePage = () => {
     return (
         <View style={styles.container}>
 
+            <Link href="https://scratch.mit.edu">Web Scratch</Link>
+
             <ScrollView style={styles.codeBlock}>
                 <Text style={styles.codeBlockText}>
                     {debugTextLoves}
@@ -64,7 +68,7 @@ const HomePage = () => {
                 </Text>
             </ScrollView>
 
-            <Button title="Logout" onPress={handleLogout} />
+            <Button text="Logout" onPress={handleLogout} />
         </View>
     );
 };

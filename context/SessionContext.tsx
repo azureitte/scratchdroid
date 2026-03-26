@@ -4,11 +4,17 @@ import type { ScratchSession } from '../util/types';
 import { apiReq } from '../util/api';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
-type SessionContextType = {
-    session: ScratchSession|null;
+type SessionContextType = 
+({
+    session: null;
+    isLoggedIn: false;
+    isLoading: true;
+}|{
+    session: ScratchSession;
     isLoggedIn: boolean;
-    isLoading: boolean;
-
+    isLoading: false;
+})
+& {
     login: (username: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
 };
@@ -16,7 +22,7 @@ type SessionContextType = {
 export const SessionContext = createContext<SessionContextType>({
     session: null,
     isLoggedIn: false,
-    isLoading: false,
+    isLoading: true,
 
     login: async () => {},
     logout: async () => {},
@@ -88,7 +94,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
             login,
             logout,
-        }}>
+        } as SessionContextType}>
             {children}
         </SessionContext.Provider>
     );

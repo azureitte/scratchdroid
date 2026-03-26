@@ -1,9 +1,10 @@
 import React from "react";
-import { Pressable, StyleSheet, View, Image } from "react-native";
+import { Pressable, StyleSheet, View, Text, DeviceEventEmitter } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 import { ICONS } from "../util/assets";
 import { DEFAULT_RIPPLE_CONFIG } from "../util/constants";
+import { useUnreadMessages } from "../hooks/useUnreadMessages";
 
 export const TAB_BAR_ICONS: Record<string, [any, any]> = {
     home: [ICONS.home, ICONS.homeActive],
@@ -19,6 +20,9 @@ const TabBar = ({
     navigation,
     insets,
 }: BottomTabBarProps) => {
+
+    const unreadCount = useUnreadMessages();
+
     const buttons = state.routes.map((route, index) => ({
         key: route.key,
         title: descriptors[route.key].options.title,
@@ -41,12 +45,16 @@ const TabBar = ({
             {
                 buttons.map(button => {
                     const isFocused = state.index === button.idx;
+                    const Icon = TAB_BAR_ICONS[button.name][isFocused ? 1 : 0];
                     return (
                         <Pressable
                             key={button.key}
                             onPress={() => {
                                 if (button.isSpecialCenter) console.log("create");
                                 else navigation.navigate(button.name)
+
+                                DeviceEventEmitter.emit('tab-pressed', button.name);
+                                if (state.index === button.idx) DeviceEventEmitter.emit('tab-re-pressed', button.name);
                             }}
                             style={[
                                 styles.tab,
@@ -55,7 +63,8 @@ const TabBar = ({
 
                             android_ripple={DEFAULT_RIPPLE_CONFIG}
                         >
-                            {TAB_BAR_ICONS[button.name][isFocused ? 1 : 0]}
+                            <Icon />
+                            { unreadCount > 0 && button.name === 'messages' && <Text style={styles.tabBadge}>{unreadCount}</Text> }
                         </Pressable>
                     );
                 })
@@ -88,6 +97,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         height: "100%",
         overflow: "hidden",
+        position: "relative",
     },
     tabCenter: {
         backgroundColor: "#4177FF",
@@ -100,5 +110,16 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 12,
         fontWeight: "600",
+    },
+    tabBadge: {
+        position: "absolute",
+        top: 10,
+        right: 16,
+        height: 18,
+        paddingHorizontal: 8,
+        borderRadius: 16,
+        fontSize: 14,
+        fontWeight: 600,
+        backgroundColor: "#F89915",
     },
 });
