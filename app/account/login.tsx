@@ -1,13 +1,13 @@
-import { useState, useRef } from "react";
-import { StyleSheet, Image, Text, KeyboardAvoidingView } from "react-native";
+import { useState, useRef } from 'react';
+import { StyleSheet, Image, Text, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { useRouter } from "expo-router";
+import { useRouter } from 'expo-router';
 
-import FormInput, { FormInputRef } from "../../components/FormInput";
-import { useSession } from "../../hooks/useSession";
+import FormInput, { FormInputRef } from '../../components/FormInput';
+import { useSession } from '../../hooks/useSession';
 
-import { IMAGES } from "../../util/assets";
-import Button from "../../components/Button";
+import { IMAGES } from '../../util/assets';
+import Button from '../../components/Button';
 
 const LoginPage = () => {
     
@@ -27,7 +27,7 @@ const LoginPage = () => {
                 usernameInputRef.current?.getValue() ?? '',
                 passwordInputRef.current?.getValue() ?? ''
             );
-            router.replace("/home");
+            router.replace('/home');
         } catch (e: any) {
             setError(e.message);
         }
@@ -80,29 +80,29 @@ export default LoginPage;
 
 const styles = StyleSheet.create({
     wrapper: {
-        backgroundColor: "#121212",
+        backgroundColor: '#121212',
         padding: 24,
-        height: "100%",
+        height: '100%',
     },
     container: {
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
         flex: 1,
-        justifyContent: "flex-start",
-        alignItems: "center",
+        justifyContent: 'flex-start',
+        alignItems: 'center',
     },
 
     logo: {
         marginTop: 32,
         marginBottom: 50,
         height: 50,
-        objectFit: "contain",
+        objectFit: 'contain',
     },
 
     errorText: {
-        color: "#fff",
-        backgroundColor: "#c40",
-        width: "100%",
+        color: '#fff',
+        backgroundColor: '#c40',
+        width: '100%',
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 8,

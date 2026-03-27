@@ -1,17 +1,22 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import { useLocalSearchParams } from 'expo-router';
 
-import { apiReq } from "../../util/api";
+import { apiReq } from '../../util/api';
 
 const UserPage = () => {
-    
+
     const { username } = useLocalSearchParams<{ username: string }>();
     const insets = useSafeAreaInsets();
 
-    const { data: user, isLoading, isError, error } = useQuery<any>({
+    const {
+        data: user,
+        isLoading,
+        isError,
+        error,
+    } = useQuery<any>({
         queryKey: ['user', username],
         queryFn: async () => {
             if (!username) return;
@@ -36,10 +41,16 @@ const UserPage = () => {
     return (
         <View style={styles.container}>
             <View style={{ marginTop: insets.top + 60 }} />
-            <Text style={styles.userTitle}>{ user.username }</Text>
-            <Image source={{ uri: `https://uploads.scratch.mit.edu/get_image/user/${user.id}_60x60.png` }} style={{ width: 60, height: 60, borderRadius: 12 }} />
+            <Text style={styles.userTitle}>{user.username}</Text>
+            <Image
+                source={{
+                    uri: `https://uploads.scratch.mit.edu/get_image/user/${user.id}_60x60.png`,
+                }}
+                style={{ width: 60, height: 60, borderRadius: 12 }}
+            />
         </View>
     );
+    
 };
 
 export default UserPage;
@@ -47,9 +58,9 @@ export default UserPage;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#121212",
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#121212',
         padding: 8,
     },
     userTitle: {
@@ -57,7 +68,7 @@ const styles = StyleSheet.create({
         padding: 4,
         marginVertical: 8,
         fontWeight: 900,
-        color: "#fff",
-        width: "100%",
-    }
+        color: '#fff',
+        width: '100%',
+    },
 });

@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 const ExplorePage = () => {
     return (
@@ -14,8 +14,8 @@ export default ExplorePage;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#121212",
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#121212',
     },
 });

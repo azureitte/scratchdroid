@@ -1,10 +1,17 @@
-import { useEffect, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { SceneMap, TabBar, TabView } from "react-native-tab-view";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEffect, useState } from 'react';
+import {
+    Dimensions,
+    ScrollView,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
+} from 'react-native';
+import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useSession } from "../../hooks/useSession";
-import { apiReq } from "../../util/api";
+import { useSession } from '../../hooks/useSession';
+import { apiReq } from '../../util/api';
 
 const TAB_ROUTES = [
     { key: 'projects', title: 'Projects' },
@@ -19,11 +26,10 @@ const renderScene = SceneMap({
 });
 
 const MyStuffPage = () => {
-
     const screen = useWindowDimensions();
     const insets = useSafeAreaInsets();
 
-    const [ tabIndex, setTabIndex ] = useState(0);
+    const [tabIndex, setTabIndex] = useState(0);
 
     const { isLoading, session } = useSession();
 
@@ -45,18 +51,18 @@ const MyStuffPage = () => {
     //     })();
     // }, [isLoading, session]);
 
-    const tabBar = (props: any) => <TabBar 
-        {...props} 
-        indicatorStyle={styles.tabIndicator}
-        style={styles.tabBar}
-    />;
+    const tabBar = (props: any) => (
+        <TabBar
+            {...props}
+            indicatorStyle={styles.tabIndicator}
+            style={styles.tabBar}
+        />
+    );
 
     return (
         <View style={[styles.container, { paddingBottom: insets.bottom + 60 }]}>
             <View style={[styles.pageStart, { paddingTop: insets.top + 82 }]}>
-                <Text style={styles.headingText}>
-                    My Stuff
-                </Text>
+                <Text style={styles.headingText}>My Stuff</Text>
             </View>
 
             <TabView
@@ -69,11 +75,15 @@ const MyStuffPage = () => {
                 options={TAB_ROUTES.reduce((acc, route) => {
                     acc[route.key] = {
                         label: ({ route, labelText, focused, color }: any) => (
-                            <Text style={[
-                                styles.tabLabel,
-                                focused && styles.tabLabelFocused,
-                            ]}>{labelText ?? route.name}</Text>
-                        )
+                            <Text
+                                style={[
+                                    styles.tabLabel,
+                                    focused && styles.tabLabelFocused,
+                                ]}
+                            >
+                                {labelText ?? route.name}
+                            </Text>
+                        ),
                     };
                     return acc;
                 }, {} as any)}
@@ -87,9 +97,9 @@ export default MyStuffPage;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "flex-start",
-        justifyContent: "flex-start",
-        backgroundColor: "#121212",
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        backgroundColor: '#121212',
     },
 
     tabContainer: {
@@ -100,15 +110,15 @@ const styles = StyleSheet.create({
         height: '100%',
     },
 
-    tabBar: { 
-        height: 46, 
-        backgroundColor: "#1d2b4d",
-        alignItems: "center",
-        width: Dimensions.get("window").width,
+    tabBar: {
+        height: 46,
+        backgroundColor: '#1d2b4d',
+        alignItems: 'center',
+        width: Dimensions.get('window').width,
     },
-    tabIndicator: { 
-        backgroundColor: "#71A3FF", 
-        height: 5, 
+    tabIndicator: {
+        backgroundColor: '#71A3FF',
+        height: 5,
         borderRadius: 5,
         marginHorizontal: 8,
     },
@@ -117,25 +127,25 @@ const styles = StyleSheet.create({
         backgroundColor: '#1d2b4d',
         padding: 16,
         zIndex: 2,
-        width: "100%",
+        width: '100%',
     },
 
     headingText: {
         fontSize: 28,
         fontWeight: 900,
-        color: "#fff",
+        color: '#fff',
     },
 
     tabLabel: {
         fontSize: 18,
         fontWeight: 500,
-        color: "#ffffffdf",
+        color: '#ffffffdf',
         minWidth: 100,
-        textAlign: "center",
+        textAlign: 'center',
         marginBottom: 10,
     },
     tabLabelFocused: {
-        color: "#fff",
+        color: '#fff',
         fontWeight: 600,
     },
 });

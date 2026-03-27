@@ -1,22 +1,33 @@
-import { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import WebView from "react-native-webview";
-import { useQuery } from "@tanstack/react-query";
-import { useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    StyleSheet,
+    Text,
+    useWindowDimensions,
+    View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import WebView from 'react-native-webview';
+import { useQuery } from '@tanstack/react-query';
+import { useLocalSearchParams } from 'expo-router';
 
-import { useSession } from "../../hooks/useSession";
-import { apiReq } from "../../util/api";
-import { ScratchProject } from "../../util/types";
+import { useSession } from '../../hooks/useSession';
+import { apiReq } from '../../util/api';
+import { ScratchProject } from '../../util/types';
 
 const ProjectPage = () => {
-    
+
     const { id } = useLocalSearchParams<{ id: string }>();
     const { session } = useSession();
     const screen = useWindowDimensions();
     const insets = useSafeAreaInsets();
 
-    const { data: project, isLoading, isError, error } = useQuery<ScratchProject>({
+    const {
+        data: project,
+        isLoading,
+        isError,
+        error,
+    } = useQuery<ScratchProject>({
         queryKey: ['project', id],
         queryFn: async () => {
             if (!id) return;
@@ -40,19 +51,27 @@ const ProjectPage = () => {
     if (isLoading || !project) return <ActivityIndicator />;
 
     const projectWidth = Math.min(480, screen.width - 16);
-    const projectHeight = projectWidth / 4 * 3 + 45;
+    const projectHeight = (projectWidth / 4) * 3 + 45;
 
     return (
         <View style={styles.container}>
             <View style={{ marginTop: insets.top + 60 }} />
-            <Text style={styles.projectTitle}>{ project.title }</Text>
-            <WebView 
-                source={{ uri: `https://turbowarp.org/${project.id}/embed?addons=pause,mute-project&settings-button` }}
-                style={{ flex: 0, width: projectWidth, height: projectHeight, backgroundColor: 'transparent' }}
+            <Text style={styles.projectTitle}>{project.title}</Text>
+            <WebView
+                source={{
+                    uri: `https://turbowarp.org/${project.id}/embed?addons=pause,mute-project&settings-button`,
+                }}
+                style={{
+                    flex: 0,
+                    width: projectWidth,
+                    height: projectHeight,
+                    backgroundColor: 'transparent',
+                }}
             />
             <Text>{id}</Text>
         </View>
     );
+    
 };
 
 export default ProjectPage;
@@ -60,9 +79,9 @@ export default ProjectPage;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#121212",
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#121212',
         padding: 8,
     },
     projectTitle: {
@@ -70,7 +89,7 @@ const styles = StyleSheet.create({
         padding: 4,
         marginVertical: 8,
         fontWeight: 900,
-        color: "#fff",
-        width: "100%",
-    }
+        color: '#fff',
+        width: '100%',
+    },
 });

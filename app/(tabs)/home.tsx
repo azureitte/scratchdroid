@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
-import { StyleSheet, Text, View, ScrollView } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Link, useRouter } from 'expo-router';
 
-import { useSession } from "../../hooks/useSession";
-import { apiReq } from "../../util/api";
+import { useSession } from '../../hooks/useSession';
+import { apiReq } from '../../util/api';
 
-import Button from "../../components/Button";
+import Button from '../../components/Button';
 
 const HomePage = () => {
 
@@ -78,23 +78,23 @@ export default HomePage;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#121212",
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#121212',
     },
 
     codeBlock: {
-        backgroundColor: "#000",
+        backgroundColor: '#000',
         maxHeight: 256,
-        width: "100%",
-        overflow: "scroll",
+        width: '100%',
+        overflow: 'scroll',
         padding: 8,
         borderRadius: 12,
         marginBottom: 12,
     },
     codeBlockText: {
-        fontFamily: "monospace",
+        fontFamily: 'monospace',
         fontSize: 12,
-        color: "#fff",
+        color: '#fff',
     },
 });
