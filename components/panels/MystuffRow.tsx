@@ -1,4 +1,4 @@
-import {} from 'react';
+import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types';
 import { relativeDate } from '@/util/functions';
@@ -15,7 +15,7 @@ type MystuffRowProps = {
     onPress?: () => void;
 };
 
-const MystuffRow = ({
+const MystuffRow = memo(({
     type,
     item,
     myUsername,
@@ -63,7 +63,7 @@ const MystuffRow = ({
 
         </Pressable>
     );
-};
+});
 
 export default MystuffRow;
 
@@ -72,7 +72,10 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: "row",
         alignItems: "flex-start",
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginVertical: -8,
+        marginBottom: 8,
         gap: 16,
     },
 

@@ -11,8 +11,10 @@ import {
 import { DevToolsBubble } from "react-native-react-query-devtools";
 import NetInfo from "@react-native-community/netinfo";
 
-import { SessionProvider } from "../context/SessionContext";
-import Header from "../components/app/Header";
+import { SessionProvider } from "@/context/SessionContext";
+import { AppProvider } from "@/context/AppContext";
+
+import Header from "@/components/app/Header";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +49,7 @@ export default function RootLayout() {
     return (
         <QueryClientProvider client={queryClient}>
             <SessionProvider>
+            <AppProvider>
                 <Stack
                     screenOptions={{
                         header: (props) => <></>,
@@ -56,6 +59,7 @@ export default function RootLayout() {
                 </Stack>
 
                 <Header />
+            </AppProvider>
             </SessionProvider>
             <DevToolsBubble
                 queryClient={queryClient}

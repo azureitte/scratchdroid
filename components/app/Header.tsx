@@ -1,21 +1,60 @@
-import React from "react";
-import { StyleSheet, Image, View, Pressable } from "react-native";
+import React, { useContext, useEffect } from "react";
+import { StyleSheet, Image, Pressable } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 
-import { ICONS, IMAGES } from "../../util/assets";
-import { useSession } from "../../hooks/useSession";
+import { ICONS, IMAGES } from "@/util/assets";
+import { AppContext } from "@/context/AppContext";
+import { useSession } from "@/hooks/useSession";
 
 const Header = () => {
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
     const { session } = useSession();
+    const { headerVisible, primaryColor } = useContext(AppContext);
 
     const MenuIcon = ICONS.menu;
 
+    const Y_HIDDEN = -(insets.top + 64);
+    const Y_VISIBLE = 0;
+
+    const COLOR_REGULAR = '#4177FF';
+    const COLOR_EXPLORE = '#349469';
+
+    const translateY = useSharedValue(Y_HIDDEN);
+    const color = useSharedValue(COLOR_REGULAR);
+
+    useEffect(() => {
+        translateY.value = withTiming(
+            headerVisible ? Y_VISIBLE : Y_HIDDEN, 
+            { duration: 300 }
+        );
+    }, [headerVisible]);
+
+    useEffect(() => {
+        color.value = withTiming(
+            primaryColor === 'regular' ? COLOR_REGULAR : COLOR_EXPLORE, 
+            { duration: 300 }
+        );
+    }, [primaryColor]);
+
+    const animatedStyle = useAnimatedStyle(() => ({
+        transform: [{ translateY: translateY.value }],
+        backgroundColor: color.value,
+    }));
+
     return (
-        <View style={[styles.headerContainer, { top: insets.top }]}>
+        <Animated.View style={[
+            styles.headerContainer, 
+            { top: insets.top }, 
+            animatedStyle
+        ]}>
             <Pressable 
                 style={styles.headerButton}
                 onPress={() => console.log('Drawer')}
@@ -39,7 +78,7 @@ const Header = () => {
                         style={styles.userAvatar} 
                     /> }
             </Pressable>
-        </View>
+        </Animated.View>
     );
 };
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 
 import type { ScratchSession } from '../util/types';
 import { apiReq } from '../util/api';

@@ -12,6 +12,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSession } from '@/hooks/useSession';
+import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useInfiniteMessages } from '@/hooks/useInfiniteMessages';
 import { useMarkMessagesRead } from '@/hooks/useMarkMessagesRead';
@@ -54,6 +55,12 @@ const MessagesPage = () => {
         DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
         return () => DeviceEventEmitter.removeAllListeners();
     }, []);
+
+    useChangeAppStateOnFocus({
+        headerVisible: true,
+        footerVisible: true,
+        primaryColor: 'regular',
+    });
 
 
     const handleRefresh = () => {

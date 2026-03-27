@@ -3,11 +3,11 @@ import { StyleSheet, Image, Text, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import FormInput, { FormInputRef } from '../../components/general/FormInput';
-import { useSession } from '../../hooks/useSession';
-
-import { IMAGES } from '../../util/assets';
-import Button from '../../components/general/Button';
+import { IMAGES } from '@/util/assets';
+import { useSession } from '@/hooks/useSession';
+import FormInput, { FormInputRef } from '@/components/general/FormInput';
+import Button from '@/components/general/Button';
+import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
 const LoginPage = () => {
     
@@ -19,6 +19,10 @@ const LoginPage = () => {
     const usernameInputRef = useRef<FormInputRef>(null);
     const passwordInputRef = useRef<FormInputRef>(null);
     
+    useChangeAppStateOnFocus({
+        headerVisible: false,
+        footerVisible: false,
+    });
 
     const handleLogin = async () => {
         try {

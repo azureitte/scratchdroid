@@ -33,7 +33,15 @@ export const useInfiniteMystuff = ({
 
     const ITEMS_PER_PAGE = type === 'projects' ? PROJECTS_PER_PAGE : STUDIOS_PER_PAGE;
 
-    const { data, isFetchingNextPage, isRefetching, fetchNextPage, isSuccess, hasNextPage } = useInfiniteQuery<
+    const { 
+        data, 
+        isFetchingNextPage, 
+        isRefetching, 
+        fetchNextPage, 
+        hasNextPage, 
+        isSuccess, 
+        isLoading 
+    } = useInfiniteQuery<
         ScratchMystuffItem[], Error, 
         InfiniteData<ScratchMystuffItem[]>, 
         ['mystuff', string, string, string|undefined, string|undefined],
@@ -97,6 +105,7 @@ export const useInfiniteMystuff = ({
             ? data.pages.flat() 
             : [], 
         isLoading: isRefetching || isFetchingNextPage, 
+        isFirstLoading: isLoading,
         isFetchingNextPage,
         fetchNextPage,
         hasNextPage,

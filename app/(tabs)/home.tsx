@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 
-import { useSession } from '@/hooks/useSession';
 import { apiReq } from '@/util/api';
-
+import { useSession } from '@/hooks/useSession';
+import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import Button from '@/components/general/Button';
 
 const HomePage = () => {
@@ -50,6 +50,12 @@ const HomePage = () => {
             setDebugTextActivity(JSON.stringify(activity, null, 2));
         })();
     }, [isLoading, session]);
+    
+    useChangeAppStateOnFocus({
+        headerVisible: true,
+        footerVisible: true,
+        primaryColor: 'regular',
+    });
 
     return (
         <View style={styles.container}>

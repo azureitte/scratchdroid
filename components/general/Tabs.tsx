@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet, Text, useWindowDimensions } from 'react-native';
-import {} from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Route, TabBar, TabView } from 'react-native-tab-view';
 
 export type TabsProps = {
@@ -28,6 +28,11 @@ const Tabs = ({
     style,
 }: TabsProps) => {
     const screen = useWindowDimensions();
+    const [flickerFix, setFlickerFix] = useState(false);
+    
+    useLayoutEffect(() => {
+        setTimeout(() => setFlickerFix(!flickerFix), 0);
+    }, [currentTab]);
     
     return (
         <TabView

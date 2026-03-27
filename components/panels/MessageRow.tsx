@@ -1,5 +1,5 @@
+import { memo } from "react";
 import { Image, StyleSheet, Text, View, Dimensions } from "react-native";
-import {} from "react";
 
 import { CommentType, type ScratchMessage } from "@/util/types";
 import { SVGS } from "@/util/assets";
@@ -32,7 +32,7 @@ type MessageRowProps = {
     isUnread: boolean;
 };
 
-const MessageRow = ({
+const MessageRow = memo(({
     message,
     myUsername,
     isUnread,
@@ -202,7 +202,7 @@ const MessageRow = ({
             </Text>
         </View>
     );
-};
+});
 
 export default MessageRow;
 

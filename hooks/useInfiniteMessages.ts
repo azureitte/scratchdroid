@@ -10,7 +10,15 @@ export const useInfiniteMessages = () => {
     const { isLoading: isSessionLoading, session } = useSession();
     const queryClient = useQueryClient();
 
-    const { data, isFetchingNextPage, isRefetching, fetchNextPage, isSuccess, hasNextPage } = useInfiniteQuery<
+    const { 
+        data, 
+        isFetchingNextPage, 
+        isRefetching, 
+        fetchNextPage, 
+        hasNextPage, 
+        isSuccess, 
+        isLoading 
+    } = useInfiniteQuery<
         ScratchMessage[], Error, 
         InfiniteData<ScratchMessage[]>, 
         ['messages', boolean], 
@@ -67,6 +75,7 @@ export const useInfiniteMessages = () => {
             ? data.pages.flat() 
             : [], 
         isLoading: isRefetching || isFetchingNextPage, 
+        isFirstLoading: isLoading,
         isFetchingNextPage,
         fetchNextPage,
         hasNextPage,
