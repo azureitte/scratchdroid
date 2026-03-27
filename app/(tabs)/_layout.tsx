@@ -1,13 +1,20 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
+import { useContext, useEffect } from 'react';
+import { router, Tabs } from 'expo-router';
 
-import TabBar from '@/components/app/TabBar';
+import { AppContext } from '@/context/AppContext';
 
 const TabsLayout = () => {
+    const { currentTab } = useContext(AppContext);
+
     const header = () => <></>;
+    const tabBar = () => <></>;
+
+    useEffect(() => {
+        router.navigate(`/${currentTab}`)
+    }, [currentTab]);
 
     return (
-        <Tabs tabBar={props => <TabBar {...props} />}>
+        <Tabs tabBar={tabBar}>
             <Tabs.Screen name="home" options={{ title: 'Home', header }} />
             <Tabs.Screen name="explore" options={{ title: 'Explore', header }} />
             <Tabs.Screen name="messages" options={{ title: 'Messages', header }} />

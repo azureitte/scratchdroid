@@ -9,13 +9,20 @@ export type TabsProps = {
     renderScene: ({ route }: { route: Route }) => React.JSX.Element,
 
     style?: StyleSheet.NamedStyles<any>;
+    variation?: 'regular' | 'explore';
 };
 
 const CustomTabBar = (props: any) => (
     <TabBar
         {...props}
-        indicatorStyle={styles.tabIndicator}
-        style={styles.tabBar}
+        indicatorStyle={[
+            styles.tabIndicator, 
+            props.variation === 'explore' && styles.tabIndicatorExplore
+        ]}
+        style={[
+            styles.tabBar, 
+            props.variation === 'explore' && styles.tabBarExplore
+        ]}
     />
 );
 
@@ -26,6 +33,7 @@ const Tabs = ({
     renderScene,
 
     style,
+    variation = 'regular',
 }: TabsProps) => {
     const screen = useWindowDimensions();
     const [flickerFix, setFlickerFix] = useState(false);
@@ -41,7 +49,7 @@ const Tabs = ({
             onIndexChange={onTabChange}
             initialLayout={{ width: screen.width, height: 0 }}
             style={[styles.tabContainer, style]}
-            renderTabBar={CustomTabBar}
+            renderTabBar={props => <CustomTabBar {...props} variation={variation} />}
             options={routes.reduce((acc, route) => {
                 acc[route.key] = {
                     label: ({ route, labelText, focused }: any) => (
@@ -79,6 +87,13 @@ const styles = StyleSheet.create({
         height: 5,
         borderRadius: 5,
         marginHorizontal: 8,
+    },
+
+    tabBarExplore: {
+        backgroundColor: '#183729',
+    },
+    tabIndicatorExplore: {
+        backgroundColor: '#43BA85',
     },
 
     tabLabel: {

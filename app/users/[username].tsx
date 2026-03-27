@@ -1,15 +1,20 @@
-import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 
-import { apiReq } from '../../util/api';
+import { apiReq } from '@/util/api';
+import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
 const UserPage = () => {
 
     const { username } = useLocalSearchParams<{ username: string }>();
     const insets = useSafeAreaInsets();
+
+    useChangeAppStateOnFocus({
+        footerVisible: false,
+        primaryColor: 'regular',
+    });
 
     const {
         data: user,

@@ -1,11 +1,12 @@
 import React, { useContext, useEffect } from "react";
 import { Pressable, StyleSheet, View, Text, DeviceEventEmitter } from "react-native";
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 import { ICONS } from "@/util/assets";
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
-import { AppContext } from "@/context/AppContext";
+import { AppContext, AppTabKey } from "@/context/AppContext";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 export const TAB_BAR_ICONS: Record<string, [any, any]> = {
@@ -16,34 +17,63 @@ export const TAB_BAR_ICONS: Record<string, [any, any]> = {
     create: [ICONS.create, ICONS.create],
 };
 
-const TabBar = ({
-    state,
-    descriptors,
-    navigation,
-    insets,
-}: BottomTabBarProps) => {
+const TAB_BAR_BUTTONS: ({
+    key: AppTabKey;
+    name: string;
+    title: string;
+    idx: number;
+    isSpecialCenter: false;
+}|{
+    key: '__create';
+    name: 'create';
+    title: 'Create';
+    idx: -1;
+    isSpecialCenter: true;
+})[] = [{
+    key: 'home',
+    name: 'home',
+    title: 'Home',
+    idx: 0,
+    isSpecialCenter: false,
+}, {
+    key: 'explore',
+    name: 'explore',
+    title: 'Explore',
+    idx: 1,
+    isSpecialCenter: false,
+}, {
+    key: '__create',
+    name: 'create',
+    title: 'Create',
+    idx: -1,
+    isSpecialCenter: true,
+}, {
+    key: 'messages',
+    name: 'messages',
+    title: 'Messages',
+    idx: 2,
+    isSpecialCenter: false,
+}, {
+    key: 'mystuff',
+    name: 'mystuff',
+    title: 'My Stuff',
+    idx: 3,
+    isSpecialCenter: false,
+}];
+
+const TabBar = () => {
 
     const unreadCount = useUnreadMessages();
-    const { footerVisible, primaryColor } = useContext(AppContext);
+    const { 
+        footerVisible, 
+        primaryColor,
+        currentTab,
+        setCurrentTab,
+    } = useContext(AppContext);
 
-    const buttons = state.routes.map((route, index) => ({
-        key: route.key,
-        title: descriptors[route.key].options.title,
-        name: route.name,
-        idx: index,
-        isSpecialCenter: false,
-    }));
+    const insets = useSafeAreaInsets();
 
-    // insert a special button in the center
-    buttons.splice(Math.round(buttons.length / 2), 0, {
-        key: "__create",
-        title: "Create",
-        name: "create",
-        idx: -1,
-        isSpecialCenter: true,
-    });
-
-    const Y_HIDDEN = (insets.top + 64);
+    const Y_HIDDEN = (insets.top + 70);
     const Y_VISIBLE = 0;
 
     const COLOR_REGULAR = '#4177FF';
@@ -55,7 +85,7 @@ const TabBar = ({
     useEffect(() => {
         translateY.value = withTiming(
             footerVisible ? Y_VISIBLE : Y_HIDDEN, 
-            { duration: 300 }
+            { duration: 300, easing: Easing.inOut(Easing.cubic) }
         );
     }, [footerVisible]);
 
@@ -81,8 +111,8 @@ const TabBar = ({
             animatedStyleContainer,    
         ]}>
             {
-                buttons.map(button => {
-                    const isFocused = state.index === button.idx;
+                TAB_BAR_BUTTONS.map(button => {
+                    const isFocused = currentTab === button.key;
                     const Icon = TAB_BAR_ICONS[button.name][isFocused ? 1 : 0];
                     
                     if (button.isSpecialCenter) return (
@@ -113,9 +143,9 @@ const TabBar = ({
                         <Pressable
                             key={button.key}
                             onPress={() => {
-                                navigation.navigate(button.name)
+                                setCurrentTab(button.key);
                                 DeviceEventEmitter.emit('tab-pressed', button.name);
-                                if (state.index === button.idx) DeviceEventEmitter.emit('tab-re-pressed', button.name);
+                                if (currentTab === button.key) DeviceEventEmitter.emit('tab-re-pressed', button.name);
                             }}
                             style={[
                                 styles.tab,

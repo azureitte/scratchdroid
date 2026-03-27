@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 
 import { ICONS, IMAGES } from "@/util/assets";
@@ -40,7 +41,7 @@ const Header = () => {
     useEffect(() => {
         color.value = withTiming(
             primaryColor === 'regular' ? COLOR_REGULAR : COLOR_EXPLORE, 
-            { duration: 300 }
+            { duration: 300, easing: Easing.inOut(Easing.cubic) }
         );
     }, [primaryColor]);
 

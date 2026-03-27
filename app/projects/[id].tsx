@@ -11,9 +11,10 @@ import WebView from 'react-native-webview';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useSession } from '@/hooks/useSession';
 import { apiReq } from '@/util/api';
 import { ScratchProject } from '@/util/types';
+import { useSession } from '@/hooks/useSession';
+import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
 const ProjectPage = () => {
 
@@ -21,6 +22,11 @@ const ProjectPage = () => {
     const { session } = useSession();
     const screen = useWindowDimensions();
     const insets = useSafeAreaInsets();
+
+    useChangeAppStateOnFocus({
+        footerVisible: false,
+        primaryColor: 'regular',
+    });
 
     const {
         data: project,
