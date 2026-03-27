@@ -17,7 +17,7 @@ import { useInfiniteMessages } from '@/hooks/useInfiniteMessages';
 import { useMarkMessagesRead } from '@/hooks/useMarkMessagesRead';
 
 import MessageRow from '@/components/panels/MessageRow';
-import Button from '@/components/general/Button';
+import ListLoadMore from '@/components/panels/ListLoadMore';
 
 const MessagesPage = () => {
     
@@ -58,29 +58,13 @@ const MessagesPage = () => {
 
     const handleRefresh = () => {
         setIsRefreshing(true);
-        messages.resetToFirstPage();
-        queryClient.invalidateQueries({
-            queryKey: ['messages', false],
-        });
+        messages.refresh();
     };
 
     const handleScrollToTop = (e: string) => {
         if (e !== 'messages') return;
         listRef.current?.scrollToIndex({ animated: false, index: 0 });
     };
-
-    
-    const pageEnd = (
-        <View style={[styles.pageEnd]}>
-            { messages.hasNextPage && <Button
-                text="Load More"
-                role="primary"
-                fullWidth
-                isLoading={messages.isLoading}
-                onPress={messages.fetchNextPage}
-            /> }
-        </View>
-    );
 
     return (
         <View style={styles.container}>
@@ -106,7 +90,11 @@ const MessagesPage = () => {
                         />
                     )}
                     ref={listRef}
-                    ListFooterComponent={pageEnd}
+                    ListFooterComponent={<ListLoadMore
+                        hasNextPage={messages.hasNextPage}
+                        isLoading={messages.isLoading}
+                        fetchNextPage={messages.fetchNextPage}
+                    />}
                     refreshControl={<RefreshControl
                         refreshing={isRefreshing}
                         onRefresh={handleRefresh}
@@ -144,12 +132,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#1d2b4d',
         padding: 16,
         zIndex: 2,
-    },
-    pageEnd: {
-        padding: 8,
-        paddingTop: 16,
-        paddingBottom: 24,
-        width: '100%',
     },
 
     headingText: {

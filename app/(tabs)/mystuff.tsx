@@ -1,6 +1,5 @@
 import { ForwardedRef, forwardRef, memo, useEffect, useRef, useState } from 'react';
 import {
-    Dimensions,
     FlatList,
     RefreshControl,
     StyleSheet,
@@ -8,15 +7,21 @@ import {
     useWindowDimensions,
     View,
 } from 'react-native';
-import { Route, TabBar, TabView } from 'react-native-tab-view';
+import type { Route } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Router, useRouter } from 'expo-router';
+
+import type { 
+    ScratchMystuffProjectItem, 
+    ScratchMystuffStudioItem 
+} from '@/util/types';
 
 import { useSession } from '@/hooks/useSession';
 import { useInfiniteMystuff } from '@/hooks/useInfiniteMystuff';
-import Button from '@/components/general/Button';
-import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types';
+
 import MystuffRow from '@/components/panels/MystuffRow';
-import { Router, useRouter } from 'expo-router';
+import Tabs from '@/components/general/Tabs';
+import ListLoadMore from '@/components/panels/ListLoadMore';
 
 const TAB_ROUTES = [
     { key: 'projects', title: 'Projects' },
@@ -24,26 +29,6 @@ const TAB_ROUTES = [
     { key: 'trash', title: 'Trash' },
 ];
 const tabKeys = TAB_ROUTES.map(route => route.key);
-
-const PageEnd = ({
-    hasNextPage,
-    isLoading,
-    fetchNextPage,
-}: {
-    hasNextPage: boolean;
-    isLoading: boolean;
-    fetchNextPage: () => void;
-}) => (
-    <View style={[styles.pageEnd]}>
-        { hasNextPage && <Button
-            text="Load More"
-            role="primary"
-            fullWidth
-            isLoading={isLoading}
-            onPress={fetchNextPage}
-        /> }
-    </View>
-);
 
 const TabProjects = memo(forwardRef(({ 
     projects,
@@ -72,7 +57,7 @@ const TabProjects = memo(forwardRef(({
             />
         )}
         ref={ref}
-        ListFooterComponent={<PageEnd
+        ListFooterComponent={<ListLoadMore
             hasNextPage={hasNextPage}
             isLoading={isLoading}
             fetchNextPage={fetchNextPage}
@@ -114,7 +99,7 @@ const TabStudios = memo(forwardRef(({
             />
         )}
         ref={ref}
-        ListFooterComponent={<PageEnd
+        ListFooterComponent={<ListLoadMore
             hasNextPage={hasNextPage}
             isLoading={isLoading}
             fetchNextPage={fetchNextPage}
@@ -125,14 +110,6 @@ const TabStudios = memo(forwardRef(({
         />}
     />
 )));
-
-const CustomTabBar = (props: any) => (
-    <TabBar
-        {...props}
-        indicatorStyle={styles.tabIndicator}
-        style={styles.tabBar}
-    />
-);
 
 const MyStuffPage = () => {
     const screen = useWindowDimensions();
@@ -215,6 +192,8 @@ const MyStuffPage = () => {
                     key='trash'
                 />;
         }
+
+        return <View />;
     };
 
     return (
@@ -223,29 +202,11 @@ const MyStuffPage = () => {
                 <Text style={styles.headingText}>My Stuff</Text>
             </View>
 
-            <TabView
-                navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
+            <Tabs 
+                routes={TAB_ROUTES}
+                currentTab={tabIndex}
+                onTabChange={setTabIndex}
                 renderScene={renderScene}
-                onIndexChange={setTabIndex}
-                initialLayout={{ width: screen.width, height: 0 }}
-                style={styles.tabContainer}
-                renderTabBar={CustomTabBar}
-                options={TAB_ROUTES.reduce((acc, route) => {
-                    acc[route.key] = {
-                        label: ({ route, labelText, focused, color }: any) => (
-                            <Text
-                                style={[
-                                    styles.tabLabel,
-                                    focused && styles.tabLabelFocused,
-                                ]}
-                            >
-                                {labelText ?? route.name}
-                            </Text>
-                        ),
-                    };
-                    return acc;
-                }, {} as any)}
-                lazy
             />
         </View>
     );
@@ -261,37 +222,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#121212',
     },
 
-    tabContainer: {
-        flex: 1,
-    },
-
-    tabPager: {
-        height: '100%',
-    },
-
-    tabBar: {
-        height: 46,
-        backgroundColor: '#1d2b4d',
-        alignItems: 'center',
-        width: Dimensions.get('window').width,
-    },
-    tabIndicator: {
-        backgroundColor: '#71A3FF',
-        height: 5,
-        borderRadius: 5,
-        marginHorizontal: 8,
-    },
-
     pageStart: {
         backgroundColor: '#1d2b4d',
         padding: 16,
         zIndex: 2,
-        width: '100%',
-    },
-    pageEnd: {
-        padding: 8,
-        paddingTop: 16,
-        paddingBottom: 24,
         width: '100%',
     },
 
@@ -299,18 +233,5 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: 900,
         color: '#fff',
-    },
-
-    tabLabel: {
-        fontSize: 18,
-        fontWeight: 500,
-        color: '#ffffffdf',
-        minWidth: 100,
-        textAlign: 'center',
-        marginBottom: 10,
-    },
-    tabLabelFocused: {
-        color: '#fff',
-        fontWeight: 600,
     },
 });

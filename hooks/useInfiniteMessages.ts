@@ -55,6 +55,13 @@ export const useInfiniteMessages = () => {
         });
     };
 
+    const refresh = () => {
+        resetToFirstPage();
+        queryClient.invalidateQueries({
+            queryKey: ['messages', false],
+        });
+    }
+
     return { 
         messages: data 
             ? data.pages.flat() 
@@ -64,6 +71,7 @@ export const useInfiniteMessages = () => {
         fetchNextPage,
         hasNextPage,
         resetToFirstPage,
+        refresh,
         isSuccess,
     };
 };

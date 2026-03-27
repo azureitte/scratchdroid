@@ -3,7 +3,7 @@ import { StyleSheet, Image, Text, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import FormInput, { FormInputRef } from '../../components/FormInput';
+import FormInput, { FormInputRef } from '../../components/general/FormInput';
 import { useSession } from '../../hooks/useSession';
 
 import { IMAGES } from '../../util/assets';
