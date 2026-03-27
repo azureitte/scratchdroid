@@ -41,10 +41,13 @@ const MessagesPage = () => {
 
     useEffect(() => {
         if (!isRefreshing && !isFocused) return;
-        if (isRefreshing) markRead();
-        queryClient.invalidateQueries({
-            queryKey: ['unread', false, false],
-        });
+
+        setTimeout(() => {
+            if (isRefreshing) markRead();
+            queryClient.invalidateQueries({
+                queryKey: ['unread', false, false],
+            });
+        }, 1000);
     }, [isRefreshing, isFocused]);
 
     useEffect(() => {
@@ -69,13 +72,13 @@ const MessagesPage = () => {
     
     const pageEnd = (
         <View style={[styles.pageEnd]}>
-            <Button
+            { messages.hasNextPage && <Button
                 text="Load More"
                 role="primary"
                 fullWidth
                 isLoading={messages.isLoading}
                 onPress={messages.fetchNextPage}
-            />
+            /> }
         </View>
     );
 

@@ -7,11 +7,6 @@ import { SVGS } from "../util/assets";
 import { Link } from "expo-router";
 import { shortRelativeDate } from "../util/functions";
 
-type MessageRowProps = {
-    message: ScratchMessage;
-    myUsername?: string;
-    isUnread: boolean;
-};
 
 const getIcon = (message: ScratchMessage) => {
     switch (message.type) {
@@ -28,6 +23,13 @@ const getIcon = (message: ScratchMessage) => {
         case 'userjoin': return SVGS.messages.comment;
         default: return SVGS.messages.comment;
     }
+};
+
+
+type MessageRowProps = {
+    message: ScratchMessage;
+    myUsername?: string;
+    isUnread: boolean;
 };
 
 const MessageRow = ({

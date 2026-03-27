@@ -1,63 +1,222 @@
-import { useEffect, useState } from 'react';
+import { ForwardedRef, forwardRef, memo, useEffect, useRef, useState } from 'react';
 import {
     Dimensions,
-    ScrollView,
+    FlatList,
+    RefreshControl,
     StyleSheet,
     Text,
     useWindowDimensions,
     View,
 } from 'react-native';
-import { SceneMap, TabBar, TabView } from 'react-native-tab-view';
+import { Route, SceneMap, TabBar, TabView } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useSession } from '../../hooks/useSession';
-import { apiReq } from '../../util/api';
+import { useInfiniteMystuff } from '../../hooks/useInfiniteMystuff';
+import Button from '../../components/Button';
+import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '../../util/types';
+import { useQueryClient } from '@tanstack/react-query';
+import MystuffRow from '../../components/MystuffRow';
+import { Router, useRouter } from 'expo-router';
 
 const TAB_ROUTES = [
     { key: 'projects', title: 'Projects' },
     { key: 'studios', title: 'Studios' },
     { key: 'trash', title: 'Trash' },
 ];
+const tabKeys = TAB_ROUTES.map(route => route.key);
 
-const renderScene = SceneMap({
-    projects: () => <Text>Projects</Text>,
-    studios: () => <Text>Studios</Text>,
-    trash: () => <Text>Trash</Text>,
-});
+const PageEnd = ({
+    hasNextPage,
+    isLoading,
+    fetchNextPage,
+}: {
+    hasNextPage: boolean;
+    isLoading: boolean;
+    fetchNextPage: () => void;
+}) => (
+    <View style={[styles.pageEnd]}>
+        { hasNextPage && <Button
+            text="Load More"
+            role="primary"
+            fullWidth
+            isLoading={isLoading}
+            onPress={fetchNextPage}
+        /> }
+    </View>
+);
+
+const TabProjects = memo(forwardRef(({ 
+    projects,
+    hasNextPage,
+    isLoading,
+    fetchNextPage,
+    isRefreshing,
+    handleRefresh,
+    router,
+}: {
+    projects: ScratchMystuffProjectItem[];
+    hasNextPage: boolean;
+    isLoading: boolean;
+    fetchNextPage: () => void;
+    isRefreshing: boolean;
+    handleRefresh: () => void;
+    router: Router;
+}, ref: ForwardedRef<FlatList<any>>) => (
+    <FlatList
+        data={projects}
+        renderItem={({ item }) => (
+            <MystuffRow 
+                type='project' 
+                item={item} 
+                onPress={() => router.push(`/projects/${item.pk}`)} 
+            />
+        )}
+        ref={ref}
+        ListFooterComponent={<PageEnd
+            hasNextPage={hasNextPage}
+            isLoading={isLoading}
+            fetchNextPage={fetchNextPage}
+        />}
+        refreshControl={<RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+        />}
+    />
+)));
+
+const TabStudios = memo(forwardRef(({ 
+    studios,
+    hasNextPage,
+    isLoading,
+    fetchNextPage,
+    isRefreshing,
+    handleRefresh,
+    myUsername,
+    router,
+}: {
+    studios: ScratchMystuffStudioItem[];
+    hasNextPage: boolean;
+    isLoading: boolean;
+    fetchNextPage: () => void;
+    isRefreshing: boolean;
+    handleRefresh: () => void;
+    myUsername?: string;
+    router: Router;
+}, ref: ForwardedRef<FlatList<any>>) => (
+    <FlatList
+        data={studios}
+        renderItem={({ item }) => (
+            <MystuffRow 
+                type='studio' 
+                item={item} 
+                myUsername={myUsername} 
+                onPress={() => router.push(`/studios/${item.pk}`)}
+            />
+        )}
+        ref={ref}
+        ListFooterComponent={<PageEnd
+            hasNextPage={hasNextPage}
+            isLoading={isLoading}
+            fetchNextPage={fetchNextPage}
+        />}
+        refreshControl={<RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+        />}
+    />
+)));
+
+const CustomTabBar = (props: any) => (
+    <TabBar
+        {...props}
+        indicatorStyle={styles.tabIndicator}
+        style={styles.tabBar}
+    />
+);
 
 const MyStuffPage = () => {
     const screen = useWindowDimensions();
     const insets = useSafeAreaInsets();
+    const router = useRouter();
+    const { session } = useSession();
 
     const [tabIndex, setTabIndex] = useState(0);
 
-    const { isLoading, session } = useSession();
+    const projects = useInfiniteMystuff({ type: 'projects', subtype: 'all' });
+    const studios = useInfiniteMystuff({ type: 'studios', subtype: 'all' });
+    const trash = useInfiniteMystuff({ type: 'projects', subtype: 'trashed' });
 
-    // useEffect(() => {
-    //     if (isLoading || !session) return;
-    //     (async () => {
-    //         const { user } = session;
-    //         if (!user) return;
+    const [ projectsRefreshing, setProjectsRefreshing ] = useState(true);
+    const [ studiosRefreshing, setStudiosRefreshing ] = useState(true);
+    const [ trashRefreshing, setTrashRefreshing ] = useState(true);
 
-    //         const projectsRes = await apiReq({
-    //             path: "/site-api/projects/all/",
-    //             params: { limit: 10, offset: 0 },
-    //             responseType: "json",
-    //         });
-    //         if (!projectsRes.success) return;
+    const projectsListRef = useRef<FlatList<any>>(null);
+    const studiosListRef = useRef<FlatList<any>>(null);
+    const trashListRef = useRef<FlatList<any>>(null);
 
-    //         const projects = projectsRes.data;
-    //         setDebugTextProjects(JSON.stringify(projects, null, 2));
-    //     })();
-    // }, [isLoading, session]);
+    useEffect(() => {
+        if (!projects.isLoading) setProjectsRefreshing(false);
+        if (!studios.isLoading) setStudiosRefreshing(false);
+        if (!trash.isLoading) setTrashRefreshing(false);
+    }, [projects.isLoading, studios.isLoading, trash.isLoading]);
 
-    const tabBar = (props: any) => (
-        <TabBar
-            {...props}
-            indicatorStyle={styles.tabIndicator}
-            style={styles.tabBar}
-        />
-    );
+    const handleProjectRefresh = () => {
+        setProjectsRefreshing(true);
+        projects.refresh();
+    };
+    const handleStudiosRefresh = () => {
+        setStudiosRefreshing(true);
+        studios.refresh();
+    };
+    const handleTrashRefresh = () => {
+        setTrashRefreshing(true);
+        trash.refresh();
+    };
+
+    const renderScene = ({ route }: { route: Route }) => {
+        if (Math.abs(tabIndex - tabKeys.indexOf(route.key)) > 1) return <View />;
+
+        switch (route.key) {
+            case 'projects': 
+                return <TabProjects
+                    projects={projects.data as ScratchMystuffProjectItem[]}
+                    hasNextPage={projects.hasNextPage}
+                    isLoading={projects.isLoading}
+                    fetchNextPage={projects.fetchNextPage}
+                    isRefreshing={projectsRefreshing}
+                    handleRefresh={handleProjectRefresh}
+                    router={router}
+                    ref={projectsListRef}
+                    key='projects'
+                />;
+            case 'studios':
+                return <TabStudios
+                    studios={studios.data as ScratchMystuffStudioItem[]}
+                    hasNextPage={studios.hasNextPage}
+                    isLoading={studios.isLoading}
+                    fetchNextPage={studios.fetchNextPage}
+                    isRefreshing={studiosRefreshing}
+                    handleRefresh={handleStudiosRefresh}
+                    ref={studiosListRef}
+                    router={router}
+                    myUsername={session?.user?.username}
+                    key='studios'
+                />;
+            case 'trash':
+                return <TabProjects
+                    projects={trash.data as ScratchMystuffProjectItem[]}
+                    hasNextPage={trash.hasNextPage}
+                    isLoading={trash.isLoading}
+                    fetchNextPage={trash.fetchNextPage}
+                    isRefreshing={trashRefreshing}
+                    handleRefresh={handleTrashRefresh}
+                    router={router}
+                    ref={trashListRef}
+                    key='trash'
+                />;
+        }
+    };
 
     return (
         <View style={[styles.container, { paddingBottom: insets.bottom + 60 }]}>
@@ -69,9 +228,9 @@ const MyStuffPage = () => {
                 navigationState={{ index: tabIndex, routes: TAB_ROUTES }}
                 renderScene={renderScene}
                 onIndexChange={setTabIndex}
-                initialLayout={{ width: screen.width }}
+                initialLayout={{ width: screen.width, height: 0 }}
                 style={styles.tabContainer}
-                renderTabBar={tabBar}
+                renderTabBar={CustomTabBar}
                 options={TAB_ROUTES.reduce((acc, route) => {
                     acc[route.key] = {
                         label: ({ route, labelText, focused, color }: any) => (
@@ -87,6 +246,7 @@ const MyStuffPage = () => {
                     };
                     return acc;
                 }, {} as any)}
+                lazy
             />
         </View>
     );
@@ -127,6 +287,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#1d2b4d',
         padding: 16,
         zIndex: 2,
+        width: '100%',
+    },
+    pageEnd: {
+        padding: 8,
+        paddingTop: 16,
+        paddingBottom: 24,
         width: '100%',
     },
 
