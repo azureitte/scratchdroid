@@ -11,13 +11,13 @@ import { useIsFocused } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useSession } from '../../hooks/useSession';
-import { useUnreadMessages } from '../../hooks/useUnreadMessages';
-import { useInfiniteMessages } from '../../hooks/useInfiniteMessages';
-import { useMarkMessagesRead } from '../../hooks/useMarkMessagesRead';
+import { useSession } from '@/hooks/useSession';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useInfiniteMessages } from '@/hooks/useInfiniteMessages';
+import { useMarkMessagesRead } from '@/hooks/useMarkMessagesRead';
 
-import MessageRow from '../../components/MessageRow';
-import Button from '../../components/Button';
+import MessageRow from '@/components/panels/MessageRow';
+import Button from '@/components/general/Button';
 
 const MessagesPage = () => {
     

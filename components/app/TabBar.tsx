@@ -2,9 +2,9 @@ import React from "react";
 import { Pressable, StyleSheet, View, Text, DeviceEventEmitter } from "react-native";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
-import { ICONS } from "../util/assets";
-import { DEFAULT_RIPPLE_CONFIG } from "../util/constants";
-import { useUnreadMessages } from "../hooks/useUnreadMessages";
+import { ICONS } from "../../util/assets";
+import { DEFAULT_RIPPLE_CONFIG } from "../../util/constants";
+import { useUnreadMessages } from "../../hooks/useUnreadMessages";
 
 export const TAB_BAR_ICONS: Record<string, [any, any]> = {
     home: [ICONS.home, ICONS.homeActive],

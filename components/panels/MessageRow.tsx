@@ -1,11 +1,11 @@
 import { Image, StyleSheet, Text, View, Dimensions } from "react-native";
 import {} from "react";
 
-import { CommentType, type ScratchMessage } from "../util/types";
-import { SVGS } from "../util/assets";
+import { CommentType, type ScratchMessage } from "@/util/types";
+import { SVGS } from "@/util/assets";
 
 import { Link } from "expo-router";
-import { shortRelativeDate } from "../util/functions";
+import { shortRelativeDate } from "@/util/functions";
 
 
 const getIcon = (message: ScratchMessage) => {

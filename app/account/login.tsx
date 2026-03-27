@@ -7,7 +7,7 @@ import FormInput, { FormInputRef } from '../../components/FormInput';
 import { useSession } from '../../hooks/useSession';
 
 import { IMAGES } from '../../util/assets';
-import Button from '../../components/Button';
+import Button from '../../components/general/Button';
 
 const LoginPage = () => {
     

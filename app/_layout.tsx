@@ -12,7 +12,7 @@ import { DevToolsBubble } from "react-native-react-query-devtools";
 import NetInfo from "@react-native-community/netinfo";
 
 import { SessionProvider } from "../context/SessionContext";
-import Header from "../components/Header";
+import Header from "../components/app/Header";
 
 const queryClient = new QueryClient();
 

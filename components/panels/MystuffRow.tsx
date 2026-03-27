@@ -1,7 +1,7 @@
 import {} from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '../util/types';
-import { relativeDate } from '../util/functions';
+import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types';
+import { relativeDate } from '@/util/functions';
 
 type MystuffRowProps = {
     type: 'project';

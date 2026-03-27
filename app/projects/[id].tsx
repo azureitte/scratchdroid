@@ -11,9 +11,9 @@ import WebView from 'react-native-webview';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalSearchParams } from 'expo-router';
 
-import { useSession } from '../../hooks/useSession';
-import { apiReq } from '../../util/api';
-import { ScratchProject } from '../../util/types';
+import { useSession } from '@/hooks/useSession';
+import { apiReq } from '@/util/api';
+import { ScratchProject } from '@/util/types';
 
 const ProjectPage = () => {
 

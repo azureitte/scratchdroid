@@ -8,6 +8,8 @@ const PROJECTS_PER_PAGE = 40;
 const STUDIOS_PER_PAGE = 40;
 
 type InfiniteMystuffProps = {
+    enabled?: boolean;
+}&({
     type: 'projects';
     subtype: 'all'|'shared'|'notshared'|'trashed';
     ascsort?: 'title';
@@ -17,13 +19,14 @@ type InfiniteMystuffProps = {
     subtype: 'all'|'owned'|'curated';
     ascsort?: 'title';
     descsort?: 'title'|'projecters_count';
-}
+})
 
 export const useInfiniteMystuff = ({
     type,
     subtype,
     ascsort,
     descsort,
+    enabled = true,
 }: InfiniteMystuffProps) => {
     const { isLoading: isSessionLoading, session } = useSession();
     const queryClient = useQueryClient();
@@ -36,6 +39,7 @@ export const useInfiniteMystuff = ({
         ['mystuff', string, string, string|undefined, string|undefined],
         number
     >({
+        enabled,
         queryKey: ['mystuff', type, subtype, ascsort, descsort],
         queryFn: async ({ pageParam }) => {
             if (isSessionLoading || !session.user) return [];

@@ -8,15 +8,14 @@ import {
     useWindowDimensions,
     View,
 } from 'react-native';
-import { Route, SceneMap, TabBar, TabView } from 'react-native-tab-view';
+import { Route, TabBar, TabView } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useSession } from '../../hooks/useSession';
-import { useInfiniteMystuff } from '../../hooks/useInfiniteMystuff';
-import Button from '../../components/Button';
-import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '../../util/types';
-import { useQueryClient } from '@tanstack/react-query';
-import MystuffRow from '../../components/MystuffRow';
+import { useSession } from '@/hooks/useSession';
+import { useInfiniteMystuff } from '@/hooks/useInfiniteMystuff';
+import Button from '@/components/general/Button';
+import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types';
+import MystuffRow from '@/components/panels/MystuffRow';
 import { Router, useRouter } from 'expo-router';
 
 const TAB_ROUTES = [
@@ -143,9 +142,9 @@ const MyStuffPage = () => {
 
     const [tabIndex, setTabIndex] = useState(0);
 
-    const projects = useInfiniteMystuff({ type: 'projects', subtype: 'all' });
-    const studios = useInfiniteMystuff({ type: 'studios', subtype: 'all' });
-    const trash = useInfiniteMystuff({ type: 'projects', subtype: 'trashed' });
+    const projects = useInfiniteMystuff({ type: 'projects', subtype: 'all', enabled: tabIndex === 0 });
+    const studios = useInfiniteMystuff({ type: 'studios', subtype: 'all', enabled: tabIndex === 1 });
+    const trash = useInfiniteMystuff({ type: 'projects', subtype: 'trashed', enabled: tabIndex === 2 });
 
     const [ projectsRefreshing, setProjectsRefreshing ] = useState(true);
     const [ studiosRefreshing, setStudiosRefreshing ] = useState(true);

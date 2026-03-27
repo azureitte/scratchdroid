@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 
-import { useSession } from '../../hooks/useSession';
-import { apiReq } from '../../util/api';
+import { useSession } from '@/hooks/useSession';
+import { apiReq } from '@/util/api';
 
-import Button from '../../components/Button';
+import Button from '@/components/general/Button';
 
 const HomePage = () => {
 

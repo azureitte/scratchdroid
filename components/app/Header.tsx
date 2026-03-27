@@ -3,8 +3,8 @@ import { StyleSheet, Image, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 
-import { ICONS, IMAGES } from "../util/assets";
-import { useSession } from "../hooks/useSession";
+import { ICONS, IMAGES } from "../../util/assets";
+import { useSession } from "../../hooks/useSession";
 
 const Header = () => {
     const insets = useSafeAreaInsets();
