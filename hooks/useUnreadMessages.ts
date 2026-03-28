@@ -4,10 +4,15 @@ import { apiReq } from "../util/api";
 import { useSession } from "./useSession";
 
 export const useUnreadMessages = (persist: boolean = false) => {
-    const { isLoading: isSessionLoading, session } = useSession();
+    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
 
-    const { data } = useQuery<number>({
-        queryKey: ['unread', isSessionLoading, persist],
+    const { data } = useQuery<
+        number, 
+        Error, 
+        number, 
+        ['unread', { persist: boolean }]
+    >({
+        queryKey: ['unread', { persist }],
         queryFn: async () => {
             if (isSessionLoading || !session.user) return 0;
 
@@ -21,6 +26,7 @@ export const useUnreadMessages = (persist: boolean = false) => {
         },
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
+        enabled: !isSessionLoading && isLoggedIn,
     });
 
     return data ?? 0;

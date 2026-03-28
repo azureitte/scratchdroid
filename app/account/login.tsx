@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { StyleSheet, Image, Text, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { IMAGES } from '@/util/assets';
 import { useSession } from '@/hooks/useSession';
@@ -10,11 +11,11 @@ import Button from '@/components/general/Button';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
 const LoginPage = () => {
-    
-    const router = useRouter();
 
     const { login, isLoading } = useSession();
     const [ error, setError ] = useState('');
+
+    const queryClient = useQueryClient();
 
     const usernameInputRef = useRef<FormInputRef>(null);
     const passwordInputRef = useRef<FormInputRef>(null);
@@ -23,15 +24,16 @@ const LoginPage = () => {
         headerVisible: false,
         footerVisible: false,
     });
-
+    
     const handleLogin = async () => {
         try {
             setError('');
+            passwordInputRef.current?.blur();
+            usernameInputRef.current?.blur();
             await login(
                 usernameInputRef.current?.getValue() ?? '',
                 passwordInputRef.current?.getValue() ?? ''
             );
-            router.replace('/home');
         } catch (e: any) {
             setError(e.message);
         }

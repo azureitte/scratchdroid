@@ -28,7 +28,7 @@ export const useInfiniteMystuff = ({
     descsort,
     enabled = true,
 }: InfiniteMystuffProps) => {
-    const { isLoading: isSessionLoading, session } = useSession();
+    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
     const queryClient = useQueryClient();
 
     const ITEMS_PER_PAGE = type === 'projects' ? PROJECTS_PER_PAGE : STUDIOS_PER_PAGE;
@@ -47,7 +47,6 @@ export const useInfiniteMystuff = ({
         ['mystuff', string, string, string|undefined, string|undefined],
         number
     >({
-        enabled,
         queryKey: ['mystuff', type, subtype, ascsort, descsort],
         queryFn: async ({ pageParam }) => {
             if (isSessionLoading || !session.user) return [];
@@ -81,6 +80,8 @@ export const useInfiniteMystuff = ({
         staleTime: 60 * 60 * 1000, // 1 hour
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
+
+        enabled: enabled && !isSessionLoading && isLoggedIn,
     });
 
     const resetToFirstPage = () => {

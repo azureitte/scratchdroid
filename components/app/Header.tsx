@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { StyleSheet, Image, Pressable } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
@@ -17,8 +17,15 @@ const Header = () => {
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
+    const pfpCachePrevent = useRef(Math.random());
+
     const { session } = useSession();
-    const { headerVisible, primaryColor } = useContext(AppContext);
+    const { 
+        headerVisible, 
+        primaryColor, 
+        drawerOpen,
+        setDrawerOpen,
+    } = useContext(AppContext);
 
     const MenuIcon = ICONS.menu;
 
@@ -58,7 +65,7 @@ const Header = () => {
         ]}>
             <Pressable 
                 style={styles.headerButton}
-                onPress={() => console.log('Drawer')}
+                onPress={() => setDrawerOpen(!drawerOpen)}
                 android_ripple={{ color: "#fff3", foreground: true }}
             >
                 <MenuIcon />
@@ -70,12 +77,15 @@ const Header = () => {
 
             <Pressable 
                 style={styles.headerButton}
-                onPress={() => router.push(`users/${session?.user?.username}`)}
+                onPress={() => {
+                    setDrawerOpen(false);
+                    router.push(`users/${session?.user?.username}`)
+                }}
                 android_ripple={{ color: "#fff3", foreground: true }}
             >
                 { session?.user && 
                     <Image 
-                        source={{ uri: `https://uploads.scratch.mit.edu/get_image/user/${session.user.id}_32x32.png` }} 
+                        source={{ uri: `https://uploads.scratch.mit.edu/get_image/user/${session.user.id}_32x32.png?a=${pfpCachePrevent.current}` }}
                         style={styles.userAvatar} 
                     /> }
             </Pressable>

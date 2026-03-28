@@ -4,12 +4,11 @@ import {
     FlatList,
     RefreshControl,
     StyleSheet,
-    Text,
     View,
 } from 'react-native';
-import { useIsFocused } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { useIsFocused } from 'expo-router';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
@@ -19,11 +18,15 @@ import { useMarkMessagesRead } from '@/hooks/useMarkMessagesRead';
 
 import MessageRow from '@/components/panels/MessageRow';
 import ListLoadMore from '@/components/panels/ListLoadMore';
+import ScrollablePageHeader from '@/components/panels/ScrollablePageHeader';
+import ListLoading from '@/components/panels/ListLoading';
+
+const HEADER_HEIGHT = 128;
+const HEADER_STICK = 105;
 
 const MessagesPage = () => {
     
     const insets = useSafeAreaInsets();
-    const queryClient = useQueryClient();
     const isFocused = useIsFocused();
 
     const messages = useInfiniteMessages();
@@ -36,6 +39,14 @@ const MessagesPage = () => {
     const listRef = useRef<FlatList<any>>(null);
 
 
+    const scrollY = useSharedValue(0);
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (e) => {
+            scrollY.value = e.contentOffset.y;
+        },
+    });
+
+
     useEffect(() => {
         if (!messages.isLoading) setIsRefreshing(false);
     }, [messages.isLoading]);
@@ -45,9 +56,7 @@ const MessagesPage = () => {
 
         setTimeout(() => {
             if (isRefreshing) markRead();
-            queryClient.invalidateQueries({
-                queryKey: ['unread', false, false],
-            });
+            messages.refreshUnreadCount();
         }, 1000);
     }, [isRefreshing, isFocused]);
 
@@ -70,7 +79,7 @@ const MessagesPage = () => {
 
     const handleScrollToTop = (e: string) => {
         if (e !== 'messages') return;
-        listRef.current?.scrollToIndex({ animated: false, index: 0 });
+        listRef.current?.scrollToOffset({ animated: false, offset: 0 });
     };
 
     return (
@@ -79,14 +88,13 @@ const MessagesPage = () => {
                 styles.messagesContainer,
                 { marginBottom: insets.bottom + 60 },
             ]}>
+                <ScrollablePageHeader
+                    scrollY={scrollY}
+                    headerStick={HEADER_STICK}
+                    title="Messages"
+                />
 
-                <View style={[styles.pageStart, { 
-                    paddingTop: insets.top + 82 
-                }]}>
-                    <Text style={styles.headingText}>Messages</Text>
-                </View>
-
-                <FlatList
+                <Animated.FlatList
                     data={messages.messages}
                     renderItem={({ item: message, index: idx }) => (
                         <MessageRow
@@ -97,15 +105,21 @@ const MessagesPage = () => {
                         />
                     )}
                     ref={listRef}
-                    ListFooterComponent={<ListLoadMore
-                        hasNextPage={messages.hasNextPage}
-                        isLoading={messages.isLoading}
-                        fetchNextPage={messages.fetchNextPage}
-                    />}
+                    ListFooterComponent={messages.isFirstLoading
+                        ? <ListLoading />
+                        : <ListLoadMore
+                            hasNextPage={messages.hasNextPage}
+                            isLoading={messages.isLoading}
+                            fetchNextPage={messages.fetchNextPage}
+                        />}
                     refreshControl={<RefreshControl
                         refreshing={isRefreshing}
                         onRefresh={handleRefresh}
+                        progressViewOffset={insets.top + HEADER_HEIGHT}
                     />}
+                    contentContainerStyle={{ paddingTop: insets.top + HEADER_HEIGHT }}
+                    onScroll={scrollHandler}
+                    scrollEventThrottle={16}
                 />
 
             </View>
@@ -132,18 +146,6 @@ const styles = StyleSheet.create({
     codeBlockText: {
         fontFamily: 'monospace',
         fontSize: 12,
-        color: '#fff',
-    },
-
-    pageStart: {
-        backgroundColor: '#1d2b4d',
-        padding: 16,
-        zIndex: 2,
-    },
-
-    headingText: {
-        fontSize: 28,
-        fontWeight: 900,
         color: '#fff',
     },
 });

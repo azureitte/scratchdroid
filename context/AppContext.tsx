@@ -21,6 +21,9 @@ type AppContextType = {
 
     currentTab: AppTabKey;
     setCurrentTab: (tab: AppTabKey) => void;
+
+    drawerOpen: boolean;
+    setDrawerOpen: (open: boolean) => void;
 };
 
 export const AppContext = createContext<AppContextType>({
@@ -34,6 +37,9 @@ export const AppContext = createContext<AppContextType>({
 
     currentTab: 'home',
     setCurrentTab: () => {},
+
+    drawerOpen: false,
+    setDrawerOpen: () => {},
 });
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -42,6 +48,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [ primaryColor, setPrimaryColor ] = useState<AppPrimaryColor>('regular');
 
     const [ currentTab, setCurrentTab ] = useState<AppTabKey>('home');
+    const [ drawerOpen, setDrawerOpen ] = useState(false);
 
     return (
         <AppContext.Provider value={{
@@ -55,6 +62,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
             currentTab,
             setCurrentTab,
+
+            drawerOpen,
+            setDrawerOpen,
         }}>
             {children}
         </AppContext.Provider>

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
@@ -10,6 +11,8 @@ const UserPage = () => {
 
     const { username } = useLocalSearchParams<{ username: string }>();
     const insets = useSafeAreaInsets();
+
+    const pfpCachePrevent = useRef(Math.random());
 
     useChangeAppStateOnFocus({
         footerVisible: false,
@@ -49,7 +52,7 @@ const UserPage = () => {
             <Text style={styles.userTitle}>{user.username}</Text>
             <Image
                 source={{
-                    uri: `https://uploads.scratch.mit.edu/get_image/user/${user.id}_60x60.png`,
+                    uri: `https://uploads.scratch.mit.edu/get_image/user/${user.id}_60x60.png?a=${pfpCachePrevent.current}`,
                 }}
                 style={{ width: 60, height: 60, borderRadius: 12 }}
             />

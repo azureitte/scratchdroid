@@ -6,16 +6,10 @@ import { useChangeAppStateOnFocus } from "@/hooks/useChangeAppStateOnFocus";
 
 const Entry = () => {
 
-    const { isLoggedIn, isLoading } = useSession();
-
     useChangeAppStateOnFocus({
         headerVisible: false,
         footerVisible: false,
     });
-
-    if (!isLoading) {
-        return <Redirect href={isLoggedIn ? "/home" : "/account/login"} />;
-    }
 
     return (
         <View>

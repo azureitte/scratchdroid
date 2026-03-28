@@ -7,6 +7,7 @@ export const useMarkMessagesRead = () => {
     const { isLoading: isSessionLoading, session } = useSession();
 
     const { mutate } = useMutation<void, Error, void>({
+        mutationKey: ['messages', 'mark-read'],
         mutationFn: async () => {
             if (isSessionLoading || !session.user) return;
 

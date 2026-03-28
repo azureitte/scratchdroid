@@ -1,8 +1,7 @@
 import React, { useContext, useEffect } from "react";
-import { Pressable, StyleSheet, View, Text, DeviceEventEmitter } from "react-native";
+import { Pressable, StyleSheet, Text, DeviceEventEmitter } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 
 import { ICONS } from "@/util/assets";
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";

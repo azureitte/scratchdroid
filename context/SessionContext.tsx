@@ -1,4 +1,6 @@
 import React, { createContext, useEffect, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 
 import type { ScratchSession } from '../util/types';
 import { apiReq } from '../util/api';
@@ -29,12 +31,14 @@ export const SessionContext = createContext<SessionContextType>({
 });
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
+    const router = useRouter();
+    const queryClient = useQueryClient();
+
     const [ session, setSession ] = useState<ScratchSession|null>(null);
     const [ isLoggedIn, setIsLoggedIn ] = useState(false);
     const [ isLoading, setIsLoading ] = useState(true);
 
     useEffect(() => {
-        console.log('Refetch session');
         apiReq<ScratchSession>({
             path: '/session',
         }).then(response => {
@@ -47,6 +51,16 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             }
         });
     }, [isLoggedIn]);
+
+    useEffect(() => {
+        if (isLoading) return;
+
+        if (isLoggedIn) router.replace('/home');
+        else {
+            router.replace('/account/login');
+            setTimeout(() => queryClient.clear(), 100);
+        }
+    }, [isLoading, isLoggedIn]);
 
     const login = async (username: string, password: string) => {
         setIsLoading(true);

@@ -7,7 +7,7 @@ import { ScratchMessage } from "../util/types";
 const MESSAGES_PER_PAGE = 40;
 
 export const useInfiniteMessages = () => {
-    const { isLoading: isSessionLoading, session } = useSession();
+    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
     const queryClient = useQueryClient();
 
     const { 
@@ -21,15 +21,15 @@ export const useInfiniteMessages = () => {
     } = useInfiniteQuery<
         ScratchMessage[], Error, 
         InfiniteData<ScratchMessage[]>, 
-        ['messages', boolean], 
+        ['messages'], 
         number
     >({
-        queryKey: ['messages', isSessionLoading],
+        queryKey: ['messages'],
         queryFn: async ({ pageParam }) => {
             if (isSessionLoading || !session.user) return [];
 
             queryClient.invalidateQueries({ 
-                queryKey: ['unread', false] 
+                queryKey: ['unread'] 
             });
 
             const messagesRes = await apiReq<ScratchMessage[]>({
@@ -51,10 +51,11 @@ export const useInfiniteMessages = () => {
 
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
+        enabled: !isSessionLoading && isLoggedIn,
     });
 
     const resetToFirstPage = () => {
-        queryClient.setQueryData(['messages', isSessionLoading], (data: InfiniteData<ScratchMessage[]>) => {
+        queryClient.setQueryData(['messages'], (data: InfiniteData<ScratchMessage[]>) => {
             if (!data) return undefined;
             return {
                 pages: [data.pages[0]], // Keep only the first page
@@ -66,7 +67,13 @@ export const useInfiniteMessages = () => {
     const refresh = () => {
         resetToFirstPage();
         queryClient.invalidateQueries({
-            queryKey: ['messages', false],
+            queryKey: ['messages'],
+        });
+    }
+
+    const refreshUnreadCount = () => {
+        queryClient.invalidateQueries({ 
+            queryKey: ['unread', { persist: false }] 
         });
     }
 
@@ -81,6 +88,7 @@ export const useInfiniteMessages = () => {
         hasNextPage,
         resetToFirstPage,
         refresh,
+        refreshUnreadCount,
         isSuccess,
     };
 };

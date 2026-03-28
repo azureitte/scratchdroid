@@ -16,6 +16,7 @@ import { AppProvider } from "@/context/AppContext";
 
 import Header from "@/components/app/Header";
 import TabBar from "@/components/app/TabBar";
+import Drawer from "@/components/app/Drawer";
 
 const queryClient = new QueryClient();
 
@@ -59,8 +60,9 @@ export default function RootLayout() {
                     <Slot />
                 </Stack>
 
-                <Header />
                 <TabBar />
+                <Drawer />
+                <Header />
             </AppProvider>
             </SessionProvider>
             <DevToolsBubble
