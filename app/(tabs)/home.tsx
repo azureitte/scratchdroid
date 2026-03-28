@@ -1,55 +1,91 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { Link, useRouter } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, RefreshControl, DeviceEventEmitter } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import { apiReq } from '@/util/api';
+import { FeaturedTab, ScratchProject } from '@/util/types';
+
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
-import Button from '@/components/general/Button';
+
+import ProjectCard from '@/components/panels/ProjectCard';
+import Carousel from '@/components/panels/ProjectCarousel';
+import Heading from '@/components/general/Heading';
+import ListLoading from '@/components/panels/ListLoading';
+import StudioCard from '@/components/panels/StudioCard';
 
 const HomePage = () => {
 
-    const [debugTextLoves, setDebugTextLoves] = useState('...');
-    const [debugTextActivity, setDebugTextActivity] = useState('...');
+    const insets = useSafeAreaInsets();
+    const { isLoading, session } = useSession();
 
-    const { isLoading, session, logout } = useSession();
-    const router = useRouter();
+    const [ isRefreshing, setIsRefreshing ] = useState(false);
+    const [ isFirstFetch, setIsFirstFetch ] = useState(true);
+    const scrollViewRef = useRef<ScrollView>(null);
 
-    const handleLogout = () => {
-        logout().then(() => router.replace('/'));
-    };
+    const [ activity, setActivity ] = useState<any[]>([]);
+    const [ projectLoves, setProjectLoves ] = useState<ScratchProject[]>([]);
+    const [ featuredTab, setFeaturedTab ] = useState<FeaturedTab>({
+        community_featured_projects: [],
+        community_featured_studios: [],
+        community_most_loved_projects: [],
+        community_most_remixed_projects: [],
+        community_newest_projects: [],
+        curator_top_projects: [],
+        scratch_design_studio: [],
+    });
+
+
 
     useEffect(() => {
+        handleRefresh();
+    }, [isLoading, session]);
+
+    useEffect(() => {
+        DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
+        return () => DeviceEventEmitter.removeAllListeners();
+    }, []);
+
+    const handleRefresh = async () => {
         if (isLoading || !session) return;
-        (async () => {
 
-            const { user } = session;
-            if (!user) return;
+        const { user } = session;
+        if (!user) return;
 
-            const lovesRes = await apiReq({
+        const [lovesRes, featuredRes, activityRes] = await Promise.all([
+            apiReq<ScratchProject[]>({
                 host: 'https://api.scratch.mit.edu',
                 path: '/users/' + user.username + '/following/users/loves',
                 auth: user.token,
                 responseType: 'json',
-            });
-            if (!lovesRes.success) return;
-
-            const loves = lovesRes.data;
-            setDebugTextLoves(JSON.stringify(loves, null, 2));
-
-            const activityRes = await apiReq({
+            }),
+            apiReq<FeaturedTab>({
+                host: 'https://api.scratch.mit.edu',
+                path: '/proxy/featured/',
+                responseType: 'json',
+            }),
+            await apiReq({
                 host: 'https://api.scratch.mit.edu',
                 path: '/users/' + user.username + '/following/users/activity',
                 params: { limit: 3 },
                 auth: user.token,
                 responseType: 'json',
-            });
-            if (!activityRes.success) return;
+            })
+        ]);
 
-            const activity = activityRes.data;
-            setDebugTextActivity(JSON.stringify(activity, null, 2));
-        })();
-    }, [isLoading, session]);
+        if (lovesRes.success) setProjectLoves(lovesRes.data);
+        if (featuredRes.success) setFeaturedTab(featuredRes.data);
+        if (activityRes.success) setActivity(activityRes.data);
+
+        setIsRefreshing(false);
+        setIsFirstFetch(false);
+    }
+
+    const handleScrollToTop = (e: string) => {
+        if (e !== 'home') return;
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    };
     
     useChangeAppStateOnFocus({
         headerVisible: true,
@@ -57,36 +93,124 @@ const HomePage = () => {
         primaryColor: 'regular',
     });
 
-    return (
-        <View style={styles.container}>
+    const sdsName = featuredTab.scratch_design_studio[0]?.gallery_title;
 
-            <Link href="https://scratch.mit.edu">Web Scratch</Link>
+    return (<>
+    
+        <LinearGradient 
+            colors={['#121212', '#121212', '#12121200']}
+            style={[styles.topHide, { height: insets.top + 60 }]} 
+        />
+        <LinearGradient 
+            colors={['#12121200', '#121212', '#121212']}
+            style={[styles.botHide, { height: insets.bottom + 50 }]} 
+        />
 
-            <ScrollView style={styles.codeBlock}>
-                <Text style={styles.codeBlockText}>
-                    {debugTextLoves}
-                </Text>
-            </ScrollView>
+        <ScrollView 
+            style={[styles.container]} 
+            contentContainerStyle={{
+                paddingTop: insets.top + 60,
+                paddingBottom: insets.bottom + 90,
+            }}
+            refreshControl={<RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={() => {
+                    setIsRefreshing(true);
+                    handleRefresh();
+                }}
+                progressViewOffset={80}
+            />}
+            ref={scrollViewRef}
+        >
+        { isFirstFetch ? <ListLoading /> :
+            <View style={styles.content}>
 
-            <ScrollView style={styles.codeBlock}>
-                <Text style={styles.codeBlockText}>
-                    {debugTextActivity}
-                </Text>
-            </ScrollView>
+                <View style={{ padding: 16, gap: 20 }}>
+                    <Heading style={{ fontSize: 24 }}>What's Happening</Heading>
+                    <ScrollView style={styles.codeBlock}>
+                        <Text style={styles.codeBlockText}>
+                            {JSON.stringify(activity, null, 2)}
+                        </Text>
+                    </ScrollView>
+                </View>
 
-            <Button text="Logout" onPress={handleLogout} />
-        </View>
-    );
+                <Carousel title="Loved by who I follow">
+                    { projectLoves.map(project => <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        title={project.title}
+                        author={project.author.username}
+                        viewCount={project.stats.views}
+                    />) }
+                </Carousel>
+
+                <Carousel title="Featured Projects">
+                    { featuredTab.community_featured_projects.map(project => <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        title={project.title}
+                        author={project.creator}
+                        loveCount={project.love_count}
+                    />) }
+                </Carousel>
+
+                <Carousel title="Featured Studios">
+                    { featuredTab.community_featured_studios.map(project => <StudioCard
+                        key={project.id}
+                        id={project.id}
+                        title={project.title}
+                    />) }
+                </Carousel>
+
+                <Carousel title="Recent Projects">
+                    { featuredTab.community_newest_projects.map(project => <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        title={project.title}
+                        author={project.creator}
+                        loveCount={project.love_count}
+                    />) }
+                </Carousel>
+
+                <Carousel title={sdsName ?? '...'} subtitle="Scratch Design Studio">
+                    { featuredTab.scratch_design_studio.map(project => <ProjectCard
+                        key={project.id}
+                        id={project.id}
+                        title={project.title}
+                        author={project.creator}
+                        loveCount={project.love_count}
+                    />) }
+                </Carousel>
+            </View>
+        }
+        </ScrollView>
+    </>);
 };
 
 export default HomePage;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
         backgroundColor: '#121212',
+    },
+
+    topHide: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+    },
+    botHide: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1,
+    },
+
+    content: {
+        gap: 32,
     },
 
     codeBlock: {

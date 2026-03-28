@@ -196,6 +196,37 @@ export type ScratchProject = {
 }
 
 
+export type FeaturedProjext = {
+    type: 'project';
+    id: number;
+    title: string;
+    creator: string;
+    creator_id: number;
+    thumbnail_url: string;
+    love_count: number;
+}
+export type SdsProject = FeaturedProjext & {
+    gallery_id: number;
+    gallery_title: string;
+}
+export type FeaturedStudio = {
+    type: 'gallery';
+    id: number;
+    thumbnail_url: string;
+    title: string;
+}
+
+export type FeaturedTab = {
+    community_featured_projects: FeaturedProjext[];
+    community_featured_studios: FeaturedStudio[];
+    community_most_loved_projects: FeaturedProjext[];
+    community_most_remixed_projects: FeaturedProjext[];
+    community_newest_projects: FeaturedProjext[];
+    curator_top_projects: FeaturedProjext[];
+    scratch_design_studio: SdsProject[];
+}
+
+
 export type ScratchMystuffItem =
     | ScratchMystuffProjectItem
     | ScratchMystuffStudioItem;

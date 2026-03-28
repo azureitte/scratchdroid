@@ -3,6 +3,8 @@ import { StyleSheet, Text } from 'react-native';
 import Animated, { Extrapolate, interpolate, SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import Heading from '../general/Heading';
+
 type ScrollablePageHeaderProps = {
     scrollY: SharedValue<number>;
     headerStick: number;
@@ -50,7 +52,7 @@ const ScrollablePageHeader = ({
             paddingTop: insets.top + 82 
         }, headerStyle]}>
             <Animated.View style={[styles.pageStartContent, headerContentStyle]}>
-                <Text style={styles.headingText}>{title}</Text>
+                <Heading>{title}</Heading>
             </Animated.View>
             {children}
         </Animated.View>
@@ -74,11 +76,5 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         width: "100%",
-    },
-
-    headingText: {
-        fontSize: 28,
-        fontWeight: 900,
-        color: '#fff',
     },
 });

@@ -5,6 +5,7 @@ import type { Route } from 'react-native-tab-view';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import Tabs from '@/components/general/Tabs';
+import Heading from '@/components/general/Heading';
 
 const TAB_ROUTES = [
     { key: 'projects', title: 'Projects' },
@@ -28,7 +29,7 @@ const ExplorePage = () => {
     return (
         <View style={styles.container}>
             <View style={[styles.pageStart, { paddingTop: insets.top + 82 }]}>
-                <Text style={styles.headingText}>Explore</Text>
+                <Heading style={styles.headingText}>Explore</Heading>
             </View>
             <Tabs 
                 routes={TAB_ROUTES}
@@ -59,9 +60,6 @@ const styles = StyleSheet.create({
     },
 
     headingText: {
-        fontSize: 28,
-        fontWeight: 900,
-        color: '#fff',
         textAlign: 'center',
     },
 });

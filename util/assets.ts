@@ -11,6 +11,9 @@ import icMyStuffActive from "../assets/icons/ic-mystuff-active.svg";
 
 import icMenu from "../assets/icons/ic-menu.svg";
 
+import icStatView from "../assets/icons/ic-stat-view.svg";
+import icStatLove from "../assets/icons/ic-stat-love.svg";
+
 import svgMessageComment from "../assets/svgs/messages/comment.svg";
 import svgMessageLove from "../assets/svgs/messages/love.svg";
 import svgMessageFavorite from "../assets/svgs/messages/favorite.svg";
@@ -35,6 +38,9 @@ export const ICONS = {
     mystuffActive: icMyStuffActive,
 
     menu: icMenu,
+
+    statView: icStatView,
+    statLove: icStatLove,
 } as const;
 
 export const IMAGES = {
@@ -55,3 +61,7 @@ export const SVGS = {
         ownerInvite: svgMessageOwnerInvite,
     },
 } as const;
+
+export const FONTS = {
+    delaGothicOne: 'DelaGothicOne_400Regular',
+}

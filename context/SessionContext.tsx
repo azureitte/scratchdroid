@@ -45,7 +45,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             setIsLoading(false);
 
             if (response.success) {
-                console.log('Session updated', response.data);
                 setSession(response.data);
                 setIsLoggedIn(!!response.data.user);
             }

@@ -47,3 +47,12 @@ export function relativeDate (date: Date) {
 
     return date.toDateString();
 }
+
+const shortNumberFormatter = new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  compactDisplay: 'short',
+});
+
+export function shortNumber (num: number) {
+  return shortNumberFormatter.format(num);
+}
