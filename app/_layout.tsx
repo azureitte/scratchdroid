@@ -54,7 +54,7 @@ export default function RootLayout() {
             <AppProvider>
                 <Stack
                     screenOptions={{
-                        header: (props) => <></>,
+                        header: () => <></>,
                     }}
                 >
                     <Slot />

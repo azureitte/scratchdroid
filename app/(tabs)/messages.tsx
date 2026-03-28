@@ -137,15 +137,9 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         backgroundColor: '#121212',
     },
-
     messagesContainer: {
         width: '100%',
         overflow: 'scroll',
         marginBottom: 16,
-    },
-    codeBlockText: {
-        fontFamily: 'monospace',
-        fontSize: 12,
-        color: '#fff',
     },
 });

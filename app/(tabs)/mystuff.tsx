@@ -178,21 +178,4 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
         backgroundColor: '#121212',
     },
-
-    pageStart: {
-        backgroundColor: '#1d2b4d',
-        padding: 16,
-        zIndex: 2,
-        width: '100%',
-    },
-
-    headingText: {
-        fontSize: 28,
-        fontWeight: 900,
-        color: '#fff',
-    },
-
-    divider: {
-        height: 24,
-    }
 });

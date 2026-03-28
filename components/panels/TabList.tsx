@@ -1,5 +1,5 @@
 import { memo, forwardRef, useState, useEffect, JSX, ForwardedRef } from 'react';
-import { FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { Extrapolate, interpolate, SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import ListLoading from './ListLoading';

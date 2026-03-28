@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react';
 import { StyleSheet, Image, Text, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
-import { useQueryClient } from '@tanstack/react-query';
 
 import { IMAGES } from '@/util/assets';
 import { useSession } from '@/hooks/useSession';
@@ -15,8 +13,6 @@ const LoginPage = () => {
     const { login, isLoading } = useSession();
     const [ error, setError ] = useState('');
 
-    const queryClient = useQueryClient();
-
     const usernameInputRef = useRef<FormInputRef>(null);
     const passwordInputRef = useRef<FormInputRef>(null);
     
@@ -24,7 +20,7 @@ const LoginPage = () => {
         headerVisible: false,
         footerVisible: false,
     });
-    
+
     const handleLogin = async () => {
         try {
             setError('');
