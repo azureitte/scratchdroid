@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import { memo, useContext, useEffect, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, DeviceEventEmitter } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -60,15 +60,15 @@ const TAB_BAR_BUTTONS: ({
     isSpecialCenter: false,
 }];
 
-const TabBar = () => {
+const TabBar = memo(() => {
 
     const unreadCount = useUnreadMessages();
     const { 
         footerVisible, 
         primaryColor,
-        currentTab,
-        setCurrentTab,
     } = useContext(AppContext);
+
+    const [ currentTab, setCurrentTab ] = useState<AppTabKey>('home');
 
     const insets = useSafeAreaInsets();
 
@@ -142,9 +142,13 @@ const TabBar = () => {
                         <Pressable
                             key={button.key}
                             onPress={() => {
-                                setCurrentTab(button.key);
+                                DeviceEventEmitter.emit('tab-navigate', button.key);
                                 DeviceEventEmitter.emit('tab-pressed', button.name);
-                                if (currentTab === button.key) DeviceEventEmitter.emit('tab-re-pressed', button.name);
+                                if (currentTab === button.key) {
+                                    DeviceEventEmitter.emit('tab-re-pressed', button.name);
+                                    DeviceEventEmitter.emit(`${button.key}-tab-re-pressed`);
+                                }
+                                setCurrentTab(button.key);
                             }}
                             style={[
                                 styles.tab,
@@ -161,7 +165,7 @@ const TabBar = () => {
             }
         </Animated.View>
     );
-};
+});
 
 export default TabBar;
 
@@ -178,6 +182,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         boxShadow: "0 0 50px #121212",
         overflow: "hidden",
+        zIndex: 5,
     },
     tab: {
         flex: 1,

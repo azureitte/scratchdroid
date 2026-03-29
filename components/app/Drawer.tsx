@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, DrawerLayoutAndroid } from 'react-native';
+import { StyleSheet, View, DrawerLayoutAndroid, DeviceEventEmitter } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppContext } from '@/context/AppContext';
@@ -11,16 +11,31 @@ type DrawerState = 'Dragging' | 'Idle' | 'Settling';
 const Drawer = () => {
 
     const insets = useSafeAreaInsets();
-    const { drawerOpen, setDrawerOpen, headerVisible } = useContext(AppContext);
+    const { headerVisible } = useContext(AppContext);
     const { logout } = useSession();
 
     const drawer = useRef<DrawerLayoutAndroid>(null);
+    const drawerOpened = useRef(false);
     const [ drawerState, setDrawerState ] = useState<DrawerState>('Idle');
+
+    const handleDrawerToggle = () => {
+        if (drawerOpened.current) drawer.current?.closeDrawer();
+        else drawer.current?.openDrawer();
+    };
+
+    const handleDrawerClose = () => {
+        drawer.current?.closeDrawer();
+    };
     
     useEffect(() => {
-        if (drawerOpen) drawer.current?.openDrawer();
-        else drawer.current?.closeDrawer();
-    }, [drawerOpen]);
+        DeviceEventEmitter.addListener('drawer-toggle', handleDrawerToggle);
+        DeviceEventEmitter.addListener('drawer-close', handleDrawerClose);
+
+        return () => {
+            DeviceEventEmitter.removeAllListeners('drawer-toggle');
+            DeviceEventEmitter.removeAllListeners('drawer-close');
+        }
+    }, []);
     
     const navigationView = () => (
         <View style={[styles.container, styles.navigationContainer, {
@@ -41,8 +56,8 @@ const Drawer = () => {
         setDrawerState(state);
     }
 
-    const shouldBeHidden = (!drawerOpen && drawerState === 'Idle');
-    const shouldIgnorePointer = (drawerOpen && drawerState === 'Settling');
+    const shouldBeHidden = (!drawerOpened.current && drawerState === 'Idle');
+    const shouldIgnorePointer = (drawerOpened.current && drawerState === 'Settling');
 
     return headerVisible && (
         <View 
@@ -57,10 +72,10 @@ const Drawer = () => {
                 drawerWidth={360}
                 ref={drawer}
                 onDrawerOpen={() => {
-                    setDrawerOpen(true);
+                    drawerOpened.current = true;
                 }}
                 onDrawerClose={() => {
-                    setDrawerOpen(false);
+                    drawerOpened.current = false;
                 }}
                 onDrawerStateChanged={handleDrawerStateChange}
             />
@@ -77,6 +92,7 @@ const styles = StyleSheet.create({
         left: 0,
         width: '100%',
         bottom: 0,
+        zIndex: 5,
     },
     drawerContainerHidden: {
         width: 8,

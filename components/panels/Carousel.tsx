@@ -1,30 +1,39 @@
-import { PROJECT_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { JSX } from 'react';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 
 import { useFonts } from '@expo-google-fonts/dela-gothic-one/useFonts';
 import { DelaGothicOne_400Regular } from '@expo-google-fonts/dela-gothic-one/400Regular';
 
+import { PROJECT_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
 import { FONTS } from '@/util/assets';
 
-type ProjectCarouselProps = {
+type CarouselProps = {
     title?: string;
     subtitle?: string;
-    children?: React.ReactNode|React.ReactNode[];
+    items: any[];
+    render: (item: any) => JSX.Element;
 };
 
 const Carousel = ({
     title,
     subtitle,
-    children,
-}: ProjectCarouselProps) => {
+    items,
+    render,
+}: CarouselProps) => {
     const [fontsLoaded] = useFonts({ DelaGothicOne_400Regular });
 
     return (<View style={styles.container}>
         { !!title && fontsLoaded && <Text style={styles.title}>{title}</Text> }
         { !!subtitle && <Text style={styles.subtitle}>{subtitle}</Text> }
-        <ScrollView style={styles.carousel} horizontal contentContainerStyle={{ paddingHorizontal: 6 }}>
-            { children }
-        </ScrollView>
+        <FlatList 
+            data={items}
+            renderItem={({ item }) => render(item)}
+            style={styles.carousel} 
+            horizontal 
+            contentContainerStyle={{ paddingHorizontal: 6 }}
+            initialNumToRender={3}
+            windowSize={8}
+        />
     </View>);
 };
 

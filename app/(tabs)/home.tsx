@@ -1,24 +1,26 @@
-import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, RefreshControl, DeviceEventEmitter } from 'react-native';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, RefreshControl, DeviceEventEmitter, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { apiReq } from '@/util/api';
-import { FeaturedTab, ScratchProject } from '@/util/types';
+import { FeaturedProject, FeaturedTab, ScratchProject } from '@/util/types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
 import ProjectCard from '@/components/panels/ProjectCard';
-import Carousel from '@/components/panels/ProjectCarousel';
+import Carousel from '@/components/panels/Carousel';
 import Heading from '@/components/general/Heading';
 import ListLoading from '@/components/panels/ListLoading';
 import StudioCard from '@/components/panels/StudioCard';
+import { AppContext } from '@/context/AppContext';
 
 const HomePage = () => {
 
     const insets = useSafeAreaInsets();
     const { isLoading, session } = useSession();
+    const { setHeaderVisible } = useContext(AppContext);
 
     const [ isRefreshing, setIsRefreshing ] = useState(false);
     const [ isFirstFetch, setIsFirstFetch ] = useState(true);
@@ -36,14 +38,13 @@ const HomePage = () => {
         scratch_design_studio: [],
     });
 
-
-
     useEffect(() => {
         handleRefresh();
     }, [isLoading, session]);
 
     useEffect(() => {
         DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
+
         return () => DeviceEventEmitter.removeAllListeners();
     }, []);
 
@@ -95,6 +96,25 @@ const HomePage = () => {
 
     const sdsName = featuredTab.scratch_design_studio[0]?.gallery_title;
 
+    const renderLovedProject = useCallback((project: ScratchProject) => <ProjectCard
+        id={project.id}
+        title={project.title}
+        author={project.author.username}
+        loveCount={project.stats.views}
+    />, []);
+
+    const renderFeaturedProject = useCallback((project: FeaturedProject) => <ProjectCard
+        id={project.id}
+        title={project.title}
+        author={project.creator}
+        loveCount={project.love_count}
+    />, []);
+
+    const renderFeaturedStudio = useCallback((project: FeaturedProject) => <StudioCard
+        id={project.id}
+        title={project.title}
+    />, []);
+
     return (<>
     
         <LinearGradient 
@@ -122,67 +142,51 @@ const HomePage = () => {
             />}
             ref={scrollViewRef}
         >
-        { isFirstFetch ? <ListLoading /> :
-            <View style={styles.content}>
+        { isFirstFetch && <ListLoading /> }
 
-                <View style={{ padding: 16, gap: 20 }}>
-                    <Heading style={{ fontSize: 24 }}>What's Happening</Heading>
-                    <ScrollView style={styles.codeBlock}>
-                        <Text style={styles.codeBlockText}>
-                            {JSON.stringify(activity, null, 2)}
-                        </Text>
-                    </ScrollView>
-                </View>
-
-                <Carousel title="Loved by who I follow">
-                    { projectLoves.map(project => <ProjectCard
-                        key={project.id}
-                        id={project.id}
-                        title={project.title}
-                        author={project.author.username}
-                        viewCount={project.stats.views}
-                    />) }
-                </Carousel>
-
-                <Carousel title="Featured Projects">
-                    { featuredTab.community_featured_projects.map(project => <ProjectCard
-                        key={project.id}
-                        id={project.id}
-                        title={project.title}
-                        author={project.creator}
-                        loveCount={project.love_count}
-                    />) }
-                </Carousel>
-
-                <Carousel title="Featured Studios">
-                    { featuredTab.community_featured_studios.map(project => <StudioCard
-                        key={project.id}
-                        id={project.id}
-                        title={project.title}
-                    />) }
-                </Carousel>
-
-                <Carousel title="Recent Projects">
-                    { featuredTab.community_newest_projects.map(project => <ProjectCard
-                        key={project.id}
-                        id={project.id}
-                        title={project.title}
-                        author={project.creator}
-                        loveCount={project.love_count}
-                    />) }
-                </Carousel>
-
-                <Carousel title={sdsName ?? '...'} subtitle="Scratch Design Studio">
-                    { featuredTab.scratch_design_studio.map(project => <ProjectCard
-                        key={project.id}
-                        id={project.id}
-                        title={project.title}
-                        author={project.creator}
-                        loveCount={project.love_count}
-                    />) }
-                </Carousel>
+        <View style={[styles.content, {
+            opacity: isFirstFetch ? 0 : 1,
+        }]}>
+            <View style={{ padding: 16, gap: 20 }}>
+                <Heading style={{ fontSize: 24 }}>What's Happening</Heading>
+                <ScrollView style={styles.codeBlock}>
+                    <Text style={styles.codeBlockText}>
+                        {JSON.stringify(activity, null, 2)}
+                    </Text>
+                </ScrollView>
             </View>
-        }
+
+            <Carousel 
+                title="Loved by who I follow" 
+                items={projectLoves}
+                render={renderLovedProject}
+            />
+
+            <Carousel 
+                title="Featured Projects"
+                items={featuredTab.community_featured_projects}
+                render={renderFeaturedProject} 
+            />
+
+            <Carousel 
+                title="Featured Studios"
+                items={featuredTab.community_featured_studios}
+                render={renderFeaturedStudio}
+            />
+
+            <Carousel 
+                title="Recent Projects"
+                items={featuredTab.community_newest_projects}
+                render={renderFeaturedProject}
+            />
+
+            <Carousel 
+                title={sdsName ?? '...'} 
+                subtitle="Scratch Design Studio"
+                items={featuredTab.scratch_design_studio}
+                render={renderFeaturedProject}
+            />
+        </View>
         </ScrollView>
     </>);
 };

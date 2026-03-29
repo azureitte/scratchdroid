@@ -1,24 +1,42 @@
-import { useContext, useEffect } from 'react';
+import { useEffect } from 'react';
+import { DeviceEventEmitter } from 'react-native';
 import { router, Tabs } from 'expo-router';
 
-import { AppContext } from '@/context/AppContext';
+import { AppTabKey } from '@/context/AppContext';
+import { Easing } from 'react-native-reanimated';
 
 const TabsLayout = () => {
-    const { currentTab } = useContext(AppContext);
 
-    const header = () => <></>;
     const tabBar = () => <></>;
 
+    const handleTabNavigate = (tab: AppTabKey) => {
+        router.navigate(`/${tab}`);
+    };
+
     useEffect(() => {
-        router.navigate(`/${currentTab}`)
-    }, [currentTab]);
+        DeviceEventEmitter.addListener('tab-navigate', handleTabNavigate);
+        return () => DeviceEventEmitter.removeAllListeners('tab-navigate');
+    }, []);
 
     return (
-        <Tabs tabBar={tabBar}>
-            <Tabs.Screen name="home" options={{ title: 'Home', header }} />
-            <Tabs.Screen name="explore" options={{ title: 'Explore', header }} />
-            <Tabs.Screen name="messages" options={{ title: 'Messages', header }} />
-            <Tabs.Screen name="mystuff" options={{ title: 'My Stuff', header }} />
+        <Tabs tabBar={tabBar} screenOptions={{
+            headerShown: false,
+            animation: 'shift',
+            sceneStyle: {
+                backgroundColor: '#121212',
+            },
+            transitionSpec: {
+                animation: 'timing',
+                config: {
+                    duration: 300,
+                    easing: Easing.out(Easing.cubic),
+                }
+            }
+        }}>
+            <Tabs.Screen name="home" options={{ title: 'Home', headerShown: false, freezeOnBlur: true }} />
+            <Tabs.Screen name="explore" options={{ title: 'Explore', headerShown: false, freezeOnBlur: true }} />
+            <Tabs.Screen name="messages" options={{ title: 'Messages', headerShown: false, freezeOnBlur: true }} />
+            <Tabs.Screen name="mystuff" options={{ title: 'My Stuff', headerShown: false, freezeOnBlur: true }} />
         </Tabs>
     );
 };

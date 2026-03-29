@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     DeviceEventEmitter,
     FlatList,
@@ -20,6 +20,7 @@ import MessageRow from '@/components/panels/MessageRow';
 import ListLoadMore from '@/components/panels/ListLoadMore';
 import ScrollablePageHeader from '@/components/panels/ScrollablePageHeader';
 import ListLoading from '@/components/panels/ListLoading';
+import { ScratchMessage } from '@/util/types';
 
 const HEADER_HEIGHT = 128;
 const HEADER_STICK = 105;
@@ -61,8 +62,8 @@ const MessagesPage = () => {
     }, [isRefreshing, isFocused]);
 
     useEffect(() => {
-        DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
-        return () => DeviceEventEmitter.removeAllListeners();
+        DeviceEventEmitter.addListener('messages-tab-re-pressed', handleScrollToTop);
+        return () => DeviceEventEmitter.removeAllListeners('messages-tab-re-pressed');
     }, []);
 
     useChangeAppStateOnFocus({
@@ -77,10 +78,20 @@ const MessagesPage = () => {
         messages.refresh();
     };
 
-    const handleScrollToTop = (e: string) => {
-        if (e !== 'messages') return;
+    const handleScrollToTop = () => {
         listRef.current?.scrollToOffset({ animated: false, offset: 0 });
     };
+
+    const renderItem = useCallback(({ item: message, index: idx }: {
+        item: ScratchMessage;
+        index: number;
+    }) => (
+        <MessageRow
+            message={message}
+            isUnread={idx < unreadCount}
+            myUsername={session?.user?.username}
+        />
+    ), [unreadCount, session]);
 
     return (
         <View style={styles.container}>
@@ -96,14 +107,8 @@ const MessagesPage = () => {
 
                 <Animated.FlatList
                     data={messages.messages}
-                    renderItem={({ item: message, index: idx }) => (
-                        <MessageRow
-                            key={message.id}
-                            message={message}
-                            isUnread={idx < unreadCount}
-                            myUsername={session?.user?.username}
-                        />
-                    )}
+                    renderItem={renderItem}
+                    keyExtractor={(item): any => item.id}
                     ref={listRef}
                     ListFooterComponent={messages.isFirstLoading
                         ? <ListLoading />
@@ -120,6 +125,9 @@ const MessagesPage = () => {
                     contentContainerStyle={{ paddingTop: insets.top + HEADER_HEIGHT }}
                     onScroll={scrollHandler}
                     scrollEventThrottle={16}
+                    initialNumToRender={10}
+                    windowSize={5}
+                    removeClippedSubviews={true}
                 />
 
             </View>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import { AppState, AppStateStatus } from "react-native";
+import { AppState, AppStateStatus, View } from "react-native";
 import { Slot, Stack } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -10,7 +10,11 @@ import {
 } from "@tanstack/react-query";
 import { DevToolsBubble } from "react-native-react-query-devtools";
 import NetInfo from "@react-native-community/netinfo";
+import { enableFreeze } from 'react-native-screens';
 
+enableFreeze(true);
+
+import { IS_DEV } from "@/util/constants";
 import { SessionProvider } from "@/context/SessionContext";
 import { AppProvider } from "@/context/AppContext";
 
@@ -52,27 +56,37 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
             <SessionProvider>
             <AppProvider>
-                <Stack
-                    screenOptions={{
-                        header: () => <></>,
-                    }}
-                >
-                    <Slot />
-                </Stack>
 
                 <TabBar />
                 <Drawer />
                 <Header />
+                
+                <Stack
+                    screenOptions={{
+                        headerShown: false,
+                        contentStyle: {
+                            backgroundColor: '#121212',
+                        },
+                        animation: 'fade_from_bottom',
+                        animationDuration: 300,
+                    }}
+                >
+                    <Stack.Screen name="index" />
+                    <Stack.Screen name="(tabs)" />
+                    <Stack.Screen name="projects/[id]" />
+                    <Stack.Screen name="users/[username]" />
+                    <Stack.Screen name="account/login" />
+                </Stack>
             </AppProvider>
             </SessionProvider>
-            <DevToolsBubble
+            { IS_DEV && <DevToolsBubble
                 queryClient={queryClient}
                 onCopy={onCopy}
                 bubbleStyle={{
                     opacity: 0.5,
                     transform: [{ translateY: -50 }, { translateX: -10 }],
                 }}
-            />
+            /> }
         </QueryClientProvider>
     );
 }

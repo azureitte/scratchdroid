@@ -9,19 +9,26 @@ type ChangeAppStateOnFocusProps = {
 }
 
 export const useChangeAppStateOnFocus = ({
-    headerVisible,
-    footerVisible,
-    primaryColor,
+    headerVisible: newHeaderVisible,
+    footerVisible: newFooterVisible,
+    primaryColor: newPrimaryColor,
 }: ChangeAppStateOnFocusProps) => {
     const { 
         setHeaderVisible, 
         setFooterVisible, 
-        setPrimaryColor 
+        setPrimaryColor,
+        headerVisible,
+        footerVisible,
+        primaryColor,
     } = useContext(AppContext);
 
-    useFocusEffect(() => {
-        if (headerVisible !== undefined) setHeaderVisible(headerVisible);
-        if (footerVisible !== undefined) setFooterVisible(footerVisible);
-        if (primaryColor !== undefined) setPrimaryColor(primaryColor);
-    });
+    const cb = () => {
+        setTimeout(() => {
+            if (newHeaderVisible !== undefined && headerVisible !== newHeaderVisible) setHeaderVisible(newHeaderVisible);
+            if (newFooterVisible !== undefined && footerVisible !== newFooterVisible) setFooterVisible(newFooterVisible);
+            if (newPrimaryColor !== undefined && primaryColor !== newPrimaryColor) setPrimaryColor(newPrimaryColor);
+        }, 0);
+    };
+
+    useFocusEffect(cb);
 };

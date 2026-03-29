@@ -1,19 +1,19 @@
-import React, { useContext, useEffect, useRef } from "react";
-import { StyleSheet, Image, Pressable } from "react-native";
+import { memo, useContext, useEffect, useRef, useState } from "react";
+import { StyleSheet, Image, Pressable, DeviceEventEmitter } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
   withTiming,
   Easing,
+  useDerivedValue,
 } from "react-native-reanimated";
 
 import { ICONS, IMAGES } from "@/util/assets";
 import { AppContext } from "@/context/AppContext";
 import { useSession } from "@/hooks/useSession";
 
-const Header = () => {
+const Header = memo(() => {
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
@@ -23,8 +23,6 @@ const Header = () => {
     const { 
         headerVisible, 
         primaryColor, 
-        drawerOpen,
-        setDrawerOpen,
     } = useContext(AppContext);
 
     const MenuIcon = ICONS.menu;
@@ -35,18 +33,15 @@ const Header = () => {
     const COLOR_REGULAR = '#4177FF';
     const COLOR_EXPLORE = '#349469';
 
-    const translateY = useSharedValue(Y_HIDDEN);
-    const color = useSharedValue(COLOR_REGULAR);
-
-    useEffect(() => {
-        translateY.value = withTiming(
+    const translateY = useDerivedValue(() => {
+        return withTiming(
             headerVisible ? Y_VISIBLE : Y_HIDDEN, 
             { duration: 300 }
         );
     }, [headerVisible]);
 
-    useEffect(() => {
-        color.value = withTiming(
+    const color = useDerivedValue(() => {
+        return withTiming(
             primaryColor === 'regular' ? COLOR_REGULAR : COLOR_EXPLORE, 
             { duration: 300, easing: Easing.inOut(Easing.cubic) }
         );
@@ -57,6 +52,10 @@ const Header = () => {
         backgroundColor: color.value,
     }));
 
+    const handleToggleDrawer = () => {
+        DeviceEventEmitter.emit('drawer-toggle');
+    };
+
     return (
         <Animated.View style={[
             styles.headerContainer, 
@@ -65,7 +64,7 @@ const Header = () => {
         ]}>
             <Pressable 
                 style={styles.headerButton}
-                onPress={() => setDrawerOpen(!drawerOpen)}
+                onPress={handleToggleDrawer}
                 android_ripple={{ color: "#fff3", foreground: true }}
             >
                 <MenuIcon />
@@ -78,7 +77,7 @@ const Header = () => {
             <Pressable 
                 style={styles.headerButton}
                 onPress={() => {
-                    setDrawerOpen(false);
+                    DeviceEventEmitter.emit('drawer-close');
                     router.push(`users/${session?.user?.username}`)
                 }}
                 android_ripple={{ color: "#fff3", foreground: true }}
@@ -91,7 +90,7 @@ const Header = () => {
             </Pressable>
         </Animated.View>
     );
-};
+});
 
 export default Header;
 
@@ -109,6 +108,7 @@ const styles = StyleSheet.create({
         height: 52,
         borderRadius: 12,
         paddingHorizontal: 4,
+        zIndex: 5,
     },
 
     logo: {

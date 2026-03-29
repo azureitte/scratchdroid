@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     DeviceEventEmitter,
     FlatList,
@@ -54,8 +54,8 @@ const MyStuffPage = () => {
     const { scroll: globalScroll, handleScrollChange } = useGlobalScroll({ scrollStick: HEADER_STICK });
 
     useEffect(() => {
-        DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
-        return () => DeviceEventEmitter.removeAllListeners();
+        DeviceEventEmitter.addListener('mystuff-tab-re-pressed', handleScrollToTop);
+        return () => DeviceEventEmitter.removeAllListeners('mystuff-tab-re-pressed');
     }, []);
 
     useChangeAppStateOnFocus({
@@ -64,32 +64,30 @@ const MyStuffPage = () => {
         primaryColor: 'regular',
     });
 
-    const handleScrollToTop = (e: string) => {
-        if (e !== 'mystuff') return;
+    const handleScrollToTop = () => {
         const listRef = 
             tabIndex === 0 ? projectsListRef :
             tabIndex === 1 ? studiosListRef :
             tabIndex === 2 ? trashListRef :
             null;
         if (!listRef) return;
-
-        listRef.current?.scrollToIndex({ animated: false, index: 0 });
+        listRef.current?.scrollToOffset({ animated: false, offset: 0 });
     };
 
-    const renderProjectItem = (item: ScratchMystuffProjectItem) => <MystuffRow 
+    const renderProjectItem = useCallback((item: ScratchMystuffProjectItem) => <MystuffRow 
         type='project' 
         item={item} 
         onPress={() => router.push(`/projects/${item.pk}`)}
-    />
+    />, [router]);
 
-    const renderStudioItem = (item: ScratchMystuffStudioItem) => <MystuffRow 
+    const renderStudioItem = useCallback((item: ScratchMystuffStudioItem) => <MystuffRow 
         type='studio' 
         item={item} 
         myUsername={session?.user?.username}
         onPress={() => router.push(`/studios/${item.pk}`)}
-    />
+    />, [session, router]);
 
-    const renderScene = (route: Route): TabListRenderScene => {
+    const renderScene = useCallback((route: Route): TabListRenderScene => {
         switch (route.key) {
             case 'projects':
                 return {
@@ -108,6 +106,7 @@ const MyStuffPage = () => {
                         value={projectsFilters}
                         onChange={setProjectsFilters}
                     />,
+                    ref: projectsListRef,
                 }
             case 'studios':
                 return {
@@ -126,6 +125,7 @@ const MyStuffPage = () => {
                         value={studiosFilters}
                         onChange={setStudiosFilters}
                     />,
+                    ref: studiosListRef,
                 }
             case 'trash':
                 return {
@@ -134,6 +134,7 @@ const MyStuffPage = () => {
                     hasNextPage: trash.hasNextPage,
                     isLoading: trash.isLoading,
                     fetchNextPage: trash.fetchNextPage,
+                    ref: trashListRef,
                 }
             default:
                 return {
@@ -145,7 +146,7 @@ const MyStuffPage = () => {
                     fetchNextPage: () => {},
                 }
         }
-    }
+    }, [projectsFilters, studiosFilters, tabIndex, projects, studios, trash]);
 
     return (
         <View style={[styles.container, { paddingBottom: insets.bottom + 60 }]}>

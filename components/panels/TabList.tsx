@@ -1,4 +1,4 @@
-import { memo, forwardRef, useState, useEffect, JSX, ForwardedRef } from 'react';
+import { memo, forwardRef, useState, useEffect, JSX, ForwardedRef, useCallback, RefObject } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { Extrapolate, interpolate, SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
@@ -75,6 +75,8 @@ const SingleTab = memo(forwardRef(({
             transform: [{ translateY }],
         };
     });
+
+    const renderItem = useCallback(({ item }: { item: any }) => render(item), [render]);
     
     return (<>
         <Animated.View style={[
@@ -86,7 +88,7 @@ const SingleTab = memo(forwardRef(({
         
         <Animated.FlatList
             data={items}
-            renderItem={({ item }) => render(item)}
+            renderItem={renderItem}
             ref={ref}
             ListFooterComponent={isFirstLoading 
                 ? <ListLoading /> 
@@ -107,6 +109,9 @@ const SingleTab = memo(forwardRef(({
                 paddingTop: headerHeight - scrollStick + LIST_GAP,
             }}
             onScroll={handleScroll}
+            initialNumToRender={10}
+            windowSize={5}
+            removeClippedSubviews={true}
         />
     </>);
 
@@ -121,6 +126,7 @@ export type TabListRenderScene = {
     onRefresh?: () => void;
     fetchNextPage: () => void;
     header?: JSX.Element;
+    ref?: RefObject<FlatList<any>|null>;
 }
 
 type TabListProps = {
@@ -165,6 +171,7 @@ const TabList = ({
                     scrollStick={scrollStick}
                     scrollMax={scrollStick}
                     key={route.key}
+                    ref={data.ref}
                 > 
                     { data.header }
                 </SingleTab>

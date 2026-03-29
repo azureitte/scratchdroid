@@ -13,10 +13,11 @@ export default ListLoading;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flex: 0,
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: 200,
+        maxHeight: 200,
         width: '100%',
     },
 });
