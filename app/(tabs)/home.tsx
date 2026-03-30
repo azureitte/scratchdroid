@@ -147,7 +147,7 @@ const HomePage = () => {
         }]}>
             <View style={{ padding: 16, gap: 20 }}>
                 <Heading style={{ fontSize: 24 }}>What's Happening</Heading>
-                <ScrollView style={styles.codeBlock}>
+                <ScrollView style={styles.codeBlock} nestedScrollEnabled>
                     <Text style={styles.codeBlockText}>
                         {JSON.stringify(activity, null, 2)}
                     </Text>
