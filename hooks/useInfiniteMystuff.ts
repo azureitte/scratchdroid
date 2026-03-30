@@ -33,6 +33,8 @@ export const useInfiniteMystuff = ({
 
     const ITEMS_PER_PAGE = type === 'projects' ? PROJECTS_PER_PAGE : STUDIOS_PER_PAGE;
 
+    const queryKey = ['mystuff', type, subtype, ascsort, descsort] as const;
+
     const { 
         data, 
         isFetchingNextPage, 
@@ -44,10 +46,10 @@ export const useInfiniteMystuff = ({
     } = useInfiniteQuery<
         ScratchMystuffItem[], Error, 
         InfiniteData<ScratchMystuffItem[]>, 
-        ['mystuff', string, string, string|undefined, string|undefined],
+        typeof queryKey,
         number
     >({
-        queryKey: ['mystuff', type, subtype, ascsort, descsort],
+        queryKey,
         queryFn: async ({ pageParam }) => {
             if (isSessionLoading || !session.user) return [];
 
@@ -85,7 +87,7 @@ export const useInfiniteMystuff = ({
     });
 
     const resetToFirstPage = () => {
-        queryClient.setQueryData(['mystuff', type, subtype, ascsort, descsort], (data: InfiniteData<ScratchMystuffItem[]>) => {
+        queryClient.setQueryData(queryKey, (data: InfiniteData<ScratchMystuffItem[]>) => {
             if (!data) return undefined;
             return {
                 pages: [data.pages[0]], // Keep only the first page
@@ -96,9 +98,7 @@ export const useInfiniteMystuff = ({
 
     const refresh = () => {
         resetToFirstPage();
-        queryClient.invalidateQueries({
-            queryKey: ['mystuff', type, subtype, ascsort, descsort],
-        });
+        queryClient.invalidateQueries({ queryKey });
     };
 
     return { 

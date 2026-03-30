@@ -195,6 +195,28 @@ export type ScratchProject = {
     }
 }
 
+export type ScratchUser = {
+    id: number;
+    username: string;
+    scratchteam: boolean;
+    history: {
+        joined: string;
+    };
+    profile: {
+        id: number;
+        images: {
+            "32x32": string;
+            "50x50": string;
+            "55x55": string;
+            "60x60": string;
+            "90x90": string;
+        };
+        status: string;
+        bio: string;
+        country: string;
+    };
+}
+
 
 export type FeaturedProject = {
     type: 'project';
@@ -275,3 +297,44 @@ export type ScratchMystuffStudioItem = {
     model: 'galleries.gallery';
     pk: number;
 }
+
+
+export type ScratchComment = {
+    id: number;
+    content: string;
+    author: {
+        id: number;
+        username: string;
+        scratchteam: boolean;
+        image: string;
+    };
+    commentee_id: number|null;
+    parent_id: number|null;
+    datetime_created: string;
+    datetime_modified: string;
+    reply_count: number;
+    visibility: "visible";
+}
+
+export type FlattenedComment = {
+    id: number;
+    content: string;
+    author: {
+        id: number|string;
+        username: string;
+        scratchteam: boolean;
+        image: string;
+    };
+    createdAt: Date;
+    modifiedAt: Date;
+    isLastInBlock: boolean;  // is the comment the last one in the reply chain
+} & ({
+    isReply: false;
+    parent: null;
+    replyTo: null
+}|{
+    isReply: true;
+    parent: number;         // parent comment id
+    replyTo: string;        // username to which the reply is targeted
+    hasMoreToLoad: boolean; // whether to show the "load more" button
+});
