@@ -14,13 +14,11 @@ import Carousel from '@/components/panels/Carousel';
 import Heading from '@/components/general/Heading';
 import ListLoading from '@/components/panels/ListLoading';
 import StudioCard from '@/components/panels/StudioCard';
-import { AppContext } from '@/context/AppContext';
 
 const HomePage = () => {
 
     const insets = useSafeAreaInsets();
     const { isLoading, session } = useSession();
-    const { setHeaderVisible } = useContext(AppContext);
 
     const [ isRefreshing, setIsRefreshing ] = useState(false);
     const [ isFirstFetch, setIsFirstFetch ] = useState(true);
@@ -44,8 +42,7 @@ const HomePage = () => {
 
     useEffect(() => {
         DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
-
-        return () => DeviceEventEmitter.removeAllListeners();
+        return () => DeviceEventEmitter.removeAllListeners('tab-re-pressed');
     }, []);
 
     const handleRefresh = async () => {
@@ -100,7 +97,7 @@ const HomePage = () => {
         id={project.id}
         title={project.title}
         author={project.author.username}
-        loveCount={project.stats.views}
+        viewCount={project.stats.views}
     />, []);
 
     const renderFeaturedProject = useCallback((project: FeaturedProject) => <ProjectCard
