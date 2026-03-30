@@ -1,7 +1,8 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, DrawerLayoutAndroid, DeviceEventEmitter } from 'react-native';
+import { StyleSheet, View, DrawerLayoutAndroid } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { off, on } from '@/util/eventBus';
 import { AppContext } from '@/context/AppContext';
 import { useSession } from '@/hooks/useSession';
 import Button from '@/components/general/Button';
@@ -28,12 +29,12 @@ const Drawer = () => {
     };
     
     useEffect(() => {
-        DeviceEventEmitter.addListener('drawer-toggle', handleDrawerToggle);
-        DeviceEventEmitter.addListener('drawer-close', handleDrawerClose);
+        on('drawer-toggle', handleDrawerToggle);
+        on('drawer-close', handleDrawerClose);
 
         return () => {
-            DeviceEventEmitter.removeAllListeners('drawer-toggle');
-            DeviceEventEmitter.removeAllListeners('drawer-close');
+            off('drawer-toggle', handleDrawerToggle);
+            off('drawer-close', handleDrawerClose);
         }
     }, []);
     

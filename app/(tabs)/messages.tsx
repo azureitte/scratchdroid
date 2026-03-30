@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    DeviceEventEmitter,
     FlatList,
     RefreshControl,
     StyleSheet,
@@ -9,6 +8,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useIsFocused } from 'expo-router';
+
+import { off, on } from '@/util/eventBus';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
@@ -62,8 +63,8 @@ const MessagesPage = () => {
     }, [isRefreshing, isFocused]);
 
     useEffect(() => {
-        DeviceEventEmitter.addListener('messages-tab-re-pressed', handleScrollToTop);
-        return () => DeviceEventEmitter.removeAllListeners('messages-tab-re-pressed');
+        on('messages-tab-re-pressed', handleScrollToTop);
+        return () => off('messages-tab-re-pressed', handleScrollToTop);
     }, []);
 
     useChangeAppStateOnFocus({

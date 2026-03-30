@@ -1,10 +1,11 @@
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, RefreshControl, DeviceEventEmitter, ActivityIndicator } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { apiReq } from '@/util/api';
 import { FeaturedProject, FeaturedTab, ScratchProject } from '@/util/types';
+import { off, on } from '@/util/eventBus';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
@@ -41,8 +42,8 @@ const HomePage = () => {
     }, [isLoading, session]);
 
     useEffect(() => {
-        DeviceEventEmitter.addListener('tab-re-pressed', handleScrollToTop);
-        return () => DeviceEventEmitter.removeAllListeners('tab-re-pressed');
+        on('tab-re-pressed', handleScrollToTop);
+        return () => off('tab-re-pressed', handleScrollToTop);
     }, []);
 
     const handleRefresh = async () => {

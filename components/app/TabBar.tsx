@@ -1,9 +1,10 @@
-import { memo, useContext, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, DeviceEventEmitter } from "react-native";
+import { memo, useContext, useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ICONS } from "@/util/assets";
+import { emit, off, on } from "@/util/eventBus";
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
 import { AppContext, AppTabKey } from "@/context/AppContext";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -95,6 +96,11 @@ const TabBar = memo(() => {
         );
     }, [primaryColor]);
 
+    useEffect(() => {
+        on('tab-navigate', setCurrentTab);
+        return () => off('tab-navigate', setCurrentTab);
+    }, []);
+
     const animatedStyleContainer = useAnimatedStyle(() => ({
         transform: [{ translateY: translateY.value }],
     }));
@@ -142,13 +148,12 @@ const TabBar = memo(() => {
                         <Pressable
                             key={button.key}
                             onPress={() => {
-                                DeviceEventEmitter.emit('tab-navigate', button.key);
-                                DeviceEventEmitter.emit('tab-pressed', button.name);
+                                emit('tab-navigate', button.key);
+                                emit('tab-pressed', button.name);
                                 if (currentTab === button.key) {
-                                    DeviceEventEmitter.emit('tab-re-pressed', button.name);
-                                    DeviceEventEmitter.emit(`${button.key}-tab-re-pressed`);
+                                    emit('tab-re-pressed', button.name);
+                                    emit(`${button.key}-tab-re-pressed`);
                                 }
-                                setCurrentTab(button.key);
                             }}
                             style={[
                                 styles.tab,

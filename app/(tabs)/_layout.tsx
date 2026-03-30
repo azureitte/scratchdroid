@@ -1,21 +1,22 @@
 import { useEffect } from 'react';
-import { DeviceEventEmitter } from 'react-native';
+import { Easing } from 'react-native-reanimated';
 import { router, Tabs } from 'expo-router';
 
+import { off, on } from '@/util/eventBus';
 import { AppTabKey } from '@/context/AppContext';
-import { Easing } from 'react-native-reanimated';
 
 const TabsLayout = () => {
 
     const tabBar = () => <></>;
 
     const handleTabNavigate = (tab: AppTabKey) => {
-        router.navigate(`/${tab}`);
+        if (router.canDismiss()) router.dismissAll();
+        router.replace(`/${tab}`);
     };
 
     useEffect(() => {
-        DeviceEventEmitter.addListener('tab-navigate', handleTabNavigate);
-        return () => DeviceEventEmitter.removeAllListeners('tab-navigate');
+        on('tab-navigate', handleTabNavigate);
+        return () => off('tab-navigate', handleTabNavigate);
     }, []);
 
     return (
@@ -31,8 +32,8 @@ const TabsLayout = () => {
                     duration: 300,
                     easing: Easing.out(Easing.cubic),
                 }
-            }
-        }}>
+            },
+        }} backBehavior="none">
             <Tabs.Screen name="home" options={{ title: 'Home', headerShown: false, freezeOnBlur: true }} />
             <Tabs.Screen name="explore" options={{ title: 'Explore', headerShown: false, freezeOnBlur: true }} />
             <Tabs.Screen name="messages" options={{ title: 'Messages', headerShown: false, freezeOnBlur: true }} />

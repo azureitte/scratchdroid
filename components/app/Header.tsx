@@ -1,5 +1,5 @@
-import { memo, useContext, useEffect, useRef, useState } from "react";
-import { StyleSheet, Image, Pressable, DeviceEventEmitter } from "react-native";
+import { memo, useContext, useRef } from "react";
+import { StyleSheet, Image, Pressable } from "react-native";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from "expo-router";
 import Animated, {
@@ -9,6 +9,7 @@ import Animated, {
   useDerivedValue,
 } from "react-native-reanimated";
 
+import { emit } from "@/util/eventBus";
 import { ICONS, IMAGES } from "@/util/assets";
 import { AppContext } from "@/context/AppContext";
 import { useSession } from "@/hooks/useSession";
@@ -53,7 +54,12 @@ const Header = memo(() => {
     }));
 
     const handleToggleDrawer = () => {
-        DeviceEventEmitter.emit('drawer-toggle');
+        emit('drawer-toggle');
+    };
+
+    const handleNavigateHome = () => {
+        emit('drawer-close');
+        emit('tab-navigate', 'home');
     };
 
     return (
@@ -70,14 +76,14 @@ const Header = memo(() => {
                 <MenuIcon />
             </Pressable>
 
-            <Pressable onPress={() => router.replace('/home')}>
+            <Pressable onPress={handleNavigateHome}>
                 <Image source={IMAGES.logo} style={styles.logo} />
             </Pressable>
 
             <Pressable 
                 style={styles.headerButton}
                 onPress={() => {
-                    DeviceEventEmitter.emit('drawer-close');
+                    emit('drawer-close');
                     router.push(`users/${session?.user?.username}`)
                 }}
                 android_ripple={{ color: "#fff3", foreground: true }}

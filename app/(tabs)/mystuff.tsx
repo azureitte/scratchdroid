@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    DeviceEventEmitter,
     FlatList,
     StyleSheet,
     View,
@@ -13,6 +12,7 @@ import type {
     ScratchMystuffProjectItem, 
     ScratchMystuffStudioItem 
 } from '@/util/types';
+import { off, on } from '@/util/eventBus';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
@@ -54,8 +54,8 @@ const MyStuffPage = () => {
     const { scroll: globalScroll, handleScrollChange } = useGlobalScroll({ scrollStick: HEADER_STICK });
 
     useEffect(() => {
-        DeviceEventEmitter.addListener('mystuff-tab-re-pressed', handleScrollToTop);
-        return () => DeviceEventEmitter.removeAllListeners('mystuff-tab-re-pressed');
+        on('mystuff-tab-re-pressed', handleScrollToTop);
+        return () => off('mystuff-tab-re-pressed', handleScrollToTop);
     }, []);
 
     useChangeAppStateOnFocus({
