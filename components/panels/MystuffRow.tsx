@@ -1,7 +1,9 @@
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+
 import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types';
-import { relativeDate } from '@/util/functions';
+import { addPrefixUrl, relativeDate } from '@/util/functions';
+import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 
 type MystuffRowProps = {
     type: 'project';
@@ -24,12 +26,12 @@ const MystuffRow = memo(({
     return (
         <Pressable 
             style={styles.container}
-            android_ripple={{ color: "#fff3", foreground: true }}
+            android_ripple={DEFAULT_RIPPLE_CONFIG}
             onPress={onPress}
         >
             { type === 'project' ? <>
                 <Image 
-                    source={{ uri: `https:${item.fields.uncached_thumbnail_url}` }} 
+                    source={{ uri: addPrefixUrl(item.fields.uncached_thumbnail_url) }} 
                     style={[styles.thumbnail, styles.projectThumbnail]} 
                 />
                 <View style={styles.content}>
@@ -46,7 +48,7 @@ const MystuffRow = memo(({
 
             : <>
                 <Image 
-                    source={{ uri: `https:${item.fields.thumbnail_url}` }} 
+                    source={{ uri: addPrefixUrl(item.fields.thumbnail_url) }} 
                     style={[styles.thumbnail, styles.studioThumbnail]} 
                 />
                 <View style={styles.content}>

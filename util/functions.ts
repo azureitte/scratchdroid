@@ -67,7 +67,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
             .trim();
 
         const authorUsername = commentElem.querySelector('.name')?.children[0]?.innerText ?? '';
-        const authorImage = 'https:' + (commentElem.querySelector('.avatar')?.getAttribute('src') ?? '');
+        const authorImage = addPrefixUrl(commentElem.querySelector('.avatar')?.getAttribute('src') ?? '');
         const author = {
             id: authorUsername,
             username: authorUsername,
@@ -144,4 +144,9 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
     }
 
     return comments;
+}
+
+export const addPrefixUrl = (url: string) => {
+    if (url.startsWith('https:')) return url;
+    return 'https:' + url;
 }

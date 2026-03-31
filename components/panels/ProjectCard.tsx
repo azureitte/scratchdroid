@@ -2,7 +2,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ICONS } from '@/util/assets';
-import { PROJECT_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
+import { DEFAULT_RIPPLE_CONFIG, PROJECT_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
 import { shortNumber } from '@/util/functions';
 
 type ProjectCardProps = {
@@ -30,7 +30,7 @@ const ProjectCard = ({
     return (
         <Pressable 
             style={styles.container}
-            android_ripple={{ color: "#fff3", foreground: true }}
+            android_ripple={DEFAULT_RIPPLE_CONFIG}
             onPress={onPress ?? (() => router.push(`/projects/${id}`))}
         >
             <Image 

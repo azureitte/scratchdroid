@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
+
 export type Filter = {
     key: string;
     title: string;
@@ -53,7 +55,7 @@ const FiltersPanel = ({
                         selectedIndicies.includes(idx) && styles.filterSelected
                     ]}
                     onPress={() => handlePress(filter)}
-                    android_ripple={{ color: "#fff3", foreground: true }}
+                    android_ripple={DEFAULT_RIPPLE_CONFIG}
                 >
                     <Text style={[
                         styles.filterText, 

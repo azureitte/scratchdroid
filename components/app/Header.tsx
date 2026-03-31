@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { emit } from "@/util/eventBus";
+import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
 import { ICONS, IMAGES } from "@/util/assets";
 import { AppContext } from "@/context/AppContext";
 import { useSession } from "@/hooks/useSession";
@@ -71,7 +72,7 @@ const Header = memo(() => {
             <Pressable 
                 style={styles.headerButton}
                 onPress={handleToggleDrawer}
-                android_ripple={{ color: "#fff3", foreground: true }}
+                android_ripple={DEFAULT_RIPPLE_CONFIG}
             >
                 <MenuIcon />
             </Pressable>
@@ -86,7 +87,7 @@ const Header = memo(() => {
                     emit('drawer-close');
                     router.push(`users/${session?.user?.username}`)
                 }}
-                android_ripple={{ color: "#fff3", foreground: true }}
+                android_ripple={DEFAULT_RIPPLE_CONFIG}
             >
                 { session?.user && 
                     <Image 

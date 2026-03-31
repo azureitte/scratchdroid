@@ -1,9 +1,13 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import React from 'react';
 
-const ListLoading = () => {
+const ListLoading = ({
+    marginTop = 0,
+}: {
+    marginTop?: number;
+}) => {
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { marginTop }]}>
             <ActivityIndicator size="large" color="#71A3FF" />
         </View>
     );

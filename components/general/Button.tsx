@@ -1,5 +1,7 @@
 import { Pressable, StyleProp, Text, StyleSheet, ViewStyle, ActivityIndicator } from "react-native";
 
+import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
+
 export type ButtonProps = {
     role?: 'primary' | 'secondary' | 'danger';
     variation?: 'regular' | 'big';
@@ -32,7 +34,7 @@ const Button = ({
                 (isLoading || isDisabled) && styles.buttonDisabled,
                 fullWidth && styles.buttonFullWidth,
             ]} 
-            android_ripple={{ color: "#fff3", foreground: true }}
+            android_ripple={DEFAULT_RIPPLE_CONFIG}
             disabled={isLoading}
         >
             { isLoading 

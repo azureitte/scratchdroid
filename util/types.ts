@@ -248,6 +248,13 @@ export type FeaturedTab = {
     scratch_design_studio: SdsProject[];
 }
 
+export type BannerProject = {
+    id: number;
+    title: string;
+    thumbnail_url: string;
+    label: string;
+}
+
 
 export type ScratchMystuffItem =
     | ScratchMystuffProjectItem

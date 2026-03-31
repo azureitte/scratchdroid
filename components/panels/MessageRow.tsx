@@ -84,7 +84,7 @@ const MessageRow = memo(({
                                     { !!message.commentee_username 
                                         ? ' replied to your comment on ' 
                                         : ' commented on your project ' }
-                                    <Link style={styles.linkText} href={`/projects/${message.comment_obj_id}`}>
+                                    <Link style={styles.linkText} href={`/projects/${message.comment_obj_id}?commentId=${message.comment_id}`}>
                                          {message.comment_obj_title }
                                     </Link>
                                 </>
@@ -93,7 +93,7 @@ const MessageRow = memo(({
                                     { !!message.commentee_username 
                                         ? ' replied to your comment on ' 
                                         : ' commented on ' }
-                                    <Link style={styles.linkText} href={`/users/${message.comment_obj_title}`}>
+                                    <Link style={styles.linkText} href={`/users/${message.comment_obj_title}?commentId=${message.comment_id}`}>
                                         { message.comment_obj_title === myUsername
                                             ? 'your profile'
                                             : `${message.comment_obj_title}'s profile`
@@ -105,7 +105,7 @@ const MessageRow = memo(({
                                     { !!message.commentee_username 
                                         ? ' replied to your comment in ' 
                                         : ' commented in studio ' }
-                                    <Link style={styles.linkText} href={`/studios/${message.comment_obj_id}`}>
+                                    <Link style={styles.linkText} href={`/studios/${message.comment_obj_id}?commentId=${message.comment_id}`}>
                                         {message.comment_obj_title}
                                     </Link>
                                 </>

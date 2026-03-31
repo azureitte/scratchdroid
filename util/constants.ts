@@ -6,3 +6,4 @@ export const DEFAULT_RIPPLE_CONFIG = {
 };
 
 export const PROJECT_CARD_THUMBNAIL_HEIGHT = 120;
+export const USER_CARD_THUMBNAIL_HEIGHT = 67;
