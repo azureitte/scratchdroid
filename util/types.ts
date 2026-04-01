@@ -192,7 +192,8 @@ export type ScratchProject = {
         favorites: number;
         views: number;
         remixes: number;
-    }
+    },
+    project_token: string;
 }
 
 export type ScratchUser = {
@@ -354,3 +355,28 @@ export type FlattenedComment = {
     replyTo: string;        // username to which the reply is targeted
     hasMoreToLoad: boolean; // whether to show the "load more" button
 });
+
+
+export type ScratchProjectFile = {
+    extensions: ScratchExtension[];
+    meta: {
+        semver: string;
+        vm: string;
+        agent: string;
+    };
+    targets: any[];
+    monitors: any[];
+}
+
+export type ScratchExtension = 
+    | 'text2speech'
+    | 'videoSensing'
+    | 'pen'
+    | 'music'
+    | 'translate'
+    | 'makeymakey'
+    | 'microbit'
+    | 'gdxfor'
+    | 'ev3'
+    | 'wedo2'
+    | 'faceSensing';

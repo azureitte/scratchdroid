@@ -1,7 +1,8 @@
 import { HTMLElement } from "node-html-parser";
-import { formatDistanceToNow } from 'date-fns';
+import he from "he";
+import { formatDistanceToNow, format } from 'date-fns';
 
-import type { FlattenedComment } from "./types";
+import type { FlattenedComment, ScratchProjectFile } from "./types";
 
 export function shortRelativeDate(date: Date) {
     const diff = (Date.now() - date.getTime()) / 1000;
@@ -37,6 +38,10 @@ export function relativeDate (date: Date) {
     return formatDistanceToNow(date, { addSuffix: true });
 }
 
+export function dateShort (date: Date) {
+    return format(date, 'MMM d, yyyy');
+}
+
 const shortNumberFormatter = new Intl.NumberFormat('en-US', {
   notation: 'compact',
   compactDisplay: 'short',
@@ -44,6 +49,11 @@ const shortNumberFormatter = new Intl.NumberFormat('en-US', {
 
 export function shortNumber (num: number) {
   return shortNumberFormatter.format(num);
+}
+
+export const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
 }
 
 
@@ -149,4 +159,24 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
 export const addPrefixUrl = (url: string) => {
     if (url.startsWith('https:')) return url;
     return 'https:' + url;
+}
+
+export const decodeWww3Comment = (comment: string) => {
+    return he.decode(comment) // html escape decode
+        .replaceAll('\n', ' ') // turn newlines into spaces
+        .replace(/\s+/g, ' ') // remove multiple spaces
+        .trim();
+}
+
+export const projectHasCloudVariables = (project?: ScratchProjectFile|null) => {
+    if (!project) return false;
+
+    const stageTarget = project.targets?.find(t => t.isStage);
+    if (!stageTarget) return false;
+
+    try {
+        return Object.values(stageTarget.variables).some((v: any) => v[2] === true);
+    } catch {
+        return false;
+    }
 }

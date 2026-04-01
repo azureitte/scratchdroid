@@ -29,7 +29,6 @@ const UserPage = () => {
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
     const pfpCachePrevent = useRef(Math.random());
-    const firstFetch = useRef(true);
     const listRef = useRef<CommentSectionRef>(null);
 
     useChangeAppStateOnFocus({

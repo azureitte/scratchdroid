@@ -21,6 +21,7 @@ import { AppProvider } from "@/context/AppContext";
 import Header from "@/components/app/Header";
 import TabBar from "@/components/app/TabBar";
 import Drawer from "@/components/app/Drawer";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
             <SessionProvider>
             <AppProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
 
                 <TabBar />
                 <Drawer />
@@ -74,9 +76,10 @@ export default function RootLayout() {
                     <Stack.Screen name="index" />
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen name="projects/[id]" />
-                    <Stack.Screen name="users/[username]" />
+                    <Stack.Screen name="users/[username]/index" />
                     <Stack.Screen name="account/login" />
                 </Stack>
+            </GestureHandlerRootView>
             </AppProvider>
             </SessionProvider>
             { IS_DEV && <DevToolsBubble
