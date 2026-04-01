@@ -217,6 +217,15 @@ export type ScratchUser = {
     };
 }
 
+export type UserQueryData = {
+    user: ScratchUser;
+    bannerProject: BannerProject|null;
+    sharedProjects: ScratchProject[];
+    favoriteProjects: ScratchProject[];
+    followers: ScratchUser[];
+    following: ScratchUser[];
+}
+
 
 export type FeaturedProject = {
     type: 'project';
