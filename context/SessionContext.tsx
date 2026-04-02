@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 
 import type { ScratchSession } from '../util/types';
@@ -32,10 +32,12 @@ export const SessionContext = createContext<SessionContextType>({
 
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
+    const pathname = usePathname();
     const queryClient = useQueryClient();
 
     const [ session, setSession ] = useState<ScratchSession|null>(null);
     const [ isLoggedIn, setIsLoggedIn ] = useState(false);
+    const [ errorPage, setErrorPage ] = useState<number|null>(null);
     const [ isLoading, setIsLoading ] = useState(true);
 
     useEffect(() => {
@@ -43,6 +45,12 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             path: '/session',
         }).then(response => {
             setIsLoading(false);
+            setErrorPage(null);
+            
+            if (response.status >= 500) {
+                setErrorPage(503);
+                return;
+            }
 
             if (response.success) {
                 setSession(response.data);
@@ -54,12 +62,17 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     useEffect(() => {
         if (isLoading) return;
 
-        if (isLoggedIn) router.replace('/home');
-        else {
-            router.replace('/account/login');
-            setTimeout(() => queryClient.clear(), 100);
+        if (errorPage === 503) {
+            if (pathname !== '/503') router.replace('/503');
+        } else if (isLoggedIn) {
+            if (pathname !== '/home') router.replace('/home');
+        } else {
+            if (pathname !== '/account/login') {
+                router.replace('/account/login');
+                setTimeout(() => queryClient.clear(), 100);
+            }
         }
-    }, [isLoading, isLoggedIn]);
+    }, [isLoading, isLoggedIn, errorPage]);
 
     const login = async (username: string, password: string) => {
         setIsLoading(true);
@@ -79,9 +92,11 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             setIsLoading(false);
             throw new Error(message);
         }
-        
+
         if (response.success) {
-            if (response.data?.[0]?.success === 1) {
+            if (response.status >= 500) {
+                return err('Scratch is currently down for maintenance or unavailable. Please try again later.');
+            } else if (response.data?.[0]?.success === 1) {
                 setIsLoggedIn(true);
             } else if (response.data?.[0]?.redirect) {  
                 err('Too many login attempts. Please try again later.');

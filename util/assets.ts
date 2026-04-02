@@ -40,6 +40,8 @@ import pngProjectExtMicrobit from "../assets/svgs/project/extension-microbit.png
 import pngProjectMakeymakey from "../assets/svgs/project/extension-makeymakey.png";
 import pngProjectWedo2 from "../assets/svgs/project/extension-wedo2.png";
 
+import pngArtWateringCan from "../assets/art/wateringcan.png";
+
 export const ICONS = {
     home: icHome,
     explore: icExplore,
@@ -61,6 +63,9 @@ export const ICONS = {
 
 export const IMAGES = {
     logo: require("../assets/logo_sm.png"),
+    art: {
+        wateringCan: pngArtWateringCan,
+    },
 } as const;
 
 export const SVGS = {

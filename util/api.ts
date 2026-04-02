@@ -107,11 +107,19 @@ export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<any> {
         });
 
         if (options.responseType === 'json') {
-            return {
-                success: true,
-                status: response.status,
-                data: await response.json(),
-            };
+            try {
+                return {
+                    success: true,
+                    status: response.status,
+                    data: await response.json(),
+                };
+            } catch (e) {
+                return {
+                    success: true,
+                    status: response.status,
+                    data: { },
+                };
+            }
         } else if (options.responseType === 'html') {
             return {
                 success: true,
