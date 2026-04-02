@@ -76,7 +76,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
             isReply: boolean;
             parentId?: number;
             isLastInBlock: boolean;
-            hasMoreToLoad?: boolean;
+            replyIdx?: number;
         }
     ) => {
         const id = Number(commentElem.getAttribute('data-comment-id'));
@@ -118,7 +118,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
                 parent: opts.parentId!,
                 replyTo: replyTo!,
                 isLastInBlock: opts.isLastInBlock ?? false,
-                hasMoreToLoad: opts.hasMoreToLoad ?? false,
+                replyIdx: opts.replyIdx ?? 0,
             };
         } else {
             comment = {
@@ -155,7 +155,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
                     isReply: true,
                     parentId: comment.id,
                     isLastInBlock: i === replyElems.length - 1,
-                    hasMoreToLoad: false,
+                    replyIdx: i,
                 });
                 comments.push(reply);
                 i++;

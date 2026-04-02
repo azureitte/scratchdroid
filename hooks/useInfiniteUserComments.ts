@@ -12,8 +12,8 @@ export const useInfiniteUserComments = ({
     user,
     enabled = true,
 }: InfiniteUserCommentsProps) => {
-    const queryClient = useQueryClient();
 
+    const queryClient = useQueryClient();
     const queryKey = ['comments', 'user', user] as const;
 
     const { 

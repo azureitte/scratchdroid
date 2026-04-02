@@ -358,9 +358,9 @@ export type FlattenedComment = {
     replyTo: null
 }|{
     isReply: true;
-    parent: number;         // parent comment id
-    replyTo: string;        // username to which the reply is targeted
-    hasMoreToLoad: boolean; // whether to show the "load more" button
+    parent: number;   // parent comment id
+    replyTo: string;  // username to which the reply is targeted
+    replyIdx: number; // index of the reply relative to the parent thread
 });
 
 

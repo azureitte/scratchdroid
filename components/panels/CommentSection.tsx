@@ -1,5 +1,21 @@
-import React, { forwardRef, memo, ReactElement, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { StyleSheet, Text, View, Image, FlatList, ViewStyle, RefreshControl } from 'react-native';
+import React, { 
+    forwardRef, 
+    memo, 
+    ReactElement, 
+    useEffect, 
+    useImperativeHandle, 
+    useRef, 
+    useState 
+} from 'react';
+import { 
+    StyleSheet, 
+    Text, 
+    View, 
+    Image, 
+    FlatList, 
+    ViewStyle, 
+    RefreshControl 
+} from 'react-native';
 import Animated, { 
     Easing,
     useAnimatedStyle, 
@@ -13,19 +29,29 @@ import { relativeDate } from '@/util/functions';
 
 import Heading from '../general/Heading';
 import ListLoadMore from './ListLoadMore';
+import Button from '../general/Button';
+import { LinearGradient } from 'expo-linear-gradient';
+
+
+const DEFAULT_REPLY_COUNT = 3;
+const REPLY_INCREMENT_COUNT = 10;
+
+const COLOR_NOHIGHLIGHT = '#4177FF00';
+const COLOR_HIGHLIGHT = '#4177FF44';
 
 type CommentProps = {
     comment: FlattenedComment;
     isHighlighted?: boolean;
+    isShowMore?: boolean;
+    onShowMore?: () => void;
 }
 
 const Comment = memo(({
     comment,
     isHighlighted = false,
+    isShowMore = false,
+    onShowMore,
 }: CommentProps) => {
-
-    const COLOR_NOHIGHLIGHT = '#4177FF00';
-    const COLOR_HIGHLIGHT = '#4177FF44';
 
     const highlightColor = useDerivedValue(() => {
         return withTiming(
@@ -42,7 +68,6 @@ const Comment = memo(({
         styles.commentWrapper,
         comment.isReply && styles.reply,
         comment.isLastInBlock && styles.commentLast,
-        // comment.hasMoreToLoad && styles.replyMore,
         wrapperStyle,
     ]}>
         <Link href={`/users/${comment.author.username}`} style={styles.commentAvatarWrap}>
@@ -55,7 +80,10 @@ const Comment = memo(({
                 </Link>
                 { comment.replyTo && ` to @${comment.replyTo}` }
             </Text>
-            <View style={styles.commentBubbleWrap}>
+            <View style={[
+                styles.commentBubbleWrap,
+                isShowMore && styles.replyMore,
+            ]}>
                 <View style={styles.commentBubbleDeco} />
                 <View style={styles.commentBubble}>
                     <Text style={styles.commentText} selectable>
@@ -66,6 +94,15 @@ const Comment = memo(({
                     </Text>
                 </View>
             </View>
+            { isShowMore && <LinearGradient
+                colors={['#12121200', '#121212']}
+                style={styles.commentReplyFade}
+            /> }
+            { isShowMore && <Button
+                text="More Replies"
+                onPress={onShowMore}
+                role="secondary"
+            /> }
         </View>
     </Animated.View>);
 });
@@ -114,8 +151,38 @@ const CommentSection = forwardRef(({
 
     const [ isHighlighting, setHighlighting ] = useState(false);
 
+    // map between parent comment ID and how much replies have been revealed visually
+    // (if not all replies are revealed, a "Show More Replies" button will be shown)
+    const [ replyRevealMap, setReplyRevealMap ] = useState<Record<number, number>>({});
+
+    const getReplyRevealCount = (parentId: number) => {
+        return replyRevealMap[parentId] ?? DEFAULT_REPLY_COUNT;
+    }
+
+    const revealMoreReplies = (parentId: number) => {
+        setReplyRevealMap(prev => ({
+            ...prev,
+            [parentId]: (prev[parentId] ?? DEFAULT_REPLY_COUNT) + REPLY_INCREMENT_COUNT,
+        }));
+    }
+
+    const revealRepliesUntil = (parentId: number, index: number) => {
+        setReplyRevealMap(prev => ({
+            ...prev,
+            [parentId]: index+2,
+        }));
+    }
+
+    const resetRevealedReplies = () => {
+        setReplyRevealMap({});
+    }
+
+
     useImperativeHandle(ref, () => ({
         scrollToIndex: (index: number) => {
+            const commentAtIndex = comments[index];
+            if (commentAtIndex.isReply) revealRepliesUntil(commentAtIndex.parent, commentAtIndex.replyIdx);
+
             try {
                 index++;
                 highlightIdx.current = index;
@@ -134,9 +201,18 @@ const CommentSection = forwardRef(({
     return (<View style={styles.container}>
         <FlatList
             data={[ null, ...comments ]}
-            renderItem={({ item, index }) => {
-                if (index === 0) return stickyHeader;
-                return <Comment comment={item!} isHighlighted={index === highlightIdx.current && isHighlighting} />
+            renderItem={({ item, index }: {
+                item: FlattenedComment|null;
+                index: number;
+            }) => {
+                if (index === 0 || item === null) return stickyHeader;
+                if (item.isReply && getReplyRevealCount(item.parent) <= item.replyIdx) return null;
+                return <Comment 
+                    comment={item!} 
+                    isHighlighted={index === highlightIdx.current && isHighlighting}
+                    isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
+                    onShowMore={() => item.isReply && revealMoreReplies(item.parent)}
+                />
             }}
             keyExtractor={(item): any => item?.id}
             style={[styles.commentsList, listStyle]} 
@@ -152,7 +228,10 @@ const CommentSection = forwardRef(({
             />}
             refreshControl={<RefreshControl
                 refreshing={isRefreshing}
-                onRefresh={handleRefresh}
+                onRefresh={() => {
+                    resetRevealedReplies();
+                    handleRefresh?.();
+                }}
                 progressViewOffset={60}
             />}
 
@@ -223,6 +302,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         marginBottom: 16,
         paddingHorizontal: 16,
+        position: 'relative',
     },
     reply: {
         paddingLeft: 64,
@@ -235,6 +315,10 @@ const styles = StyleSheet.create({
     },
     commentHighlighted: {
         backgroundColor: '#4177ff44',  
+    },
+    replyMore: {
+        height: 50,
+        overflow: 'hidden',
     },
 
     commentAvatarWrap: {
@@ -291,6 +375,14 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 400,
         color: "#6C6C6C",
+    },
+
+    commentReplyFade: {
+        position: 'absolute',
+        bottom: 40,
+        left: 0,
+        right: 0,
+        height: 80,
     },
 
     authorStatus: {

@@ -103,6 +103,7 @@ export const useInfiniteProjectComments = ({
 
                 // add them as FlattenedComments
                 // inserted after either the last reply to the parent, or the parent itself
+                let replyIdx = 0;
                 for (const replyObj of repliesRes.data) {
                     const reply: FlattenedComment = {
                         id: replyObj.id,
@@ -117,7 +118,7 @@ export const useInfiniteProjectComments = ({
                         modifiedAt: new Date(replyObj.datetime_modified),
                         isLastInBlock: true, // true by default
                         isReply: true,
-                        hasMoreToLoad: false,
+                        replyIdx,
                         parent: commentId,
                         replyTo: userMap.get(replyObj.commentee_id!) ?? replyObj.commentee_id?.toString() ?? '',
                     };
@@ -128,6 +129,7 @@ export const useInfiniteProjectComments = ({
                         insertAfter.isLastInBlock = false; // mark the insert target as not last in block
                         comments.splice(comments.indexOf(insertAfter) + 1, 0, reply);
                     }
+                    replyIdx++;
 
                     userMap.set(replyObj.author.id, replyObj.author.username);
                 }
