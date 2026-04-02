@@ -42,6 +42,8 @@ const ProjectPage = () => {
     const { session } = useSession();
     const insets = useSafeAreaInsets();
 
+    const ignoreProjectUnload = useRef(false);
+
     useChangeAppStateOnFocus({
         footerVisible: false,
         primaryColor: 'regular',
@@ -57,9 +59,10 @@ const ProjectPage = () => {
         const sub = AppState.addEventListener('change', handleAppStateChange);
 
         setWebviewActive(true);
+        ignoreProjectUnload.current = false;
 
         return () => {
-            if (appState.current === 'active') {
+            if (appState.current === 'active' && !ignoreProjectUnload.current) {
                 setWebviewActive(false);
             }
             sub.remove();
@@ -110,6 +113,7 @@ const ProjectPage = () => {
                     studios={data.studios}
                     myUsername={session?.user?.username}
                     webviewActive={webviewActive}
+                    onInfoPress={() => ignoreProjectUnload.current = true}
                 />}
                 hasNextPage={comments.hasNextPage}
                 isLoading={comments.isLoading}

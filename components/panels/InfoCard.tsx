@@ -15,9 +15,11 @@ type InfoCardProps = {
     children?: React.ReactNode;
     subtext?: string;
     href?: string;
+    onPress?: () => void;
 
     maxLength?: number;
     lengthBehavior?: 'distribute'|'duplicate';
+    variation?: 'regular'|'full';
 }
 
 const InfoCard = ({
@@ -26,9 +28,11 @@ const InfoCard = ({
     children,
     subtext,
     href,
+    onPress,
 
     maxLength = 800,
     lengthBehavior = 'distribute',
+    variation = 'regular',
 }: InfoCardProps) => {
     
     const router = useRouter();
@@ -41,19 +45,31 @@ const InfoCard = ({
 
     return (
         <Pressable 
-            style={styles.contentCard}
-            onPress={() => router.push(href!)}
-            android_ripple={DEFAULT_RIPPLE_CONFIG}
+            style={[
+                styles.contentCard, 
+                variation === 'full' && styles.contentCardFull,
+            ]}
+            onPress={() => {
+                if (href) router.push(href);
+                if (onPress) onPress();
+            }}
+            android_ripple={href ? DEFAULT_RIPPLE_CONFIG : undefined}
         >
             { nonEmptySections.map((section) => {
                 const [text, isTruncated] = truncateText(section.text!, lengthPerSection);
 
                 return <React.Fragment key={section.title}>
-                    <Text style={styles.contentCardTitle}>{section.title}</Text>
-                    <Text style={styles.contentCardText} selectable>
+                    <Text style={[
+                        styles.contentCardTitle,
+                        variation === 'full' && styles.contentCardTitleFull,
+                    ]}>{section.title}</Text>
+                    <Text style={[
+                        styles.contentCardText,
+                        variation === 'full' && styles.contentCardTextFull,
+                    ]} selectable>
                         { text }
                         { isTruncated && href && 
-                            <Link href={href} style={styles.link}>
+                            <Link href={href} style={styles.link} onPress={onPress}>
                                 {'\nRead More'}
                             </Link> }
                     </Text>
@@ -82,12 +98,22 @@ const styles = StyleSheet.create({
         gap: 8,
         overflow: 'hidden',
     },
+    contentCardFull: {
+        paddingHorizontal: 8,
+        paddingVertical: 16,
+        backgroundColor: '#0000',
+    },
+
     contentCardTitle: {
         fontSize: 14,
         fontWeight: 600,
         color: '#888',
         marginTop: 4,
     },
+    contentCardTitleFull: {
+        fontSize: 16,
+    },
+
     contentCardText: {
         fontSize: 18,
         lineHeight: 28,
@@ -95,6 +121,11 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginBottom: 8,
     },
+    contentCardTextFull: {
+        fontSize: 20,
+        marginBottom: 24,
+    },
+
     contentCardSubtext: {
         fontSize: 16,
         color: '#888',

@@ -29,6 +29,7 @@ type ProjectPageHeaderProps = {
     studios: any[],
     myUsername?: string;
     webviewActive?: boolean;
+    onInfoPress?: () => void;
 }
 
 const ProjectPageHeader = ({
@@ -40,6 +41,7 @@ const ProjectPageHeader = ({
     studios,
     myUsername,
     webviewActive = true,
+    onInfoPress,
 }: ProjectPageHeaderProps) => {
 
     const screen = useWindowDimensions();
@@ -116,6 +118,7 @@ const ProjectPageHeader = ({
                 + (!publishedEqModified ? ` • Modified on ${modifiedStr}` : '')
             }
             href={`/projects/${projectId}/info`}
+            onPress={onInfoPress}
         >
             { extensions.length > 0 && <View style={styles.extensionsBar}>
                 { extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
