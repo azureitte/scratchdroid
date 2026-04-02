@@ -74,10 +74,11 @@ export default function RootLayout() {
                     }}
                 >
                     <Stack.Screen name="index" />
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="projects/[id]" />
-                    <Stack.Screen name="users/[username]/index" />
                     <Stack.Screen name="account/login" />
+                    <Stack.Screen name="(tabs)" />
+
+                    <Stack.Screen name="users/[username]/index" />
+                    <Stack.Screen name="projects/[id]/index" />
                 </Stack>
             </GestureHandlerRootView>
             </AppProvider>

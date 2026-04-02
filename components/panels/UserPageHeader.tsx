@@ -7,12 +7,13 @@ import CountryFlag from "react-native-country-flag";
 import type { ScratchProject, ScratchUser, UserQueryData } from '@/util/types';
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
+import { countryToCode } from '@/util/countries';
 
 
 import Carousel from '@/components/panels/Carousel';
 import ProjectCard from '@/components/panels/ProjectCard';
 import UserCard from '@/components/panels/UserCard';
-import { countryToCode } from '@/util/countries';
+import InfoCard from './InfoCard';
 
 
 type UserPageHeaderProps = {
@@ -30,6 +31,13 @@ const UserPageHeader = memo(({
     const router = useRouter();
     
     const renderProject = useCallback((project: ScratchProject) => <ProjectCard
+        id={project.id}
+        title={project.title}
+        author={project.author.username}
+        viewCount={project.stats.views}
+    />, [data.user]);
+
+    const renderMyProject = useCallback((project: ScratchProject) => <ProjectCard
         id={project.id}
         title={project.title}
         author={myUsername}
@@ -86,17 +94,18 @@ const UserPageHeader = memo(({
             </View>
         </View>
 
-        <View style={styles.contentCard}>
-            <Text style={styles.contentCardTitle}>About Me</Text>
-            <Text style={styles.contentCardText} selectable>{ data.user.profile.bio }</Text>
-            <Text style={styles.contentCardTitle}>What I'm working on</Text>
-            <Text style={styles.contentCardText} selectable>{ data.user.profile.status }</Text>
-        </View>
+        <InfoCard
+            sections={[
+                { title: 'About Me', text: data.user.profile.bio },
+                { title: 'What I\'m working on', text: data.user.profile.status },
+            ]}
+            href={`/users/${myUsername}/info`}
+        />
 
         <Carousel 
             title="Shared Projects" 
             items={data.sharedProjects}
-            render={renderProject}
+            render={renderMyProject}
         />
 
         <Carousel 
@@ -106,14 +115,14 @@ const UserPageHeader = memo(({
         />
 
         <Carousel 
-            title="Followers" 
-            items={data.followers}
+            title="Following" 
+            items={data.following}
             render={renderUser}
         />
 
         <Carousel 
-            title="Following" 
-            items={data.following}
+            title="Followers" 
+            items={data.followers}
             render={renderUser}
         />
 

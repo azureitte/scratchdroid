@@ -51,9 +51,19 @@ export function shortNumber (num: number) {
   return shortNumberFormatter.format(num);
 }
 
-export const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.slice(0, maxLength) + '...';
+export const truncateText = (text: string, maxLength: number, charPerNewLine: number = 60): [string, boolean] => {
+    let idx = 0;
+    let counter = 0;
+    while (idx < text.length && counter < maxLength) {
+        if (text[idx] === '\n') {
+            counter += charPerNewLine;
+        } else {
+            counter += 1;
+        }
+        idx++;
+    }
+    if (idx >= text.length) return [text, false];
+    return [text.slice(0, idx).trimEnd() + '...', true];
 }
 
 

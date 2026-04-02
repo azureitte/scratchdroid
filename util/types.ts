@@ -227,6 +227,13 @@ export type UserQueryData = {
     following: ScratchUser[];
 }
 
+export type ProjectQueryData = {
+    project: ScratchProject;
+    remixes: ScratchProject[];
+    studios: any[];
+    file: ScratchProjectFile|null;
+}
+
 
 export type FeaturedProject = {
     type: 'project';
