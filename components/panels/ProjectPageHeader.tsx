@@ -110,7 +110,7 @@ const ProjectPageHeader = ({
         <InfoCard
             sections={[
                 { title: 'Instructions', text: project.instructions },
-                { title: 'Description', text: project.description },
+                { title: 'Notes & Credits', text: project.description },
             ]}
             childTitle={extensions.length > 0 && 'Extensions'}
             subtext={

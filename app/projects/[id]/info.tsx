@@ -60,7 +60,7 @@ const ProjectInfoPage = () => {
             <InfoCard
                 sections={[
                     { title: 'Instructions', text: data.project.instructions },
-                    { title: 'Description', text: data.project.description },
+                    { title: 'Notes & Credits', text: data.project.description },
                 ]}
                 childTitle={extensions.length > 0 && 'Extensions'}
                 subtext={
