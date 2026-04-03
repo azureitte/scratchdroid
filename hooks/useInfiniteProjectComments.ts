@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiReq } from "@/util/api";
@@ -13,11 +13,13 @@ const COMMENTS_PER_PAGE = 20;
 type InfiniteProjectCommentsProps = {
     project: number;
     author: string;
+    highlightedComment?: number;
     enabled?: boolean;
 }
 export const useInfiniteProjectComments = ({
     project,
     author,
+    highlightedComment,
     enabled = true,
 }: InfiniteProjectCommentsProps) => {
     const queryClient = useQueryClient();
@@ -26,9 +28,56 @@ export const useInfiniteProjectComments = ({
     const queryKey = ['comments', 'project', project] as const;
 
     const [ replies, setReplies ] = useState<Record<string, FlattenedComment[]>>({});
+    const [ highlight, setHighlight ] = useState<FlattenedComment[]|null>(null);
+    const [ highlightLoaded, setHighlightLoaded ] = useState(!highlightedComment);
 
     // map between user id and username
     const userMap = useRef<Map<number, string>>(new Map());
+
+    const toFlattenedComment = (comment: ScratchComment, opts?: {
+        isReply: boolean;
+        parentId: number;
+        replyIdx: number;
+        replyTo: number;
+        isHighlighted?: boolean;
+    }): FlattenedComment => {
+        if (opts?.isReply) { return {
+            id: comment.id,
+            content: decodeWww3Comment(comment.content),
+            author: {
+                id: comment.author.id,
+                username: comment.author.username,
+                scratchteam: comment.author.scratchteam,
+                image: comment.author.image,
+            },
+            createdAt: new Date(comment.datetime_created),
+            modifiedAt: new Date(comment.datetime_modified),
+            isLastInBlock: true, // true by default
+            isHighlighted: opts.isHighlighted ?? false,
+            isReply: true,
+            replyIdx: opts.replyIdx,
+            parent: opts.parentId,
+            replyTo: userMap.current.get(opts.replyTo) ?? opts.replyTo?.toString() ?? '',
+        } }
+        return {
+            id: comment.id,
+            content: decodeWww3Comment(comment.content),
+            author: {
+                id: comment.author.id,
+                username: comment.author.username,
+                scratchteam: comment.author.scratchteam,
+                image: comment.author.image,
+            },
+            createdAt: new Date(comment.datetime_created),
+            modifiedAt: new Date(comment.datetime_modified),
+            isLastInBlock: comment.reply_count === 0,
+            isHighlighted: opts?.isHighlighted ?? false,
+            isReply: false,
+            parent: null,
+            replyTo: null,
+        }
+    }
+
 
     const fetchComments = useCallback(async (
         from: number = 0, 
@@ -57,22 +106,8 @@ export const useInfiniteProjectComments = ({
 
         // add them to the list as FlattenedComments
         for (const commentObj of commentsRes.data) {
-            comments.push({
-                id: commentObj.id,
-                content: decodeWww3Comment(commentObj.content),
-                author: {
-                    id: commentObj.author.id,
-                    username: commentObj.author.username,
-                    scratchteam: commentObj.author.scratchteam,
-                    image: commentObj.author.image,
-                },
-                createdAt: new Date(commentObj.datetime_created),
-                modifiedAt: new Date(commentObj.datetime_modified),
-                isLastInBlock: commentObj.reply_count === 0,
-                isReply: false,
-                parent: null,
-                replyTo: null,
-            });
+            const comment = toFlattenedComment(commentObj);
+            comments.push(comment);
             if (commentObj.reply_count > 0) replyComments.push(commentObj.id);
             userMap.current.set(commentObj.author.id, commentObj.author.username);
         }
@@ -111,26 +146,14 @@ export const useInfiniteProjectComments = ({
             const prevReply = newReplies[i-1];
             if (prevReply) {
                 prevReply.isLastInBlock = false;
-                // newReplies[i-1] = prevReply;
             }
 
-            const reply: FlattenedComment = {
-                id: replyObj.id,
-                content: decodeWww3Comment(replyObj.content),
-                author: {
-                    id: replyObj.author.id,
-                    username: replyObj.author.username,
-                    scratchteam: replyObj.author.scratchteam,
-                    image: replyObj.author.image,
-                },
-                createdAt: new Date(replyObj.datetime_created),
-                modifiedAt: new Date(replyObj.datetime_modified),
-                isLastInBlock: true, // true by default
+            const reply: FlattenedComment = toFlattenedComment(replyObj, {
                 isReply: true,
+                parentId: parentId,
                 replyIdx: i,
-                parent: parentId,
-                replyTo: userMap.current.get(replyObj.commentee_id!) ?? replyObj.commentee_id?.toString() ?? '',
-            };
+                replyTo: replyObj.commentee_id!,
+            });
 
             addOrReplace(newReplies, reply, i);
             i++;
@@ -144,6 +167,68 @@ export const useInfiniteProjectComments = ({
             [parentId]: newReplies,
         }));
     }, [replies, author, project, session]);
+
+    const fetchHighlight = useCallback(async (commentId: number) => {
+        setHighlightLoaded(false);
+
+        const targetCommentRes = await apiReq<ScratchComment>({
+            host: 'https://api.scratch.mit.edu',
+            path: `/users/${author}/projects/${project}/comments/${commentId}`,
+            auth: session?.user?.token,
+            responseType: 'json',
+        });
+        if (!targetCommentRes.success) throw new Error(targetCommentRes.error);
+        if (targetCommentRes.status === 404) return;
+    
+        const targetComment = targetCommentRes.data;
+        if (targetComment.parent_id === null) {
+            setHighlight([toFlattenedComment(targetComment, {
+                isReply: false,
+                parentId: 0,
+                replyIdx: 0,
+                replyTo: 0,
+                isHighlighted: true,
+            })]);
+            setHighlightLoaded(true);
+            return;
+        }
+
+        const parentCommentRes = await apiReq<ScratchComment>({
+            host: 'https://api.scratch.mit.edu',
+            path: `/users/${author}/projects/${project}/comments/${targetComment.parent_id}`,
+            auth: session?.user?.token,
+            responseType: 'json',
+        });
+        if (!parentCommentRes.success) throw new Error(parentCommentRes.error);
+        if (parentCommentRes.status === 404) {
+            setHighlight([toFlattenedComment(targetComment)]);
+            setHighlightLoaded(true);
+            return;
+        };
+
+        const parentComment = parentCommentRes.data;
+        const parentCommentFlat = toFlattenedComment(parentComment);
+        const replyCommentFlat = toFlattenedComment(targetComment, {
+            isReply: true,
+            parentId: targetComment.parent_id,
+            replyIdx: 0,
+            replyTo: targetComment.commentee_id!,
+            isHighlighted: true,
+        });
+
+        setHighlight([parentCommentFlat, replyCommentFlat]);
+        setHighlightLoaded(true);
+    }, [author, project, session]);
+
+    const clearHighlight = () => {
+        setHighlight(null);
+    };
+
+    useEffect(() => {
+        if (author && highlightedComment) {
+            fetchHighlight(highlightedComment);
+        }
+    }, [author, highlightedComment]);
 
 
     const { 
@@ -200,8 +285,14 @@ export const useInfiniteProjectComments = ({
 
     const refresh = () => {
         resetToFirstPage();
+        clearHighlight();
         setReplies({});
         queryClient.invalidateQueries({ queryKey });
+    };
+
+    const clearAndFetchNextPage = () => {
+        if (highlight !== null) clearHighlight();
+        else return fetchNextPage();
     };
 
 
@@ -228,13 +319,18 @@ export const useInfiniteProjectComments = ({
         }
     }
 
+    if (highlight) {
+        mergedData = highlight;
+    }
+
     return { 
         data: mergedData, 
-        isLoading: isRefetching || isFetchingNextPage, 
-        isFirstLoading: isLoading,
+        isLoading: isRefetching || isFetchingNextPage || !highlightLoaded,
+        highlightLoaded,
+        isFirstLoading: isLoading || !highlightLoaded,
         isFetchingNextPage,
-        fetchNextPage,
-        hasNextPage,
+        fetchNextPage: clearAndFetchNextPage,
+        hasNextPage: hasNextPage || !!highlight,
         resetToFirstPage,
         refresh,
         fetchRepliesFor,

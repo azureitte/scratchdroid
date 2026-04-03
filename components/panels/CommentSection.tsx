@@ -1,8 +1,7 @@
 import React, { 
     forwardRef, 
     memo, 
-    ReactElement, 
-    useEffect, 
+    ReactElement,
     useImperativeHandle, 
     useRef, 
     useState 
@@ -69,10 +68,19 @@ const Comment = memo(({
         comment.isLastInBlock && styles.commentLast,
         wrapperStyle,
     ]}>
-        <Link href={`/users/${comment.author.username}`} style={styles.commentAvatarWrap}>
+        <Link href={`/users/${comment.author.username}`} style={[
+                styles.commentAvatarWrap,
+                comment.isHighlighted && styles.commentAvatarHighlight,
+            ]}>
             <Image source={{ uri: comment.author.image }} style={styles.commentAvatar} />
         </Link>
         <View style={styles.commentRight}>
+            { comment.isHighlighted && <View style={styles.commentBadge}>
+                <Text style={styles.commentBadgeText}>
+                    { comment.isReply ? 'Highlighted reply' : 'Highlighted comment' }
+                </Text>
+            </View> }
+
             <Text style={styles.authorStatus} numberOfLines={1}>
                 <Link href={`/users/${comment.author.username}`} style={styles.mentionLink}>
                     @{ comment.author.username }
@@ -344,6 +352,9 @@ const styles = StyleSheet.create({
         height: 42, 
         borderRadius: 8,
     },
+    commentAvatarHighlight: {
+        marginTop: 24,
+    },
 
     commentRight: {
         gap: 8,
@@ -352,6 +363,19 @@ const styles = StyleSheet.create({
     commentBubbleWrap: {
         flex: 1,
         flexDirection: "row",
+    },
+
+    commentBadge: {
+        flexDirection: "row",
+    },
+    commentBadgeText: {
+        color: "#ffffff9e",
+        fontSize: 12,
+        backgroundColor: "#ffffff22",
+        paddingHorizontal: 8,
+        height: 16,
+        borderRadius: 4,
+        flex: 0,
     },
 
     commentBubbleDeco: {

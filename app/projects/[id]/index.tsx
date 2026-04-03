@@ -10,14 +10,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { projectHasCloudVariables } from '@/util/functions';
+import { projectHasCloudVariables, scrollCommentSectionToId } from '@/util/functions';
 
 import { useProject } from '@/hooks/useProject';
 import { useInfiniteProjectComments } from '@/hooks/useInfiniteProjectComments';
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
-import CommentSection from '@/components/panels/CommentSection';
+import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
 import ProjectPageHeader from '@/components/panels/ProjectPageHeader';
 import ListLoading from '@/components/panels/ListLoading';
 
@@ -33,6 +33,7 @@ const ProjectPage = () => {
     const comments = useInfiniteProjectComments({
         project: Number(id),
         author: data?.project.author.username ?? '',
+        highlightedComment: commentId ? Number(commentId) : undefined,
         enabled: !!id && !!data?.project,
     });
 
@@ -43,6 +44,7 @@ const ProjectPage = () => {
     const insets = useSafeAreaInsets();
 
     const ignoreProjectUnload = useRef(false);
+    const listRef = useRef<CommentSectionRef>(null);
 
     useChangeAppStateOnFocus({
         footerVisible: false,
@@ -74,6 +76,16 @@ const ProjectPage = () => {
     useEffect(() => {
         comments.refresh();
     }, []);
+
+    // scroll to target comment, if commentId param was provided
+    useEffect(() => {
+        if (commentId && comments.highlightLoaded)
+            scrollCommentSectionToId(
+                listRef.current, 
+                comments.data, 
+                commentId
+            );
+    }, [comments.highlightLoaded, commentId]);
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
@@ -121,6 +133,7 @@ const ProjectPage = () => {
                 fetchReplies={comments.fetchRepliesFor}
                 isRefreshing={isRefreshing}
                 handleRefresh={handleRefresh}
+                ref={listRef}
             />
         </View>
     </>);

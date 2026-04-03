@@ -352,10 +352,11 @@ export type FlattenedComment = {
     createdAt: Date;
     modifiedAt: Date;
     isLastInBlock: boolean;  // is the comment the last one in the reply chain
+    isHighlighted: boolean;
 } & ({
     isReply: false;
     parent: null;
-    replyTo: null
+    replyTo: null;
 }|{
     isReply: true;
     parent: number;   // parent comment id

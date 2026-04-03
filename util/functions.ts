@@ -3,6 +3,7 @@ import he from "he";
 import { formatDistanceToNow, format } from 'date-fns';
 
 import type { FlattenedComment, ScratchProjectFile } from "./types";
+import { CommentSectionRef } from "@/components/panels/CommentSection";
 
 export function shortRelativeDate(date: Date) {
     const diff = (Date.now() - date.getTime()) / 1000;
@@ -118,6 +119,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
                 parent: opts.parentId!,
                 replyTo: replyTo!,
                 isLastInBlock: opts.isLastInBlock ?? false,
+                isHighlighted: false,
                 replyIdx: opts.replyIdx ?? 0,
             };
         } else {
@@ -131,6 +133,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
                 parent: null,
                 replyTo: null,
                 isLastInBlock: opts.isLastInBlock ?? false,
+                isHighlighted: false,
             };
         }
 
@@ -197,4 +200,14 @@ export const addOrReplace = (arr: any[], item: any, idx: number) => {
         arr.push(item);
     else 
         arr[idx] = item;
+}
+
+export const scrollCommentSectionToId = (listRef: CommentSectionRef|null|undefined, comments: FlattenedComment[], commentId: number|string) => {
+    const comment = comments.find(c => c.id === Number(commentId));
+    if (comment) {
+        const targetIdx = comments.indexOf(comment);
+        listRef?.scrollToIndex(targetIdx);
+        return true;
+    }
+    return false;
 }
