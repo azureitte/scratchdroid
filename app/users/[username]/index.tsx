@@ -4,13 +4,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { scrollCommentSectionToId } from '@/util/functions';
+
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useInfiniteUserComments } from '@/hooks/useInfiniteUserComments';
+import { useUser } from '@/hooks/useUser';
 
 import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
 import ListLoading from '@/components/panels/ListLoading';
 import UserPageHeader from '@/components/panels/UserPageHeader';
-import { useUser } from '@/hooks/useUser';
 
 
 const UserPage = () => {
@@ -30,6 +32,7 @@ const UserPage = () => {
 
     const pfpCachePrevent = useRef(Math.random());
     const listRef = useRef<CommentSectionRef>(null);
+    const initPageFetchCount = useRef(0);
 
     useChangeAppStateOnFocus({
         footerVisible: false,
@@ -48,16 +51,18 @@ const UserPage = () => {
     useEffect(() => {
         if (commentId && comments.data.length && !comments.isFirstLoading) {
             // if has comment with provided id, resolve
-            const comment = comments.data.find(c => c.id === Number(commentId));
-            if (comment) {
-                const targetIdx = comments.data.indexOf(comment);
-                listRef.current?.scrollToIndex(targetIdx);
-                return;
-            }
+            const found = scrollCommentSectionToId(
+                listRef.current, 
+                comments.data, 
+                commentId
+            );
+            if (found) return;
 
             // if not, fetch comments until comment with provided id is found
-            if (comments.hasNextPage) {
+            // limit at 40 pages max
+            if (comments.hasNextPage && initPageFetchCount.current < 40) {
                 comments.fetchNextPage();
+                initPageFetchCount.current++;
             }
         }
     }, [comments, comments.data, commentId]);
