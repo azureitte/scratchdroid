@@ -1,3 +1,6 @@
+import type { SheetDetent } from "@lodev09/react-native-true-sheet";
+import type { JSX } from "react";
+
 export type ScratchSession = {
     flags: {
         accepted_terms_of_service?: boolean;
@@ -388,3 +391,15 @@ export type ScratchExtension =
     | 'ev3'
     | 'wedo2'
     | 'faceSensing';
+
+
+export type SheetMenuDefinition = {
+    render: () => JSX.Element;
+    title?: string;
+    detents: SheetDetent[];
+    dismissible: boolean;
+}
+
+export type PartialSheetMenuDefinition = {
+    render: () => JSX.Element;
+} & Partial<SheetMenuDefinition>;

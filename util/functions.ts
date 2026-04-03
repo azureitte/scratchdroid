@@ -2,7 +2,12 @@ import { HTMLElement } from "node-html-parser";
 import he from "he";
 import { formatDistanceToNow, format } from 'date-fns';
 
-import type { FlattenedComment, ScratchProjectFile } from "./types";
+import type { 
+    FlattenedComment, 
+    PartialSheetMenuDefinition, 
+    ScratchProjectFile, 
+    SheetMenuDefinition 
+} from "./types";
 import { CommentSectionRef } from "@/components/panels/CommentSection";
 
 export function shortRelativeDate(date: Date) {
@@ -211,3 +216,9 @@ export const scrollCommentSectionToId = (listRef: CommentSectionRef|null|undefin
     }
     return false;
 }
+
+export const buildMenu = (def: PartialSheetMenuDefinition): SheetMenuDefinition => ({
+    ...def,
+    detents: def.detents ?? ['auto'],
+    dismissible: def.dismissible ?? true,
+})

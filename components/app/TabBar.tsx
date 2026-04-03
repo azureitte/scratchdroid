@@ -8,6 +8,7 @@ import { emit, off, on } from "@/util/eventBus";
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
 import { AppContext, AppTabKey } from "@/context/AppContext";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useSheet } from "@/hooks/useSheet";
 
 export const TAB_BAR_ICONS: Record<string, [any, any]> = {
     home: [ICONS.home, ICONS.homeActive],
@@ -72,6 +73,7 @@ const TabBar = memo(() => {
     const [ currentTab, setCurrentTab ] = useState<AppTabKey>('home');
 
     const insets = useSafeAreaInsets();
+    const sheet = useSheet();
 
     const Y_HIDDEN = (insets.top + 70);
     const Y_VISIBLE = 0;
@@ -131,7 +133,7 @@ const TabBar = memo(() => {
                         >
                             <Pressable
                                 onPress={() => {
-                                    console.log("create");
+                                    sheet.push('create');
                                 }}
                                 style={[
                                     styles.tabCenter,

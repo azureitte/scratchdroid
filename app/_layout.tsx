@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
-import { AppState, AppStateStatus, View } from "react-native";
-import { Slot, Stack } from "expo-router";
+import { AppState, AppStateStatus } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Stack } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import {
     QueryClient,
@@ -21,7 +22,7 @@ import { AppProvider } from "@/context/AppContext";
 import Header from "@/components/app/Header";
 import TabBar from "@/components/app/TabBar";
 import Drawer from "@/components/app/Drawer";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
+import Sheet from "@/components/app/Sheet";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,8 @@ export default function RootLayout() {
                     <Stack.Screen name="users/[username]/index" />
                     <Stack.Screen name="projects/[id]/index" />
                 </Stack>
+
+                <Sheet />
             </GestureHandlerRootView>
             </AppProvider>
             </SessionProvider>

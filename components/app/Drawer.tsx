@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, DrawerLayoutAndroid } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { off, on } from '@/util/eventBus';
+import { emit, off, on } from '@/util/eventBus';
 import { AppContext } from '@/context/AppContext';
 import { useSession } from '@/hooks/useSession';
 import Button from '@/components/general/Button';
@@ -48,6 +48,13 @@ const Drawer = () => {
                 onPress={() => {
                     drawer.current?.closeDrawer();
                     logout();
+                }}
+            />
+            <Button
+                text="Bottom Sheet"
+                fullWidth
+                onPress={() => {
+                    emit('sheet-push', 'test1');
                 }}
             />
         </View>
