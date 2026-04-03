@@ -221,7 +221,7 @@ const CommentSection = forwardRef(({
                     onShowMore={async () => {
                         if (item.isReply) {
                             await fetchReplies?.(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
-                            item.isReply && revealMoreReplies(item.parent);
+                            revealMoreReplies(item.parent);
                         }
                     }}
                 />
