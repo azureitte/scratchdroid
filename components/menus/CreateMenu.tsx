@@ -9,7 +9,12 @@ const CreateMenu = () => {
 
     return (
         <View style={styles.container}>
-            <Button text="New Project" variation='big' role='primary' />
+            <Button 
+                text="New Project" 
+                onPress={() => sheet.clear()}
+                variation='big' 
+                role='primary'
+            />
             <Button text="New Studio" variation='big' />
         </View>
     );

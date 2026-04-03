@@ -28,6 +28,9 @@ const Sheet = () => {
     const stack = useStack<SheetMenuName>();
     const insets = useSafeAreaInsets();
 
+    const sheetRef = useRef<TrueSheet>(null);
+    const isSheetOpen = useRef(false);
+
     const onBack = () => {
         stack.pop();
     }
@@ -47,7 +50,8 @@ const Sheet = () => {
 
     const handleSheetClear = () => {
         Keyboard.dismiss();
-        stack.clear();
+        if (sheetRef.current && isSheetOpen.current) sheetRef.current.dismiss().then(() => stack.clear());
+        else stack.clear();
     };
 
     useEffect(() => {
@@ -61,17 +65,16 @@ const Sheet = () => {
             off('sheet-clear', handleSheetClear);
         };
     }, [stack]);
-
-
-    const sheetRef = useRef<TrueSheet>(null);
     
     const currentMenuName: SheetMenuName|undefined = stack.stack[stack.size - 1];
     const currentMenu = currentMenuName ? getMenu(currentMenuName) : null;
 
     useEffect(() => {
-        if (stack.size === 0) {
+        if (stack.size === 0 && isSheetOpen.current) {
             sheetRef.current?.dismiss();
-        } else {
+        }
+        
+        if (stack.size > 0 && !isSheetOpen.current) {
             sheetRef.current?.present();
         }
     }, [stack.size]);
@@ -97,7 +100,13 @@ const Sheet = () => {
             ref={sheetRef}
             detents={currentMenu?.detents ?? ['auto']}
             dismissible={currentMenu?.dismissible ?? true}
-            onDidDismiss={onBack}
+            onDidDismiss={() => {
+                isSheetOpen.current = false;
+                onBack();
+            }}
+            onDidPresent={() => {
+                isSheetOpen.current = true;
+            }}
             backgroundColor={'#1C1C1C'}
             style={{
                 paddingBottom: insets.bottom,
