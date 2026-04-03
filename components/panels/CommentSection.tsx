@@ -26,15 +26,12 @@ import { Link } from 'expo-router';
 
 import type { FlattenedComment } from '@/util/types';
 import { relativeDate } from '@/util/functions';
+import { DEFAULT_REPLY_COUNT, REPLY_INCREMENT_COUNT } from '@/util/constants';
 
 import Heading from '../general/Heading';
 import ListLoadMore from './ListLoadMore';
 import Button from '../general/Button';
 import { LinearGradient } from 'expo-linear-gradient';
-
-
-const DEFAULT_REPLY_COUNT = 3;
-const REPLY_INCREMENT_COUNT = 10;
 
 const COLOR_NOHIGHLIGHT = '#4177FF00';
 const COLOR_HIGHLIGHT = '#4177FF44';
@@ -52,6 +49,8 @@ const Comment = memo(({
     isShowMore = false,
     onShowMore,
 }: CommentProps) => {
+
+    const [ isFetching, setIsFetching ] = useState(false);
 
     const highlightColor = useDerivedValue(() => {
         return withTiming(
@@ -100,12 +99,22 @@ const Comment = memo(({
             /> }
             { isShowMore && <Button
                 text="More Replies"
-                onPress={onShowMore}
+                onPress={async () => {
+                    setIsFetching(true);
+                    await onShowMore?.();
+                    setIsFetching(false);
+                }}
                 role="secondary"
+                isLoading={isFetching}
             /> }
         </View>
     </Animated.View>);
 });
+
+
+export type CommentSectionRef = {
+    scrollToIndex: (index: number) => void;
+};
 
 type CommentSectionProps = {
     comments: FlattenedComment[];
@@ -115,13 +124,10 @@ type CommentSectionProps = {
     hasNextPage?: boolean;
     isLoading?: boolean;
     fetchNextPage?: () => void;
+    fetchReplies?: (parentId: number, from: number, limit: number) => void;
     isRefreshing?: boolean;
     handleRefresh?: () => void;
 }
-
-export type CommentSectionRef = {
-    scrollToIndex: (index: number) => void;
-};
 
 const CommentSection = forwardRef(({
     comments,
@@ -131,6 +137,7 @@ const CommentSection = forwardRef(({
     hasNextPage = false,
     isLoading = false,
     fetchNextPage = () => {},
+    fetchReplies,
     isRefreshing = false,
     handleRefresh,
 }: CommentSectionProps, ref?: React.ForwardedRef<CommentSectionRef>) => {
@@ -211,7 +218,12 @@ const CommentSection = forwardRef(({
                     comment={item!} 
                     isHighlighted={index === highlightIdx.current && isHighlighting}
                     isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
-                    onShowMore={() => item.isReply && revealMoreReplies(item.parent)}
+                    onShowMore={async () => {
+                        if (item.isReply) {
+                            await fetchReplies?.(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
+                            item.isReply && revealMoreReplies(item.parent);
+                        }
+                    }}
                 />
             }}
             keyExtractor={(item): any => item?.id}

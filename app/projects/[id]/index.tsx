@@ -118,6 +118,7 @@ const ProjectPage = () => {
                 hasNextPage={comments.hasNextPage}
                 isLoading={comments.isLoading}
                 fetchNextPage={comments.fetchNextPage}
+                fetchReplies={comments.fetchRepliesFor}
                 isRefreshing={isRefreshing}
                 handleRefresh={handleRefresh}
             />

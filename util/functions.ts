@@ -190,3 +190,11 @@ export const projectHasCloudVariables = (project?: ScratchProjectFile|null) => {
         return false;
     }
 }
+
+export const addOrReplace = (arr: any[], item: any, idx: number) => {
+    if (idx < 0) return;
+    if (idx >= arr.length)
+        arr.push(item);
+    else 
+        arr[idx] = item;
+}
