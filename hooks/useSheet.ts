@@ -2,17 +2,21 @@ import { emit } from "@/util/eventBus";
 import type { SheetMenuName } from "@/components/app/Sheet";
 
 export const useSheet = () => {
-    const push = (name: SheetMenuName) => {
-        emit('sheet-push', name);
+    const push = <T extends any>(name: SheetMenuName, props?: T) => {
+        emit('sheet-push', name, props);
     };
 
-    const replace = (name: SheetMenuName) => {
-        emit('sheet-replace', name);
+    const pop = () => {
+        emit('sheet-pop');
+    };
+
+    const replace = <T extends any>(name: SheetMenuName, props?: T) => {
+        emit('sheet-replace', name, props);
     };
 
     const clear = () => {
         emit('sheet-clear');
     };
 
-    return { push, replace, clear };
+    return { push, pop, replace, clear };
 };

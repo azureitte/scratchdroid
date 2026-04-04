@@ -11,21 +11,27 @@ import Heading from '@/components/general/Heading';
 import Test from '../menus/Test';
 import Test2 from '../menus/Test2';
 import CreateMenu from '../menus/CreateMenu';
+import AddCommentMenu from '../menus/AddCommentMenu';
 
 const MENUS = {
     test1: Test,
     test2: Test2,
     create: CreateMenu,
+    addComment: AddCommentMenu
 } as const;
 
 export type SheetMenuName = keyof typeof MENUS;
 const getMenu = (name: SheetMenuName) => MENUS[name];
 
 
+type SheetMenu = {
+    name: SheetMenuName;
+    props?: any;
+}
 
 const Sheet = () => {
     
-    const stack = useStack<SheetMenuName>();
+    const stack = useStack<SheetMenu>();
     const insets = useSafeAreaInsets();
 
     const sheetRef = useRef<TrueSheet>(null);
@@ -38,14 +44,26 @@ const Sheet = () => {
     const isLast = stack.size <= 1;
 
     
-    const handleSheetPush = (name: SheetMenuName) => {
+    const handleSheetPush = <T extends any>(name: SheetMenuName, props?: T) => {
         Keyboard.dismiss();
-        stack.push(name);
+        stack.push({
+            name,
+            props,
+        });
     };
 
-    const handleSheetReplace = (name: SheetMenuName) => {
+    const handleSheetPop = () => {
         Keyboard.dismiss();
-        stack.replace(name);
+        if (isLast) sheetRef.current?.dismiss().then(() => stack.clear());
+        else stack.pop();
+    };
+
+    const handleSheetReplace = <T extends any>(name: SheetMenuName, props?: T) => {
+        Keyboard.dismiss();
+        stack.replace({
+            name,
+            props,
+        });
     };
 
     const handleSheetClear = () => {
@@ -56,18 +74,20 @@ const Sheet = () => {
 
     useEffect(() => {
         on('sheet-push', handleSheetPush);
+        on('sheet-pop', handleSheetPop);
         on('sheet-replace', handleSheetReplace);
         on('sheet-clear', handleSheetClear);
 
         return () => {
             off('sheet-push', handleSheetPush);
+            off('sheet-pop', handleSheetPop);
             off('sheet-replace', handleSheetReplace);
             off('sheet-clear', handleSheetClear);
         };
     }, [stack]);
     
-    const currentMenuName: SheetMenuName|undefined = stack.stack[stack.size - 1];
-    const currentMenu = currentMenuName ? getMenu(currentMenuName) : null;
+    const currentMenu: SheetMenu|undefined = stack.stack[stack.size - 1];
+    const currentMenuDef = currentMenu ? getMenu(currentMenu.name) : null;
 
     useEffect(() => {
         if (stack.size === 0 && isSheetOpen.current) {
@@ -81,7 +101,7 @@ const Sheet = () => {
 
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (!currentMenu?.dismissible) return false;
+            if (!currentMenuDef?.dismissible) return false;
 
             if (isLast) 
                 sheetRef.current?.dismiss().then(onBack);
@@ -98,8 +118,8 @@ const Sheet = () => {
     return (
         <TrueSheet
             ref={sheetRef}
-            detents={currentMenu?.detents ?? ['auto']}
-            dismissible={currentMenu?.dismissible ?? true}
+            detents={currentMenuDef?.detents ?? ['auto']}
+            dismissible={currentMenuDef?.dismissible ?? true}
             onDidDismiss={() => {
                 isSheetOpen.current = false;
                 onBack();
@@ -112,13 +132,13 @@ const Sheet = () => {
                 paddingBottom: insets.bottom,
             }}
         >
-            { !!(currentMenu?.title) && <Heading style={styles.heading}>{currentMenu?.title}</Heading> }
-            { stack.stack.map((name, index) => (
+            { !!(currentMenuDef?.title) && <Heading style={styles.heading}>{currentMenuDef?.title}</Heading> }
+            { stack.stack.map((menu, index) => (
                 <Activity
-                    key={`${index}_${name}`}
-                    mode={name === currentMenuName ? 'visible' : 'hidden'}
+                    key={`${index}_${menu.name}`}
+                    mode={menu.name === currentMenu.name ? 'visible' : 'hidden'}
                 >
-                    { getMenu(name).render() }
+                    { getMenu(menu.name).render(menu.props) }
                 </Activity>
             )) }
         </TrueSheet>

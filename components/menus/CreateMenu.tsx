@@ -23,7 +23,6 @@ const CreateMenu = () => {
 export default buildMenu({
     title: 'Create',
     render: () => <CreateMenu />,
-    detents: ['auto', 1],
 });
 
 const styles = StyleSheet.create({
