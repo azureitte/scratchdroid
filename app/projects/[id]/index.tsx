@@ -115,6 +115,8 @@ const ProjectPage = () => {
             paddingBottom: insets.bottom,
         }]}>
             <CommentSection 
+                type='project'
+                objectId={Number(id)}
                 comments={comments.data}
                 header={<ProjectPageHeader 
                     project={data.project}

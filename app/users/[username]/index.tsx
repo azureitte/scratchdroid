@@ -97,6 +97,9 @@ const UserPage = () => {
         }]}>
             
         <CommentSection 
+            type='user'
+            objectId={user.data.user.id}
+            objectName={username}
             comments={comments.data} 
             header={<UserPageHeader 
                 data={user.data} 

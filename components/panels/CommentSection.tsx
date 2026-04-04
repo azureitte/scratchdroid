@@ -22,15 +22,18 @@ import Animated, {
     withTiming 
 } from 'react-native-reanimated';
 import { Link } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 import type { FlattenedComment } from '@/util/types';
 import { relativeDate } from '@/util/functions';
 import { DEFAULT_REPLY_COUNT, REPLY_INCREMENT_COUNT } from '@/util/constants';
 
-import Heading from '../general/Heading';
-import ListLoadMore from './ListLoadMore';
-import Button from '../general/Button';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useSheet } from '@/hooks/useSheet';
+
+import Heading from '@/components/general/Heading';
+import ListLoadMore from '@/components/panels/ListLoadMore';
+import Button from '@/components/general/Button';
+import type { AddCommentMenuProps } from '@/components/menus/AddCommentMenu';
 
 const COLOR_NOHIGHLIGHT = '#4177FF00';
 const COLOR_HIGHLIGHT = '#4177FF44';
@@ -125,6 +128,13 @@ export type CommentSectionRef = {
 };
 
 type CommentSectionProps = {
+    type?:
+        | 'user'
+        | 'project'
+        | 'studio';
+    objectId: number;
+    objectName?: string;
+
     comments: FlattenedComment[];
     listStyle?: ViewStyle;
     header?: ReactElement;
@@ -138,6 +148,10 @@ type CommentSectionProps = {
 }
 
 const CommentSection = forwardRef(({
+    type = 'user',
+    objectId,
+    objectName,
+
     comments,
     listStyle,
     header,
@@ -149,14 +163,6 @@ const CommentSection = forwardRef(({
     isRefreshing = false,
     handleRefresh,
 }: CommentSectionProps, ref?: React.ForwardedRef<CommentSectionRef>) => {
-    const stickyHeader = <View style={[{
-        marginTop: 50,
-        pointerEvents: 'none',
-    }]}>
-        <View style={styles.header}>
-            <Heading>Comments</Heading>
-        </View>
-    </View>;
 
     const listRef = useRef<FlatList<any>>(null);
 
@@ -169,6 +175,22 @@ const CommentSection = forwardRef(({
     // map between parent comment ID and how much replies have been revealed visually
     // (if not all replies are revealed, a "Show More Replies" button will be shown)
     const [ replyRevealMap, setReplyRevealMap ] = useState<Record<number, number>>({});
+
+    const sheet = useSheet();
+
+    const stickyHeader = <View style={[{
+        marginTop: 50,
+    }]}>
+        <View style={styles.header}>
+            <Heading>Comments</Heading>
+        </View>
+        <Button text="Leave a comment" onPress={() => sheet.push<AddCommentMenuProps>('addComment', {
+            isReply: false,
+            type,
+            objectId,
+            objectName,
+        })} />
+    </View>;
 
     const getReplyRevealCount = (parentId: number) => {
         return replyRevealMap[parentId] ?? DEFAULT_REPLY_COUNT;
