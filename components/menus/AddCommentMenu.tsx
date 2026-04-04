@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, TextInput, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -16,6 +16,9 @@ export type AddCommentMenuProps = {
     objectName?: string;
 }&({
     isReply?: false;
+    parentId?: undefined;
+    replyToId?: undefined;
+    replyToUsername?: undefined;
 }|{
     isReply: true;
     parentId: number;
@@ -37,7 +40,7 @@ const AddCommentMenu = ({
     const [ commentText, setCommentText ] = useState('');
     const [ errorMessage, setErrorMessage ] = useState('');
 
-    const action = useAddUserComment({
+    const userAction = useAddUserComment({
         username: objectName!,
         onSuccess: (comment) => {
             setErrorMessage('');
@@ -48,31 +51,38 @@ const AddCommentMenu = ({
         },
     });
 
+    const action = type === 'user' ? userAction : undefined;
+
     return (
         <View style={[styles.container, {
-            paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom + 12,
         }]}>
-            <Text style={{ color: '#fff' }}>{type}</Text>
+            <Text style={styles.title}>
+                { isReply ? `Reply to @${replyOpts.replyToUsername}` : 'New comment' }
+            </Text>
+            { errorMessage && <Text style={styles.errorText}>{errorMessage}</Text> }
             <TextInput
-                placeholder='Comment'
+                placeholder='Write something worth sharing...'
                 multiline={true}
                 style={styles.input}
+                placeholderTextColor="#a4a4a4" 
                 value={commentText}
                 onChangeText={setCommentText}
+                autoFocus={true}
             />
-            { errorMessage && <Text style={styles.errorText}>{errorMessage}</Text> }
             <View style={styles.buttonRow}>
                 <Button 
                     text="Post" 
                     onPress={() => {
                         setErrorMessage('');
-                        action.mutate({ 
+                        action?.mutate({ 
                             content: commentText,
-                            parentId: isReply ? (replyOpts as any).parentId : undefined,
-                            replyToId: isReply ? (replyOpts as any).replyToId : undefined,
+                            parentId: replyOpts.parentId,
+                            replyToId: replyOpts.replyToId,
                         })
                     }}
-                    isLoading={action.isPending}
+                    isLoading={action?.isPending}
+                    isDisabled={!action}
                     variation='big' 
                     role='primary'
                     fullWidth
@@ -83,7 +93,6 @@ const AddCommentMenu = ({
 };
 
 export default buildMenu({
-    title: 'Leave a comment',
     render: (props: AddCommentMenuProps) => <AddCommentMenu {...props} />,
 });
 
@@ -93,7 +102,15 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         flexDirection: 'column',
         alignItems: 'stretch',
-        gap: 16,
+        gap: 8,
+    },
+    title: {
+        color: '#fff',
+        fontSize: 24,
+        fontWeight: 600,
+        marginHorizontal: 8,
+        marginTop: 16,
+        marginBottom: 12,
     },
     buttonRow: {
         flexDirection: 'row',
@@ -102,7 +119,15 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        minHeight: 100,
+        minHeight: 120,
+        backgroundColor: '#272727',
+        color: '#fff',
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        fontSize: 18,
+        textAlignVertical: 'top',
+        marginBottom: 8,
     },
     errorText: {
         color: '#fff',

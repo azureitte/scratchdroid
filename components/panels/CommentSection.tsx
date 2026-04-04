@@ -13,7 +13,8 @@ import {
     Image, 
     FlatList, 
     ViewStyle, 
-    RefreshControl 
+    RefreshControl, 
+    Pressable
 } from 'react-native';
 import Animated, { 
     Easing,
@@ -25,8 +26,8 @@ import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import type { FlattenedComment } from '@/util/types';
-import { relativeDate } from '@/util/functions';
-import { DEFAULT_REPLY_COUNT, REPLY_INCREMENT_COUNT } from '@/util/constants';
+import { addPrefixUrl, relativeDate } from '@/util/functions';
+import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
 
 import { useSheet } from '@/hooks/useSheet';
 
@@ -34,6 +35,7 @@ import Heading from '@/components/general/Heading';
 import ListLoadMore from '@/components/panels/ListLoadMore';
 import Button from '@/components/general/Button';
 import type { AddCommentMenuProps } from '@/components/menus/AddCommentMenu';
+import { useSession } from '@/hooks/useSession';
 
 const COLOR_NOHIGHLIGHT = '#4177FF00';
 const COLOR_HIGHLIGHT = '#4177FF44';
@@ -164,6 +166,9 @@ const CommentSection = forwardRef(({
     handleRefresh,
 }: CommentSectionProps, ref?: React.ForwardedRef<CommentSectionRef>) => {
 
+    const { session } = useSession();
+    const sheet = useSheet();
+
     const listRef = useRef<FlatList<any>>(null);
 
     const isProgrammaticScroll = useRef(false);
@@ -176,20 +181,32 @@ const CommentSection = forwardRef(({
     // (if not all replies are revealed, a "Show More Replies" button will be shown)
     const [ replyRevealMap, setReplyRevealMap ] = useState<Record<number, number>>({});
 
-    const sheet = useSheet();
+    const handleAddComment = () => {
+        sheet.push<AddCommentMenuProps>('addComment', {
+            isReply: false,
+            type,
+            objectId,
+            objectName,
+        });
+    }
 
     const stickyHeader = <View style={[{
         marginTop: 50,
     }]}>
         <View style={styles.header}>
-            <Heading>Comments</Heading>
+            <Heading style={styles.headerTitle}>Comments</Heading>
+            <Pressable
+                onPress={handleAddComment}
+                style={styles.addCommentWrap}
+                android_ripple={DEFAULT_RIPPLE_CONFIG}
+            >
+                <Image
+                    source={{ uri: addPrefixUrl(session?.user?.thumbnailUrl!) }}
+                    style={styles.addCommentAvatar}
+                />
+                <Text style={styles.addCommentText}>Leave a comment...</Text>
+            </Pressable>
         </View>
-        <Button text="Leave a comment" onPress={() => sheet.push<AddCommentMenuProps>('addComment', {
-            isReply: false,
-            type,
-            objectId,
-            objectName,
-        })} />
     </View>;
 
     const getReplyRevealCount = (parentId: number) => {
@@ -322,11 +339,17 @@ const styles = StyleSheet.create({
     },
 
     header: {
-        paddingHorizontal: 16,
         paddingVertical: 12,
+        paddingBottom: 0,
         marginBottom: 24,
-        borderBottomWidth: 1,
         backgroundColor: '#121212',
+        borderBottomWidth: 1,
+        borderBottomColor: '#262626',
+    },
+    headerTitle: {
+        paddingHorizontal: 16,
+        paddingBottom: 8,
+        borderBottomWidth: 1,
         borderBottomColor: '#262626',
     },
 
@@ -337,6 +360,31 @@ const styles = StyleSheet.create({
 
     listContent: {
         paddingVertical: 0,
+    },
+
+    addCommentWrap: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        margin: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        backgroundColor: '#1C1C1C',
+        borderRadius: 8,
+        overflow: 'hidden',
+        gap: 12,
+    },
+    addCommentAvatar: {
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        objectFit: 'fill',
+        opacity: 0.8,
+    },
+    addCommentText: {
+        color: '#888',
+        fontSize: 16,
+        fontWeight: 400,
+        fontStyle: 'italic',
     },
 
     commentWrapper: {
