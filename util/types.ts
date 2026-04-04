@@ -367,6 +367,16 @@ export type FlattenedComment = {
     replyIdx: number; // index of the reply relative to the parent thread
 });
 
+export type MuteStatus = {
+    currentMessageType: string;
+    muteExpiresAt: number;
+    offenses: {
+        messageType: string;
+        createdAt: number;
+        expiresAt: number;
+    }[];
+}
+
 
 export type ScratchProjectFile = {
     extensions: ScratchExtension[];
@@ -394,12 +404,12 @@ export type ScratchExtension =
 
 
 export type SheetMenuDefinition = {
-    render: () => JSX.Element;
+    render: (props?: any) => JSX.Element;
     title?: string;
     detents: SheetDetent[];
     dismissible: boolean;
 }
 
 export type PartialSheetMenuDefinition = {
-    render: () => JSX.Element;
+    render: (props?: any) => JSX.Element;
 } & Partial<SheetMenuDefinition>;

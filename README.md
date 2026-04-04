@@ -32,7 +32,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✅ View user comments
    - ✅ View project/studio comments
    - ✖️ Display links, mentions and emojis in comments
-   - ✖️ Post comments
+   - 🟡 Post comments
    - ✖️ Delete/report comments
 
 - 🟡 Project management
@@ -58,6 +58,7 @@ This project is currently in development and is incomplete. Here is where it's c
 
 - 🟡 Messages
     - ✅ View messages
+    - ✖️ View/clear admin alerts
     - ✅ Mark messages as read
     - ✖️ Filter messages
 

@@ -9,6 +9,7 @@ import type {
     SheetMenuDefinition 
 } from "./types";
 import { CommentSectionRef } from "@/components/panels/CommentSection";
+import { FAIL_REASON_MESSAGES } from "./constants";
 
 export function shortRelativeDate(date: Date) {
     const diff = (Date.now() - date.getTime()) / 1000;
@@ -44,6 +45,11 @@ export function relativeDate (date: Date) {
     return formatDistanceToNow(date, { addSuffix: true });
 }
 
+export function muteStatusDateToString (expiresAt: number) {
+    const futureDate = new Date(expiresAt * 1000);
+    return formatDistanceToNow(futureDate, { addSuffix: true });
+}
+
 export function dateShort (date: Date) {
     return format(date, 'MMM d, yyyy');
 }
@@ -72,85 +78,84 @@ export const truncateText = (text: string, maxLength: number, charPerNewLine: nu
     return [text.slice(0, idx).trimEnd() + '...', true];
 }
 
+export function commentR2htmlToFlattened (
+    commentElem: HTMLElement, 
+    opts: {
+        isReply: boolean;
+        parentId?: number;
+        isLastInBlock: boolean;
+        replyIdx?: number;
+    }
+): FlattenedComment {
+    const id = Number(commentElem.getAttribute('data-comment-id'));
+    let content = commentElem.querySelector('.content')?.innerText ?? '';
+    content = content
+        .replaceAll('\n', ' ') // turn newlines into spaces
+        .replace(/\s+/g, ' ') // remove multiple spaces
+        .trim();
+
+    const authorUsername = commentElem.querySelector('.name')?.children[0]?.innerText ?? '';
+    const authorImage = addPrefixUrl(commentElem.querySelector('.avatar')?.getAttribute('src') ?? '');
+    const author = {
+        id: authorUsername,
+        username: authorUsername,
+        scratchteam: false,
+        image: authorImage,
+    }
+    
+    const createdAtStr = commentElem.querySelector('.time')?.getAttribute('title');
+    const createdAt = createdAtStr ? new Date(createdAtStr) : new Date(0);
+
+    let replyTo = null;
+    if (opts.isReply) {
+        const contentSpl = content.split(' ')
+        replyTo = contentSpl[0].slice(1);
+        content = contentSpl.slice(1).join(' ');
+    }
+
+    let comment: FlattenedComment;
+
+    if (opts.isReply) {
+        comment = {
+            id,
+            content,
+            author,
+            createdAt,
+            modifiedAt: createdAt,
+            isReply: true,
+            parent: opts.parentId!,
+            replyTo: replyTo!,
+            isLastInBlock: opts.isLastInBlock ?? false,
+            isHighlighted: false,
+            replyIdx: opts.replyIdx ?? 0,
+        };
+    } else {
+        comment = {
+            id,
+            content,
+            author,
+            createdAt,
+            modifiedAt: createdAt,
+            isReply: false,
+            parent: null,
+            replyTo: null,
+            isLastInBlock: opts.isLastInBlock ?? false,
+            isHighlighted: false,
+        };
+    }
+
+    return comment;
+}
 
 export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[] {
     const comments: FlattenedComment[] = [];
-
-    const getComment = (
-        commentElem: HTMLElement, 
-        opts: {
-            isReply: boolean;
-            parentId?: number;
-            isLastInBlock: boolean;
-            replyIdx?: number;
-        }
-    ) => {
-        const id = Number(commentElem.getAttribute('data-comment-id'));
-        let content = commentElem.querySelector('.content')?.innerText ?? '';
-        content = content
-            .replaceAll('\n', ' ') // turn newlines into spaces
-            .replace(/\s+/g, ' ') // remove multiple spaces
-            .trim();
-
-        const authorUsername = commentElem.querySelector('.name')?.children[0]?.innerText ?? '';
-        const authorImage = addPrefixUrl(commentElem.querySelector('.avatar')?.getAttribute('src') ?? '');
-        const author = {
-            id: authorUsername,
-            username: authorUsername,
-            scratchteam: false,
-            image: authorImage,
-        }
-        
-        const createdAtStr = commentElem.querySelector('.time')?.getAttribute('title');
-        const createdAt = createdAtStr ? new Date(createdAtStr) : new Date(0);
-
-        let replyTo = null;
-        if (opts.isReply) {
-            const contentSpl = content.split(' ')
-            replyTo = contentSpl[0].slice(1);
-            content = contentSpl.slice(1).join(' ');
-        }
-
-        let comment: FlattenedComment;
-
-        if (opts.isReply) {
-            comment = {
-                id,
-                content,
-                author,
-                createdAt,
-                modifiedAt: createdAt,
-                isReply: true,
-                parent: opts.parentId!,
-                replyTo: replyTo!,
-                isLastInBlock: opts.isLastInBlock ?? false,
-                isHighlighted: false,
-                replyIdx: opts.replyIdx ?? 0,
-            };
-        } else {
-            comment = {
-                id,
-                content,
-                author,
-                createdAt,
-                modifiedAt: createdAt,
-                isReply: false,
-                parent: null,
-                replyTo: null,
-                isLastInBlock: opts.isLastInBlock ?? false,
-                isHighlighted: false,
-            };
-        }
-
-        return comment;
-    }
 
     const parentElems = root.querySelectorAll('.top-level-reply');
     for (const parentElem of parentElems) {
         const parentCommentElem = parentElem.querySelector('.comment');
         const replyElems = parentElem.querySelector('.replies')?.querySelectorAll('.comment');
 
-        const comment = getComment(parentCommentElem!, {
+        const comment = commentR2htmlToFlattened(parentCommentElem!, {
             isReply: false,
             isLastInBlock: !replyElems || replyElems.length === 0,
         });
@@ -159,7 +164,7 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
         if (replyElems) {
             let i = 0;
             for (const replyElem of replyElems) {
-                const reply = getComment(replyElem, {
+                const reply = commentR2htmlToFlattened(replyElem, {
                     isReply: true,
                     parentId: comment.id,
                     isLastInBlock: i === replyElems.length - 1,
@@ -172,6 +177,50 @@ export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[
     }
 
     return comments;
+}
+
+export function parseR2AddCommentResponse (root: HTMLElement, opts: {
+    isReply: boolean;
+    parentId?: number;
+} = {
+    isReply: false,
+}): ({
+    success: true;
+    comment?: FlattenedComment;
+}|{
+    success: false;
+    error: string;
+}) {
+    const errorElem = root.querySelector('#error-data');
+    if (errorElem) {
+        try {
+            const errorObj = JSON.parse(errorElem.innerText);
+            return {
+                success: false,
+                error: FAIL_REASON_MESSAGES[errorObj.error](errorObj.mute_status),
+            };
+        } catch {
+            return {
+                success: false,
+                error: FAIL_REASON_MESSAGES.error(),
+            };
+        }
+    }
+
+    const commentElem = root.querySelector('.comment');
+    if (!commentElem) return {
+        success: true,
+    };
+
+    const comment = commentR2htmlToFlattened(commentElem, {
+        isReply: opts.isReply,
+        parentId: opts.parentId,
+        isLastInBlock: true,
+    });
+    return {
+        success: true,
+        comment,
+    };
 }
 
 export const addPrefixUrl = (url: string) => {
