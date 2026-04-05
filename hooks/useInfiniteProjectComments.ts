@@ -3,7 +3,7 @@ import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-
 
 import { apiReq } from "@/util/api";
 import { FlattenedComment, ScratchComment } from "@/util/types";
-import { addOrReplace, decodeWww3Comment } from "@/util/functions";
+import { addOrReplace, decodeWww3Comment, www3ToFlattenedComment } from "@/util/functions";
 import { DEFAULT_REPLY_COUNT, REPLY_INCREMENT_COUNT } from "@/util/constants";
 
 import { useSession } from "./useSession";
@@ -34,50 +34,6 @@ export const useInfiniteProjectComments = ({
     // map between user id and username
     const userMap = useRef<Map<number, string>>(new Map());
 
-    const toFlattenedComment = (comment: ScratchComment, opts?: {
-        isReply: boolean;
-        parentId: number;
-        replyIdx: number;
-        replyTo: number;
-        isHighlighted?: boolean;
-    }): FlattenedComment => {
-        if (opts?.isReply) { return {
-            id: comment.id,
-            content: decodeWww3Comment(comment.content),
-            author: {
-                id: comment.author.id,
-                username: comment.author.username,
-                scratchteam: comment.author.scratchteam,
-                image: comment.author.image,
-            },
-            createdAt: new Date(comment.datetime_created),
-            modifiedAt: new Date(comment.datetime_modified),
-            isLastInBlock: true, // true by default
-            isHighlighted: opts.isHighlighted ?? false,
-            isReply: true,
-            replyIdx: opts.replyIdx,
-            parent: opts.parentId,
-            replyTo: userMap.current.get(opts.replyTo) ?? opts.replyTo?.toString() ?? '',
-        } }
-        return {
-            id: comment.id,
-            content: decodeWww3Comment(comment.content),
-            author: {
-                id: comment.author.id,
-                username: comment.author.username,
-                scratchteam: comment.author.scratchteam,
-                image: comment.author.image,
-            },
-            createdAt: new Date(comment.datetime_created),
-            modifiedAt: new Date(comment.datetime_modified),
-            isLastInBlock: comment.reply_count === 0,
-            isHighlighted: opts?.isHighlighted ?? false,
-            isReply: false,
-            parent: null,
-            replyTo: null,
-        }
-    }
-
 
     const fetchComments = useCallback(async (
         from: number = 0, 
@@ -106,7 +62,7 @@ export const useInfiniteProjectComments = ({
 
         // add them to the list as FlattenedComments
         for (const commentObj of commentsRes.data) {
-            const comment = toFlattenedComment(commentObj);
+            const comment = www3ToFlattenedComment(commentObj);
             comments.push(comment);
             if (commentObj.reply_count > 0) replyComments.push(commentObj.id);
             userMap.current.set(commentObj.author.id, commentObj.author.username);
@@ -148,11 +104,12 @@ export const useInfiniteProjectComments = ({
                 prevReply.isLastInBlock = false;
             }
 
-            const reply: FlattenedComment = toFlattenedComment(replyObj, {
+            const reply: FlattenedComment = www3ToFlattenedComment(replyObj, {
                 isReply: true,
                 parentId: parentId,
                 replyIdx: i,
                 replyTo: replyObj.commentee_id!,
+                userMap: userMap.current,
             });
 
             addOrReplace(newReplies, reply, i);
@@ -182,7 +139,7 @@ export const useInfiniteProjectComments = ({
     
         const targetComment = targetCommentRes.data;
         if (targetComment.parent_id === null) {
-            setHighlight([toFlattenedComment(targetComment, {
+            setHighlight([www3ToFlattenedComment(targetComment, {
                 isReply: false,
                 parentId: 0,
                 replyIdx: 0,
@@ -201,19 +158,22 @@ export const useInfiniteProjectComments = ({
         });
         if (!parentCommentRes.success) throw new Error(parentCommentRes.error);
         if (parentCommentRes.status === 404) {
-            setHighlight([toFlattenedComment(targetComment)]);
+            setHighlight([www3ToFlattenedComment(targetComment)]);
             setHighlightLoaded(true);
             return;
         };
 
         const parentComment = parentCommentRes.data;
-        const parentCommentFlat = toFlattenedComment(parentComment);
-        const replyCommentFlat = toFlattenedComment(targetComment, {
+        const parentCommentFlat = www3ToFlattenedComment(parentComment);
+        userMap.current.set(parentComment.author.id, parentComment.author.username);
+
+        const replyCommentFlat = www3ToFlattenedComment(targetComment, {
             isReply: true,
             parentId: targetComment.parent_id,
             replyIdx: 0,
             replyTo: targetComment.commentee_id!,
             isHighlighted: true,
+            userMap: userMap.current,
         });
 
         setHighlight([parentCommentFlat, replyCommentFlat]);
@@ -298,10 +258,22 @@ export const useInfiniteProjectComments = ({
     const addCommentDirectly = (comment?: FlattenedComment) => {
         if (!comment) return;
         if (comment.isReply) {
-            setReplies(prev => ({
-                ...prev,
-                [comment.parent]: [...(prev[comment.parent] ?? []), comment],
-            }));
+            comment.replyTo = userMap.current.get(Number(comment.replyTo)) ?? comment.replyTo;
+            setReplies(prev => {
+                const prevReplies = prev[comment.parent] ? [...prev[comment.parent]] : [];
+                const prevLastReply = prevReplies[prevReplies.length - 1];
+                if (prevLastReply) {
+                    prevLastReply.isLastInBlock = false;
+                }
+                const replyIdx = prevLastReply?.isReply ? prevLastReply.replyIdx + 1 : 0;
+
+                const newReplies = [...prevReplies, { ...comment, replyIdx }];
+
+                return {
+                    ...prev,
+                    [comment.parent]: newReplies,
+                }
+            });
         } else {
             refresh();
         }
@@ -320,6 +292,9 @@ export const useInfiniteProjectComments = ({
 
         const repliesForParent = replies[parentId];
         if (repliesForParent && repliesForParent.length > 0) {
+            const targetParent = mergedData.find(c => c.id === parentId)
+            if (targetParent) targetParent.isLastInBlock = false;
+
             // insert them after either the last reply to the parent, or the parent itself
             for (const reply of repliesForParent) {
                 // the insert target is the (if present) last reply to the parent or the parent itself

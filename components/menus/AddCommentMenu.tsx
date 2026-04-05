@@ -8,6 +8,7 @@ import { emit } from '@/util/eventBus';
 import { useSheet } from '@/hooks/useSheet';
 import { useAddUserComment } from '@/hooks/useAddUserComment';
 import Button from '@/components/general/Button';
+import { useAddModernComment } from '@/hooks/useAddModernComment';
 
 export type AddCommentMenuProps = {
     type: 
@@ -54,7 +55,23 @@ const AddCommentMenu = ({
         },
     });
 
-    const action = type === 'user' ? userAction : undefined;
+    const projectAction = useAddModernComment({
+        type: 'project',
+        objectId: Number(objectId),
+        onSuccess: (comment) => {
+            setErrorMessage('');
+            emit('add-comment', comment);
+            sheet.pop();
+        },
+        onError: (error) => {
+            setErrorMessage(error);
+        },
+    });
+
+    const action = 
+        type === 'user' ? userAction :
+        type === 'project' ? projectAction :
+        undefined;
 
     return (
         <View style={[styles.container, {

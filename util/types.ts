@@ -347,7 +347,7 @@ export type FlattenedComment = {
     id: number;
     content: string;
     author: {
-        id: number|string;
+        id: number;
         username: string;
         scratchteam: boolean;
         image: string;
@@ -366,6 +366,17 @@ export type FlattenedComment = {
     replyTo: string;  // username to which the reply is targeted
     replyIdx: number; // index of the reply relative to the parent thread
 });
+
+export type ModernAddCommentResponse = 
+    | ScratchComment
+    | ModernAddCommentResponseRejected;
+
+export type ModernAddCommentResponseRejected = {
+    rejected: string;
+    status: {
+        mute_status?: MuteStatus;
+    }
+}
 
 export type MuteStatus = {
     currentMessageType: string;

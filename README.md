@@ -32,12 +32,12 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✅ View user comments
    - ✅ View project/studio comments
    - ✖️ Display links, mentions and emojis in comments
-   - 🟡 Post comments
+   - ✅ Post comments
    - ✖️ Delete/report comments
 
 - 🟡 Project management
    - ✅ View public projects
-   - ✖️ View private projects
+   - 🟡 View private projects
    - ✅ View project metadata
    - ✅ View project extensions and cloud variable usage
    - 🟡 View project stats

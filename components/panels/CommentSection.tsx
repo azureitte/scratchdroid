@@ -134,6 +134,7 @@ const Comment = memo(({
 
 export type CommentSectionRef = {
     scrollToIndex: (index: number) => void;
+    revealRepliesUntil: (parentId: number, index: number) => void;
 };
 
 type CommentSectionProps = {
@@ -268,7 +269,8 @@ const CommentSection = forwardRef(({
             } catch (e) {
                 console.log(e);
             }
-        }
+        },
+        revealRepliesUntil: revealRepliesUntil,
     }));
 
     return (<View style={styles.container}>

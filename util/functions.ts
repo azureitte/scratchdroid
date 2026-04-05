@@ -5,6 +5,7 @@ import { formatDistanceToNow, format } from 'date-fns';
 import type { 
     FlattenedComment, 
     PartialSheetMenuDefinition, 
+    ScratchComment, 
     ScratchProjectFile, 
     SheetMenuDefinition 
 } from "./types";
@@ -99,7 +100,7 @@ export function commentR2htmlToFlattened (
     const authorId = commentElem.querySelector('[data-commentee-id]')?.getAttribute('data-commentee-id') ?? authorUsername;
     const authorImage = addPrefixUrl(commentElem.querySelector('.avatar')?.getAttribute('src') ?? '');
     const author = {
-        id: authorId,
+        id: Number(authorId),
         username: authorUsername,
         scratchteam: false,
         image: authorImage,
@@ -223,6 +224,51 @@ export function parseR2AddCommentResponse (root: HTMLElement, opts: {
         success: true,
         comment,
     };
+}
+
+export const www3ToFlattenedComment = (comment: ScratchComment, opts?: {
+    isReply: boolean;
+    parentId: number;
+    replyIdx: number;
+    replyTo: number;
+    isHighlighted?: boolean;
+    userMap?: Map<number, string>;
+}): FlattenedComment => {
+    if (opts?.isReply) { return {
+        id: comment.id,
+        content: decodeWww3Comment(comment.content),
+        author: {
+            id: comment.author.id,
+            username: comment.author.username,
+            scratchteam: comment.author.scratchteam,
+            image: comment.author.image,
+        },
+        createdAt: new Date(comment.datetime_created),
+        modifiedAt: new Date(comment.datetime_modified),
+        isLastInBlock: true, // true by default
+        isHighlighted: opts.isHighlighted ?? false,
+        isReply: true,
+        replyIdx: opts.replyIdx,
+        parent: opts.parentId,
+        replyTo: opts.userMap?.get(opts.replyTo) ?? opts.replyTo?.toString() ?? '',
+    } }
+    return {
+        id: comment.id,
+        content: decodeWww3Comment(comment.content),
+        author: {
+            id: comment.author.id,
+            username: comment.author.username,
+            scratchteam: comment.author.scratchteam,
+            image: comment.author.image,
+        },
+        createdAt: new Date(comment.datetime_created),
+        modifiedAt: new Date(comment.datetime_modified),
+        isLastInBlock: comment.reply_count === 0,
+        isHighlighted: opts?.isHighlighted ?? false,
+        isReply: false,
+        parent: null,
+        replyTo: null,
+    }
 }
 
 export const addPrefixUrl = (url: string) => {

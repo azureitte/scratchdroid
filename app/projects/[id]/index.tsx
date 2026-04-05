@@ -11,6 +11,8 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { projectHasCloudVariables, scrollCommentSectionToId } from '@/util/functions';
+import { off, on } from '@/util/eventBus';
+import type { FlattenedComment } from '@/util/types';
 
 import { useProject } from '@/hooks/useProject';
 import { useInfiniteProjectComments } from '@/hooks/useInfiniteProjectComments';
@@ -86,6 +88,30 @@ const ProjectPage = () => {
                 commentId
             );
     }, [comments.highlightLoaded, commentId]);
+
+    // insert comments directly when recieved event
+    
+    const handleAddComment = useCallback((comment?: FlattenedComment) => {
+        if (!comment) return;
+        comments.addCommentDirectly(comment);
+        
+        setTimeout(() => {
+            let targetIdx = 0;
+            if (comment.isReply) {
+                targetIdx = comments.data.findLastIndex(c => c.parent === comment.parent || c.id === comment.parent);
+                targetIdx++;
+                listRef.current?.revealRepliesUntil(comment.parent, comment.replyIdx);
+            }
+            listRef.current?.scrollToIndex(targetIdx);
+        }, 100);
+    }, [comments.data]);
+
+    useFocusEffect(() => {
+        on('add-comment', handleAddComment);
+        return () => {
+            off('add-comment', handleAddComment);
+        };
+    });
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
