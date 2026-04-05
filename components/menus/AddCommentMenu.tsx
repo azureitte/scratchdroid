@@ -89,6 +89,7 @@ const AddCommentMenu = ({
                 value={commentText}
                 onChangeText={setCommentText}
                 autoFocus={true}
+                maxLength={500}
             />
             <View style={styles.buttonRow}>
                 <Button 

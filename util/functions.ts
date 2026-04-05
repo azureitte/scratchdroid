@@ -308,7 +308,7 @@ export const scrollCommentSectionToId = (listRef: CommentSectionRef|null|undefin
     const comment = comments.find(c => c.id === Number(commentId));
     if (comment) {
         const targetIdx = comments.indexOf(comment);
-        listRef?.scrollToIndex(targetIdx);
+        setTimeout(() => listRef?.scrollToIndex(targetIdx), 0);
         return true;
     }
     return false;
