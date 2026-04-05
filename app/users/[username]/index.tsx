@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { scrollCommentSectionToId } from '@/util/functions';
@@ -85,12 +85,12 @@ const UserPage = () => {
         }, 100);
     }, []);
 
-    useEffect(() => {
+    useFocusEffect(() => {
         on('add-comment', handleAddComment);
         return () => {
             off('add-comment', handleAddComment);
         };
-    }, [handleAddComment]);
+    });
 
 
     const handleRefresh = async () => {

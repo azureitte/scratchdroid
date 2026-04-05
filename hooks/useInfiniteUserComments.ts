@@ -88,8 +88,11 @@ export const useInfiniteUserComments = ({
                     oldData, 
                     c => c.parent === comment.parent || c.id === comment.parent,
                 );
+                const insertAfter = oldData.pages[pageIndex][itemIndex];
+                const replyIdx = insertAfter.isReply ? insertAfter.replyIdx + 1 : 0;
 
-                const newData = insertItemAtInfinite(comment, oldData, pageIndex, itemIndex + 1);
+                const newData = insertItemAtInfinite({ ...comment, replyIdx }, oldData, pageIndex, itemIndex + 1);
+                newData.pages[pageIndex][itemIndex].isLastInBlock = false;
                 newComments = newData.pages.flat();
                 return newData;
             });

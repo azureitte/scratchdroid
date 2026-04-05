@@ -289,6 +289,20 @@ export const insertItemAtInfinite = <TItem, TPageParam = unknown>(
     return newData;
 }
 
+export const replaceItemAtInfinite = <TItem, TPageParam = unknown>(
+    replaceFunc: (item: TItem, index: number) => TItem,
+    oldData: InfiniteData<TItem[], TPageParam>, 
+    pageIndex: number, 
+    itemIndex: number
+) => {
+    const newData: InfiniteData<TItem[], TPageParam> = {
+        pages: [...oldData.pages.map(p => [...p])],
+        pageParams: [...oldData.pageParams],
+    };
+    newData.pages[pageIndex][itemIndex] = replaceFunc(newData.pages[pageIndex][itemIndex], itemIndex);
+    return newData;
+}
+
 type FindInfiniteResult = {
   pageIndex: number;
   itemIndex: number;
