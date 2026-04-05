@@ -45,6 +45,7 @@ type CommentProps = {
     isHighlighted?: boolean;
     isShowMore?: boolean;
     onShowMore?: () => void;
+    onReply?: () => void;
 }
 
 const Comment = memo(({
@@ -52,6 +53,7 @@ const Comment = memo(({
     isHighlighted = false,
     isShowMore = false,
     onShowMore,
+    onReply,
 }: CommentProps) => {
 
     const [ isFetching, setIsFetching ] = useState(false);
@@ -104,6 +106,11 @@ const Comment = memo(({
                     <Text style={styles.commentSubtext}>
                         { relativeDate(comment.createdAt) }
                     </Text>
+                    <Button
+                        text="reply"
+                        onPress={onReply}
+                        style={styles.commentReplyBtn}
+                    />
                 </View>
             </View>
             { isShowMore && <LinearGradient
@@ -190,6 +197,18 @@ const CommentSection = forwardRef(({
         });
     }
 
+    const handleAddReply = (parentId: number, replyToId: number, replyToUsername: string) => {
+        sheet.push<AddCommentMenuProps>('addComment', {
+            isReply: true,
+            type,
+            objectId,
+            objectName,
+            parentId: parentId,
+            replyToId: replyToId,
+            replyToUsername: replyToUsername,
+        });
+    }
+
     const stickyHeader = <View style={[{
         marginTop: 50,
     }]}>
@@ -270,6 +289,9 @@ const CommentSection = forwardRef(({
                             await fetchReplies?.(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
                             revealMoreReplies(item.parent);
                         }
+                    }}
+                    onReply={() => {
+                        handleAddReply(item.parent ?? item.id, Number(item.author.id), item.author.username)
                     }}
                 />
             }}
@@ -481,6 +503,17 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 400,
         color: "#6C6C6C",
+    },
+
+    commentReplyBtn: {
+        position: 'absolute',
+        bottom: -10,
+        right: 0,
+        width: 150,
+        height: 60,
+        alignItems: 'flex-end',
+        justifyContent: 'center',
+        backgroundColor: '#0000',
     },
 
     commentReplyFade: {

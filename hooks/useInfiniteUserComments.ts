@@ -2,7 +2,8 @@ import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-
 
 import { apiReq } from "@/util/api";
 import { FlattenedComment } from "@/util/types";
-import { commentsR2htmlToFlattened } from "@/util/functions";
+import { commentsR2htmlToFlattened, findLastIndexInfinite, insertItemAtInfinite } from "@/util/functions";
+import { useEffect } from "react";
 
 type InfiniteUserCommentsProps = {
     user: string;
@@ -77,6 +78,32 @@ export const useInfiniteUserComments = ({
         queryClient.invalidateQueries({ queryKey });
     };
 
+    const addCommentDirectly = (comment?: FlattenedComment): FlattenedComment[] => {
+        let newComments: FlattenedComment[] = [];
+
+        if (!comment) return newComments;
+        if (comment.isReply) {
+            queryClient.setQueryData(queryKey, (oldData: InfiniteData<FlattenedComment[]>) => {
+                const { pageIndex, itemIndex } = findLastIndexInfinite(
+                    oldData, 
+                    c => c.parent === comment.parent || c.id === comment.parent,
+                );
+
+                const newData = insertItemAtInfinite(comment, oldData, pageIndex, itemIndex + 1);
+                newComments = newData.pages.flat();
+                return newData;
+            });
+        } else {
+            queryClient.setQueryData(queryKey, (oldData: InfiniteData<FlattenedComment[]>) => {
+                const newData = insertItemAtInfinite(comment, oldData, 0, 0);
+                newComments = newData.pages.flat();
+                return newData;
+            });
+        }
+
+        return newComments;
+    };
+
     return { 
         data: data 
             ? data.pages.flat() 
@@ -88,6 +115,7 @@ export const useInfiniteUserComments = ({
         hasNextPage,
         resetToFirstPage,
         refresh,
+        addCommentDirectly,
         isSuccess,
     };
 };

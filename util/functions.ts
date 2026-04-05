@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import { CommentSectionRef } from "@/components/panels/CommentSection";
 import { FAIL_REASON_MESSAGES } from "./constants";
+import { InfiniteData } from "@tanstack/react-query";
 
 export function shortRelativeDate(date: Date) {
     const diff = (Date.now() - date.getTime()) / 1000;
@@ -95,9 +96,10 @@ export function commentR2htmlToFlattened (
         .trim();
 
     const authorUsername = commentElem.querySelector('.name')?.children[0]?.innerText ?? '';
+    const authorId = commentElem.querySelector('[data-commentee-id]')?.getAttribute('data-commentee-id') ?? authorUsername;
     const authorImage = addPrefixUrl(commentElem.querySelector('.avatar')?.getAttribute('src') ?? '');
     const author = {
-        id: authorUsername,
+        id: authorId,
         username: authorUsername,
         scratchteam: false,
         image: authorImage,
@@ -270,4 +272,69 @@ export const buildMenu = (def: PartialSheetMenuDefinition): SheetMenuDefinition 
     ...def,
     detents: def.detents ?? ['auto'],
     dismissible: def.dismissible ?? true,
-})
+});
+
+
+export const insertItemAtInfinite = <TItem, TPageParam = unknown>(
+    item: TItem, 
+    oldData: InfiniteData<TItem[], TPageParam>, 
+    pageIndex: number, 
+    itemIndex: number
+) => {
+    const newData: InfiniteData<TItem[], TPageParam> = {
+        pages: [...oldData.pages.map(p => [...p])],
+        pageParams: [...oldData.pageParams],
+    };
+    newData.pages[pageIndex].splice(itemIndex, 0, item);
+    return newData;
+}
+
+type FindInfiniteResult = {
+  pageIndex: number;
+  itemIndex: number;
+};
+
+export const findIndexInfinite = <TItem>(
+    data: InfiniteData<TItem[]>,
+    predicate: (item: TItem, index: number) => boolean
+): FindInfiniteResult => {
+
+    if (data) {
+        for (let pageIndex = 0; pageIndex < data.pages.length; pageIndex++) {
+            const items = data.pages[pageIndex];
+            const itemIndex = items.findIndex(predicate);
+
+            if (itemIndex !== -1) {
+                return { pageIndex, itemIndex };
+            }
+        }
+    }
+
+    return {
+        pageIndex: -1,
+        itemIndex: -1,
+    };
+
+}
+
+export const findLastIndexInfinite = <TItem>(
+    data: InfiniteData<TItem[]>,
+    predicate: (item: TItem, index: number) => boolean
+): FindInfiniteResult => {
+
+    if (data) {
+        for (let pageIndex = data.pages.length - 1; pageIndex >= 0; pageIndex--) {
+            const items = data.pages[pageIndex];
+            const itemIndex = items.findLastIndex(predicate);
+
+            if (itemIndex !== -1) {
+                return { pageIndex, itemIndex };
+            }
+        }
+    }
+    
+    return {
+        pageIndex: -1,
+        itemIndex: -1,
+    };
+}

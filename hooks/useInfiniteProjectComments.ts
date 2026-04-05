@@ -238,7 +238,7 @@ export const useInfiniteProjectComments = ({
         fetchNextPage, 
         hasNextPage, 
         isSuccess, 
-        isLoading 
+        isLoading
     } = useInfiniteQuery<
         FlattenedComment[], Error, 
         InfiniteData<FlattenedComment[]>, 
@@ -295,6 +295,18 @@ export const useInfiniteProjectComments = ({
         else return fetchNextPage();
     };
 
+    const addCommentDirectly = (comment?: FlattenedComment) => {
+        if (!comment) return;
+        if (comment.isReply) {
+            setReplies(prev => ({
+                ...prev,
+                [comment.parent]: [...(prev[comment.parent] ?? []), comment],
+            }));
+        } else {
+            refresh();
+        }
+    };
+
 
     // construct merged data based on the top-level comments and the fetched reply map
 
@@ -334,6 +346,7 @@ export const useInfiniteProjectComments = ({
         resetToFirstPage,
         refresh,
         fetchRepliesFor,
+        addCommentDirectly,
         isSuccess,
     };
 };

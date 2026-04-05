@@ -1,11 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { View, StyleSheet, TextInput, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { buildMenu } from '@/util/functions';
+import { emit } from '@/util/eventBus';
+
 import { useSheet } from '@/hooks/useSheet';
-import Button from '@/components/general/Button';
 import { useAddUserComment } from '@/hooks/useAddUserComment';
+import Button from '@/components/general/Button';
 
 export type AddCommentMenuProps = {
     type: 
@@ -44,6 +46,7 @@ const AddCommentMenu = ({
         username: objectName!,
         onSuccess: (comment) => {
             setErrorMessage('');
+            emit('add-comment', comment);
             sheet.pop();
         },
         onError: (error) => {

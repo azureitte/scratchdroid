@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { scrollCommentSectionToId } from '@/util/functions';
+import { off, on } from '@/util/eventBus';
+import type { FlattenedComment } from '@/util/types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useInfiniteUserComments } from '@/hooks/useInfiniteUserComments';
@@ -66,6 +68,29 @@ const UserPage = () => {
             }
         }
     }, [comments, comments.data, commentId]);
+
+
+    // insert comments directly when recieved event
+
+    const handleAddComment = useCallback((comment?: FlattenedComment) => {
+        if (!comment) return;
+
+        const newData = comments.addCommentDirectly(comment);
+        setTimeout(() => {
+            scrollCommentSectionToId(
+                listRef.current, 
+                newData, 
+                comment.id,
+            );
+        }, 100);
+    }, []);
+
+    useEffect(() => {
+        on('add-comment', handleAddComment);
+        return () => {
+            off('add-comment', handleAddComment);
+        };
+    }, [handleAddComment]);
 
 
     const handleRefresh = async () => {

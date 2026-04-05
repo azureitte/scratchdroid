@@ -59,14 +59,17 @@ export const useAddUserComment = ({
                 error: 'A server-side error occurred. Please try again later.'
             }
 
-            const parsedRes = parseR2AddCommentResponse(res.data);
+            const parsedRes = parseR2AddCommentResponse(res.data, {
+                isReply: !!comment.parentId,
+                parentId: comment.parentId,
+            });
             return parsedRes;
         },
-        onSuccess: (data) => {
-            if (data.success) {
+        onSettled: (data) => {
+            if (data?.success) {
                 onSuccess?.(data.comment);
             } else {
-                onError?.(data.error);
+                onError?.(data?.error ?? 'Something went wrong');
             }
         },
     });
