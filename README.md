@@ -58,7 +58,7 @@ This project is currently in development and is incomplete. Here is where it's c
 
 - 🟡 Messages
     - ✅ View messages
-    - ✖️ View/clear admin alerts
+    - ✅ View/clear admin alerts
     - ✅ Mark messages as read
     - ✖️ Filter messages
 

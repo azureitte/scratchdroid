@@ -20,7 +20,7 @@ const getIcon = (message: ScratchMessage) => {
         case 'forumpost': return SVGS.messages.forumActivity;
         case 'becomehoststudio': return SVGS.messages.hostTransfer;
         case 'becomeownerstudio': return SVGS.messages.ownerInvite;
-        case 'userjoin': return SVGS.messages.comment;
+        case 'userjoin': return SVGS.messages.follow;
         default: return SVGS.messages.comment;
     }
 };

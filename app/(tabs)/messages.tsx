@@ -10,20 +10,22 @@ import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native
 import { useIsFocused } from 'expo-router';
 
 import { off, on } from '@/util/eventBus';
+import type { MessageQueryItem } from '@/util/types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useInfiniteMessages } from '@/hooks/useInfiniteMessages';
 import { useMarkMessagesRead } from '@/hooks/useMarkMessagesRead';
+import { useDeleteMessage } from '@/hooks/useDeleteMessage';
 
 import MessageRow from '@/components/panels/MessageRow';
 import ListLoadMore from '@/components/panels/ListLoadMore';
 import ScrollablePageHeader from '@/components/panels/ScrollablePageHeader';
 import ListLoading from '@/components/panels/ListLoading';
-import { ScratchMessage } from '@/util/types';
+import AdminAlertRow from '@/components/panels/AdminAlertRow';
 
-const HEADER_HEIGHT = 128;
+const HEADER_HEIGHT = 131;
 const HEADER_STICK = 105;
 
 const MessagesPage = () => {
@@ -34,6 +36,7 @@ const MessagesPage = () => {
     const messages = useInfiniteMessages();
     const unreadCount = useUnreadMessages(true);
     const markRead = useMarkMessagesRead();
+    const deleteMessage = useDeleteMessage();
 
     const { session } = useSession();
 
@@ -83,15 +86,25 @@ const MessagesPage = () => {
         listRef.current?.scrollToOffset({ animated: false, offset: 0 });
     };
 
-    const renderItem = useCallback(({ item: message, index: idx }: {
-        item: ScratchMessage;
+    const handleDeleteMessage = useCallback((id: number) => {
+        deleteMessage(id);
+        messages.deleteMessageDirectly(id);
+    }, [deleteMessage, messages]);
+
+    const renderItem = useCallback(({ item, index: idx }: {
+        item: MessageQueryItem;
         index: number;
     }) => (
-        <MessageRow
-            message={message}
-            isUnread={idx < unreadCount}
-            myUsername={session?.user?.username}
-        />
+        item.type === 'adminAlert' 
+            ? <AdminAlertRow
+                message={item.message}
+                onClose={() => handleDeleteMessage(item.message.id)}
+            />
+            : <MessageRow
+                message={item.message}
+                isUnread={idx < unreadCount}
+                myUsername={session?.user?.username}
+            />
     ), [unreadCount, session]);
 
     return (
@@ -109,7 +122,7 @@ const MessagesPage = () => {
                 <Animated.FlatList
                     data={messages.messages}
                     renderItem={renderItem}
-                    keyExtractor={(item): any => item.id}
+                    keyExtractor={(item): any => item.message.id}
                     ref={listRef}
                     ListFooterComponent={messages.isFirstLoading
                         ? <ListLoading />

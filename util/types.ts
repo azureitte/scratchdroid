@@ -145,6 +145,22 @@ export type MessageUserJoin = MessageBase & {
     type: "userjoin";
 }
 
+export type ScratchAdminAlert = {
+    id: number;
+    recipient_id: number;
+    message: string;
+    datetime_created: string;
+    datetime_read: string|null;
+}
+
+export type MessageQueryItem = ({
+    type: 'message';
+    message: ScratchMessage;
+} | {
+    type: 'adminAlert';
+    message: ScratchAdminAlert;
+})
+
 
 export type ScratchProject = {
     id: number;
