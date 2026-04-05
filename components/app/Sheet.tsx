@@ -1,7 +1,8 @@
 import { Activity, useEffect, useRef } from 'react';
-import { BackHandler, Keyboard, StyleSheet } from 'react-native';
+import { BackHandler, Keyboard, StyleSheet, View } from 'react-native';
 import { TrueSheet } from '@lodev09/react-native-true-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useKeyboard } from "react-native-use-keyboard";
 
 import { off, on } from '@/util/eventBus';
 import { useStack } from '@/hooks/useStack';
@@ -33,6 +34,7 @@ const Sheet = () => {
     
     const stack = useStack<SheetMenu>();
     const insets = useSafeAreaInsets();
+    const keyboard = useKeyboard();
 
     const sheetRef = useRef<TrueSheet>(null);
     const isSheetOpen = useRef(false);
@@ -128,19 +130,25 @@ const Sheet = () => {
                 isSheetOpen.current = true;
             }}
             backgroundColor={'#1C1C1C'}
-            style={{
-                paddingBottom: insets.bottom,
+            style={{ 
+                paddingBottom: 20,
             }}
         >
-            { !!(currentMenuDef?.title) && <Heading style={styles.heading}>{currentMenuDef?.title}</Heading> }
-            { stack.stack.map((menu, index) => (
-                <Activity
-                    key={`${index}_${menu.name}`}
-                    mode={menu.name === currentMenu.name ? 'visible' : 'hidden'}
-                >
-                    { getMenu(menu.name).render(menu.props) }
-                </Activity>
-            )) }
+            <View style={[styles.container, {
+                marginBottom: keyboard.isVisible
+                    ? (-insets.bottom)
+                    : 0,
+            }]}>
+                { !!(currentMenuDef?.title) && <Heading style={styles.heading}>{currentMenuDef?.title}</Heading> }
+                { stack.stack.map((menu, index) => (
+                    <Activity
+                        key={`${index}_${menu.name}`}
+                        mode={menu.name === currentMenu.name ? 'visible' : 'hidden'}
+                    >
+                        { getMenu(menu.name).render(menu.props) }
+                    </Activity>
+                )) }
+            </View>
         </TrueSheet>
     );
 };
@@ -153,5 +161,8 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         marginTop: 16,
         fontSize: 24,
-    }
+    },
+    container: {
+        flexDirection: 'column',
+    },
 });

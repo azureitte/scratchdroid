@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     },
 
     mentionLink: {
-        color: "#71A3FF",
+        color: "#93C0FF",
         fontWeight: 600,
         fontSize: 16,
         fontStyle: 'normal',

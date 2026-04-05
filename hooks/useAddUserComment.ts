@@ -27,7 +27,7 @@ export const useAddUserComment = ({
     
     const action = useMutation({
         mutationKey: ['add-comment', 'user', username],
-        mutationFn: async (comment: AddCommentFormData): Promise<({
+        mutationFn: async (payload: AddCommentFormData): Promise<({
             success: true;
             comment?: FlattenedComment;
         }|{
@@ -39,13 +39,18 @@ export const useAddUserComment = ({
                 error: 'Please log in to comment.' 
             };
 
+            if (!payload.content) return { 
+                success: false, 
+                error: 'You can\'t post an empty comment!'
+            };
+
             const res = await apiReq({
                 path: `/site-api/comments/user/${username}/add/`,
                 method: 'POST',
                 body: {
-                    content: comment.content,
-                    parent_id: comment.parentId ?? null,
-                    commentee_id: comment.replyToId ?? null,
+                    content: payload.content,
+                    parent_id: payload.parentId ?? null,
+                    commentee_id: payload.replyToId ?? null,
                 },
                 useCrsf: true,
                 responseType: 'html',
@@ -60,8 +65,8 @@ export const useAddUserComment = ({
             }
 
             const parsedRes = parseR2AddCommentResponse(res.data, {
-                isReply: !!comment.parentId,
-                parentId: comment.parentId,
+                isReply: !!payload.parentId,
+                parentId: payload.parentId,
             });
             return parsedRes;
         },

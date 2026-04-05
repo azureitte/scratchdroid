@@ -36,6 +36,7 @@ import ListLoadMore from '@/components/panels/ListLoadMore';
 import Button from '@/components/general/Button';
 import type { AddCommentMenuProps } from '@/components/menus/AddCommentMenu';
 import { useSession } from '@/hooks/useSession';
+import { ICONS } from '@/util/assets';
 
 const COLOR_NOHIGHLIGHT = '#4177FF00';
 const COLOR_HIGHLIGHT = '#4177FF44';
@@ -68,6 +69,8 @@ const Comment = memo(({
     const wrapperStyle = useAnimatedStyle(() => ({
         backgroundColor: highlightColor.value,
     }));
+
+    const ReplyIcon = ICONS.reply;
 
     return (<Animated.View style={[
         styles.commentWrapper,
@@ -106,11 +109,13 @@ const Comment = memo(({
                     <Text style={styles.commentSubtext}>
                         { relativeDate(comment.createdAt) }
                     </Text>
-                    <Button
-                        text="reply"
+                    <Pressable
                         onPress={onReply}
                         style={styles.commentReplyBtn}
-                    />
+                    >
+                        <Text style={styles.commentReplyBtnText}>reply</Text>
+                        <ReplyIcon style={styles.commentReplyBtnIcon} height={16} />
+                    </Pressable>
                 </View>
             </View>
             { isShowMore && <LinearGradient
@@ -510,12 +515,21 @@ const styles = StyleSheet.create({
     commentReplyBtn: {
         position: 'absolute',
         bottom: -10,
-        right: 0,
-        width: 150,
+        right: 8,
+        paddingLeft: 40,
         height: 60,
-        alignItems: 'flex-end',
-        justifyContent: 'center',
-        backgroundColor: '#0000',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        // backgroundColor: '#fff',
+    },
+    commentReplyBtnText: {
+        fontSize: 14,
+        fontWeight: 600,
+        color: '#93C0FF',
+    },
+    commentReplyBtnIcon: {
+        marginLeft: 2,
     },
 
     commentReplyFade: {
@@ -533,7 +547,7 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
     mentionLink: {
-        color: "#71A3FF",
+        color: "#93C0FF",
         fontWeight: 600,
         fontSize: 16,
         fontStyle: 'normal',

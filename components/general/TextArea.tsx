@@ -1,43 +1,38 @@
 import { StyleSheet, Text, TextInput, TextInputProps, View } from "react-native";
 import { ForwardedRef, forwardRef, RefObject, useImperativeHandle, useRef, useState } from "react";
 
-type FormInputProps = {
+type TextAreaProps = {
     label?: string;
     placeholder?: string;
-    type: 'text' | 'password';
-    defaultValue?: string;
-    autoComplete?: TextInputProps['autoComplete'];
-    returnKeyType?: 'next' | 'done' | 'go' | 'search' | 'send';
-    next?: RefObject<FormInputRef|null>;
+    value?: string;
     onChangeText?: (value: string) => void;
+    maxLength?: number;
+    autoFocus?: boolean;
 };
 
-export type FormInputRef = {
+export type TextAreaRef = {
     focus: () => void;
     blur: () => void;
     getValue: () => string;
 };
 
-const FormInput = forwardRef(({
+const TextArea = forwardRef(({
     label,
     placeholder,
-    type,
-    defaultValue = '',
-    autoComplete,
-    returnKeyType,
-    next,
+    value = '',
     onChangeText,
-}: FormInputProps, ref: ForwardedRef<FormInputRef>) => {
-    const [isFocused, setIsFocused] = useState(false);
+    maxLength,
+    autoFocus = false,
+}: TextAreaProps, ref: ForwardedRef<TextAreaRef>) => {
 
+    const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<TextInput>(null);
-    const valueRef = useRef(defaultValue);
 
     useImperativeHandle(ref, () => ({
         focus: () => inputRef.current?.focus(),
         blur: () => inputRef.current?.blur(),
-        getValue: () => valueRef.current,
-        setValue: (value: string) => valueRef.current = value,
+        getValue: () => value,
+        setValue: (value: string) => onChangeText?.(value),
     }));
 
     return (
@@ -49,36 +44,33 @@ const FormInput = forwardRef(({
             ]}>
                 <TextInput 
                     ref={inputRef}
-                    defaultValue={defaultValue}
+                    value={value}
+                    multiline={true}
+                    autoFocus={autoFocus}
+                    onChangeText={onChangeText}
                     placeholder={placeholder}
                     placeholderTextColor="#a4a4a4" 
-                    secureTextEntry={type === 'password'}
                     style={styles.input} 
-                    autoComplete={autoComplete}
-                    returnKeyType={returnKeyType ?? (next ? "next" : "done")}
+                    maxLength={maxLength}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    onSubmitEditing={() => next?.current?.focus()}
-                    onChangeText={value => {
-                        valueRef.current = value;
-                        onChangeText?.(value);
-                    }}
                 />
             </View>
         </>
     );
 });
 
-export default FormInput;
+export default TextArea;
 
 const styles = StyleSheet.create({
     inputWrapper: {
+        flex: 1,
+        minHeight: 120,
         width: "100%",
         borderColor: "#3D3D3D",
         backgroundColor: "#272727",
         borderWidth: 2,
-        marginBottom: 32,
-        borderRadius: 12,
+        borderRadius: 8,
     },
     inputWrapperFocus: {
         borderColor: "#4177FF",
@@ -86,11 +78,12 @@ const styles = StyleSheet.create({
     },
     input: {
         width: "100%",
-        paddingHorizontal: 24,
+        paddingHorizontal: 20,
         paddingVertical: 16,
         color: "#fff",
         fontSize: 18,
-        fontWeight: 500,
+        fontWeight: 400,
+        textAlignVertical: 'top',
     },
     inputLabel: {
         color: "#fff",

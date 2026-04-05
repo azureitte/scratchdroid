@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width,
     },
     tabIndicator: {
-        backgroundColor: '#71A3FF',
+        backgroundColor: '#93C0FF',
         height: 5,
         borderRadius: 5,
         marginHorizontal: 8,

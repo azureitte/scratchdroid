@@ -8,7 +8,7 @@ const ListLoading = ({
 }) => {
     return (
         <View style={[styles.container, { marginTop }]}>
-            <ActivityIndicator size="large" color="#71A3FF" />
+            <ActivityIndicator size="large" color="#93C0FF" />
         </View>
     );
 };

@@ -42,6 +42,11 @@ export const useAddModernComment = ({
                 error: 'Please log in to comment.' 
             };
 
+            if (!payload.content) return { 
+                success: false, 
+                error: 'You can\'t post an empty comment!'
+            };
+
             const res = await apiReq<ModernAddCommentResponse>({
                 host: 'https://api.scratch.mit.edu',
                 path: `/proxy/comments/${type}/${objectId}`,

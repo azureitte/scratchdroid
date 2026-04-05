@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     link: {
-        color: "#71A3FF",
+        color: "#93C0FF",
         fontWeight: 500,
         fontSize: 16,
         fontStyle: 'normal',

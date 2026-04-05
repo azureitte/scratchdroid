@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { View, StyleSheet, TextInput, Text } from 'react-native';
+import { View, StyleSheet, TextInput, Text, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { buildMenu } from '@/util/functions';
+import { addPrefixUrl, buildMenu } from '@/util/functions';
 import { emit } from '@/util/eventBus';
 
 import { useSheet } from '@/hooks/useSheet';
+import { useSession } from '@/hooks/useSession';
 import { useAddUserComment } from '@/hooks/useAddUserComment';
-import Button from '@/components/general/Button';
 import { useAddModernComment } from '@/hooks/useAddModernComment';
+
+import Button from '@/components/general/Button';
+import TextArea from '@/components/general/TextArea';
 
 export type AddCommentMenuProps = {
     type: 
@@ -38,7 +41,7 @@ const AddCommentMenu = ({
 }: AddCommentMenuProps) => {
 
     const sheet = useSheet();
-    const insets = useSafeAreaInsets();
+    const { session } = useSession();
 
     const [ commentText, setCommentText ] = useState('');
     const [ errorMessage, setErrorMessage ] = useState('');
@@ -74,26 +77,27 @@ const AddCommentMenu = ({
         undefined;
 
     return (
-        <View style={[styles.container, {
-            paddingBottom: insets.bottom + 12,
-        }]}>
+        <View style={[styles.container]}>
             <Text style={styles.title}>
                 { isReply ? `Reply to @${replyOpts.replyToUsername}` : 'New comment' }
             </Text>
+            <View style={styles.commentBox}>
+                <Image
+                    source={{ uri: addPrefixUrl(session?.user?.thumbnailUrl!) }}
+                    style={styles.avatar}
+                />
+                <TextArea
+                    placeholder='Write something worth sharing...'
+                    value={commentText}
+                    onChangeText={setCommentText}
+                    autoFocus={true}
+                    maxLength={500}
+                />
+            </View>
             { errorMessage && <Text style={styles.errorText}>{errorMessage}</Text> }
-            <TextInput
-                placeholder='Write something worth sharing...'
-                multiline={true}
-                style={styles.input}
-                placeholderTextColor="#a4a4a4" 
-                value={commentText}
-                onChangeText={setCommentText}
-                autoFocus={true}
-                maxLength={500}
-            />
             <View style={styles.buttonRow}>
                 <Button 
-                    text="Post" 
+                    text={isReply ? 'Reply' : 'Post'}
                     onPress={() => {
                         setErrorMessage('');
                         action?.mutate({ 
@@ -121,6 +125,7 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 16,
         paddingVertical: 16,
+        paddingBottom: 0,
         flexDirection: 'column',
         alignItems: 'stretch',
         gap: 8,
@@ -137,25 +142,24 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 8,
+        marginTop: 12,
     },
-    input: {
-        flex: 1,
-        minHeight: 120,
-        backgroundColor: '#272727',
-        color: '#fff',
+    commentBox: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    avatar: {
+        width: 42, 
+        height: 42, 
         borderRadius: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        fontSize: 18,
-        textAlignVertical: 'top',
-        marginBottom: 8,
+        objectFit: 'fill',
     },
     errorText: {
         color: '#fff',
         backgroundColor: '#c40',
-        width: '100%',
         paddingVertical: 8,
         paddingHorizontal: 16,
         borderRadius: 8,
+        marginLeft: 54,
     },
 });

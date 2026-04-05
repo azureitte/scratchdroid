@@ -12,6 +12,7 @@ import icMyStuffActive from "../assets/icons/ic-mystuff-active.svg";
 import icMenu from "../assets/icons/ic-menu.svg";
 import icCardViewMore from "../assets/icons/ic-card-viewmore.svg";
 import icClose from "../assets/icons/ic-close.svg";
+import icReply from "../assets/icons/ic-reply.svg";
 
 import icStatView from "../assets/icons/ic-stat-view.svg";
 import icStatLove from "../assets/icons/ic-stat-love.svg";
@@ -58,6 +59,7 @@ export const ICONS = {
     menu: icMenu,
     cardViewMore: icCardViewMore,
     close: icClose,
+    reply: icReply,
 
     statView: icStatView,
     statLove: icStatLove,
