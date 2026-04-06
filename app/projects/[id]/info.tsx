@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { useProject } from '@/hooks/useProject';
+import { useProject } from '@/hooks/queries/useProject';
 import ListLoading from '@/components/panels/ListLoading';
 import InfoCard from '@/components/panels/InfoCard';
 import { dateShort, projectHasCloudVariables } from '@/util/functions';

@@ -3,8 +3,11 @@ import he from "he";
 import { formatDistanceToNow, format } from 'date-fns';
 
 import type { 
+    Comment,
     FlattenedComment, 
     PartialSheetMenuDefinition, 
+    ReplyComment, 
+    RootComment, 
     ScratchComment, 
     ScratchProjectFile, 
     SheetMenuDefinition 
@@ -80,15 +83,17 @@ export const truncateText = (text: string, maxLength: number, charPerNewLine: nu
     return [text.slice(0, idx).trimEnd() + '...', true];
 }
 
-export function commentR2htmlToFlattened (
+type CommentR2Return<T> = T extends true 
+    ? ReplyComment 
+    : RootComment;
+
+export function getCommentFromR2 <T extends boolean>(
     commentElem: HTMLElement, 
     opts: {
-        isReply: boolean;
+        isReply: T;
         parentId?: number;
-        isLastInBlock: boolean;
-        replyIdx?: number;
     }
-): FlattenedComment {
+): CommentR2Return<T> {
     const id = Number(commentElem.getAttribute('data-comment-id'));
     let content = commentElem.querySelector('.content')?.innerText ?? '';
     content = content
@@ -116,10 +121,8 @@ export function commentR2htmlToFlattened (
         content = contentSpl.slice(1).join(' ');
     }
 
-    let comment: FlattenedComment;
-
     if (opts.isReply) {
-        comment = {
+        return {
             id,
             content,
             author,
@@ -128,53 +131,41 @@ export function commentR2htmlToFlattened (
             isReply: true,
             parent: opts.parentId!,
             replyTo: replyTo!,
-            isLastInBlock: opts.isLastInBlock ?? false,
-            isHighlighted: false,
-            replyIdx: opts.replyIdx ?? 0,
-        };
+        } as any;
     } else {
-        comment = {
+        return {
             id,
             content,
             author,
             createdAt,
             modifiedAt: createdAt,
             isReply: false,
-            parent: null,
-            replyTo: null,
-            isLastInBlock: opts.isLastInBlock ?? false,
-            isHighlighted: false,
-        };
+            replies: [],
+            totalReplies: 0,
+        } as any;
     }
-
-    return comment;
 }
 
-export function commentsR2htmlToFlattened (root: HTMLElement): FlattenedComment[] {
-    const comments: FlattenedComment[] = [];
+export function getCommentsFromR2 (root: HTMLElement): RootComment[] {
+    const comments: RootComment[] = [];
 
     const parentElems = root.querySelectorAll('.top-level-reply');
     for (const parentElem of parentElems) {
         const parentCommentElem = parentElem.querySelector('.comment');
         const replyElems = parentElem.querySelector('.replies')?.querySelectorAll('.comment');
 
-        const comment = commentR2htmlToFlattened(parentCommentElem!, {
+        const comment = getCommentFromR2(parentCommentElem!, {
             isReply: false,
-            isLastInBlock: !replyElems || replyElems.length === 0,
         });
         comments.push(comment);
 
         if (replyElems) {
-            let i = 0;
             for (const replyElem of replyElems) {
-                const reply = commentR2htmlToFlattened(replyElem, {
+                const reply = getCommentFromR2(replyElem, {
                     isReply: true,
                     parentId: comment.id,
-                    isLastInBlock: i === replyElems.length - 1,
-                    replyIdx: i,
                 });
-                comments.push(reply);
-                i++;
+                comment.replies.push(reply);
             }
         }
     }
@@ -189,7 +180,7 @@ export function parseR2AddCommentResponse (root: HTMLElement, opts: {
     isReply: false,
 }): ({
     success: true;
-    comment?: FlattenedComment;
+    comment?: Comment;
 }|{
     success: false;
     error: string;
@@ -215,10 +206,9 @@ export function parseR2AddCommentResponse (root: HTMLElement, opts: {
         success: true,
     };
 
-    const comment = commentR2htmlToFlattened(commentElem, {
+    const comment = getCommentFromR2(commentElem, {
         isReply: opts.isReply,
         parentId: opts.parentId,
-        isLastInBlock: true,
     });
     return {
         success: true,
@@ -226,15 +216,13 @@ export function parseR2AddCommentResponse (root: HTMLElement, opts: {
     };
 }
 
-export const www3ToFlattenedComment = (comment: ScratchComment, opts?: {
-    isReply: boolean;
-    parentId: number;
-    replyIdx: number;
-    replyTo: number;
-    isHighlighted?: boolean;
+export const getCommentFromWww3 = (comment: ScratchComment, opts?: {
+    replies?: ReplyComment[];
     userMap?: Map<number, string>;
-}): FlattenedComment => {
-    if (opts?.isReply) { return {
+}): Comment => {
+    const isReply = comment.parent_id != null;
+
+    if (isReply) { return {
         id: comment.id,
         content: decodeWww3Comment(comment.content),
         author: {
@@ -245,12 +233,9 @@ export const www3ToFlattenedComment = (comment: ScratchComment, opts?: {
         },
         createdAt: new Date(comment.datetime_created),
         modifiedAt: new Date(comment.datetime_modified),
-        isLastInBlock: true, // true by default
-        isHighlighted: opts.isHighlighted ?? false,
         isReply: true,
-        replyIdx: opts.replyIdx,
-        parent: opts.parentId,
-        replyTo: opts.userMap?.get(opts.replyTo) ?? opts.replyTo?.toString() ?? '',
+        parent: comment.parent_id!,
+        replyTo: opts?.userMap?.get(comment.commentee_id!) ?? comment.commentee_id?.toString() ?? '',
     } }
     return {
         id: comment.id,
@@ -263,12 +248,45 @@ export const www3ToFlattenedComment = (comment: ScratchComment, opts?: {
         },
         createdAt: new Date(comment.datetime_created),
         modifiedAt: new Date(comment.datetime_modified),
-        isLastInBlock: comment.reply_count === 0,
-        isHighlighted: opts?.isHighlighted ?? false,
         isReply: false,
-        parent: null,
-        replyTo: null,
+        replies: opts?.replies ?? [],
+        totalReplies: comment.reply_count,
     }
+}
+
+export const flattenComments = (comments: RootComment[], opts?: {
+    highlightedId?: number;
+}): FlattenedComment[] => {
+    return uniqueById(comments.reduce((acc, comment) => {
+        acc.push({
+            id: comment.id,
+            content: comment.content,
+            author: comment.author,
+            createdAt: comment.createdAt,
+            modifiedAt:comment.modifiedAt,
+            isLastInBlock: comment.replies.length === 0,
+            isHighlighted: opts?.highlightedId === comment.id,
+            isReply: false,
+            parent: null,
+            replyTo: null,
+        });
+        comment.replies.forEach((reply, idx) => {
+            acc.push({
+                id: reply.id,
+                content: reply.content,
+                author: reply.author,
+                createdAt: reply.createdAt,
+                modifiedAt: reply.modifiedAt,
+                isLastInBlock: idx === comment.replies.length - 1,
+                isHighlighted: opts?.highlightedId === reply.id,
+                isReply: true,
+                parent: comment.id,
+                replyTo: reply.author.username,
+                replyIdx: idx,
+            });
+        });
+        return acc;
+    }, [] as FlattenedComment[]));
 }
 
 export const addPrefixUrl = (url: string) => {
@@ -320,81 +338,15 @@ export const buildMenu = (def: PartialSheetMenuDefinition): SheetMenuDefinition 
     dismissible: def.dismissible ?? true,
 });
 
+export function uniqueById<T extends { id: number; [key: string]: any }>(arr: T[]): T[] {
+    const seen = new Set<number>();
 
-export const insertItemAtInfinite = <TItem, TPageParam = unknown>(
-    item: TItem, 
-    oldData: InfiniteData<TItem[], TPageParam>, 
-    pageIndex: number, 
-    itemIndex: number
-) => {
-    const newData: InfiniteData<TItem[], TPageParam> = {
-        pages: [...oldData.pages.map(p => [...p])],
-        pageParams: [...oldData.pageParams],
-    };
-    newData.pages[pageIndex].splice(itemIndex, 0, item);
-    return newData;
+    return arr.filter(item => {
+        if (seen.has(item.id))
+            return false;
+        seen.add(item.id);
+        return true;
+    });
 }
 
-export const replaceItemAtInfinite = <TItem, TPageParam = unknown>(
-    replaceFunc: (item: TItem, index: number) => TItem,
-    oldData: InfiniteData<TItem[], TPageParam>, 
-    pageIndex: number, 
-    itemIndex: number
-) => {
-    const newData: InfiniteData<TItem[], TPageParam> = {
-        pages: [...oldData.pages.map(p => [...p])],
-        pageParams: [...oldData.pageParams],
-    };
-    newData.pages[pageIndex][itemIndex] = replaceFunc(newData.pages[pageIndex][itemIndex], itemIndex);
-    return newData;
-}
-
-type FindInfiniteResult = {
-  pageIndex: number;
-  itemIndex: number;
-};
-
-export const findIndexInfinite = <TItem>(
-    data: InfiniteData<TItem[]>,
-    predicate: (item: TItem, index: number) => boolean
-): FindInfiniteResult => {
-
-    if (data) {
-        for (let pageIndex = 0; pageIndex < data.pages.length; pageIndex++) {
-            const items = data.pages[pageIndex];
-            const itemIndex = items.findIndex(predicate);
-
-            if (itemIndex !== -1) {
-                return { pageIndex, itemIndex };
-            }
-        }
-    }
-
-    return {
-        pageIndex: -1,
-        itemIndex: -1,
-    };
-
-}
-
-export const findLastIndexInfinite = <TItem>(
-    data: InfiniteData<TItem[]>,
-    predicate: (item: TItem, index: number) => boolean
-): FindInfiniteResult => {
-
-    if (data) {
-        for (let pageIndex = data.pages.length - 1; pageIndex >= 0; pageIndex--) {
-            const items = data.pages[pageIndex];
-            const itemIndex = items.findLastIndex(predicate);
-
-            if (itemIndex !== -1) {
-                return { pageIndex, itemIndex };
-            }
-        }
-    }
-    
-    return {
-        pageIndex: -1,
-        itemIndex: -1,
-    };
-}
+export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

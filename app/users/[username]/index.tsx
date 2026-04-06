@@ -6,11 +6,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { scrollCommentSectionToId } from '@/util/functions';
 import { off, on } from '@/util/eventBus';
-import type { FlattenedComment } from '@/util/types';
+import type { Comment, FlattenedComment } from '@/util/types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
-import { useInfiniteUserComments } from '@/hooks/useInfiniteUserComments';
-import { useUser } from '@/hooks/useUser';
+import { useUserComments } from '@/hooks/queries/useUserComments';
+import { useUser } from '@/hooks/queries/useUser';
 
 import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
 import ListLoading from '@/components/panels/ListLoading';
@@ -25,7 +25,7 @@ const UserPage = () => {
     }>();
 
     const user = useUser(username);
-    const comments = useInfiniteUserComments({
+    const comments = useUserComments({
         user: username,
         enabled: !!username,
     });
@@ -72,7 +72,7 @@ const UserPage = () => {
 
     // insert comments directly when recieved event
 
-    const handleAddComment = useCallback((comment?: FlattenedComment) => {
+    const handleAddComment = useCallback((comment?: Comment) => {
         if (!comment) return;
 
         const newData = comments.addCommentDirectly(comment);
@@ -83,7 +83,7 @@ const UserPage = () => {
                 comment.id,
             );
         }, 100);
-    }, []);
+    }, [comments.data]);
 
     useFocusEffect(() => {
         on('add-comment', handleAddComment);
@@ -133,6 +133,7 @@ const UserPage = () => {
             />}
             hasNextPage={comments.hasNextPage}
             isLoading={comments.isLoading}
+            isFirstLoading={comments.isFirstLoading}
             fetchNextPage={comments.fetchNextPage}
             isRefreshing={isRefreshing}
             handleRefresh={handleRefresh}

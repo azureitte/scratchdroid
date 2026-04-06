@@ -7,7 +7,7 @@ import { ICONS } from "@/util/assets";
 import { emit, off, on } from "@/util/eventBus";
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
 import { AppContext, AppTabKey } from "@/context/AppContext";
-import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useUnreadMessages } from "@/hooks/queries/useUnreadMessages";
 import { useSheet } from "@/hooks/useSheet";
 
 export const TAB_BAR_ICONS: Record<string, [any, any]> = {

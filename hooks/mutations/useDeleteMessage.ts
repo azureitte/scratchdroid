@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiReq } from "../util/api";
-import { useSession } from "./useSession";
+import { apiReq } from "../../util/api";
+import { useSession } from "../useSession";
 
 export const useDeleteMessage = () => {
     const { isLoading: isSessionLoading, session } = useSession();

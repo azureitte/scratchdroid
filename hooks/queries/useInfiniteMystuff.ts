@@ -1,8 +1,8 @@
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiReq } from "../util/api";
-import { useSession } from "./useSession";
-import { ScratchMystuffItem } from "../util/types";
+import { apiReq } from "../../util/api";
+import { useSession } from "../useSession";
+import { ScratchMystuffItem } from "../../util/types";
 
 const PROJECTS_PER_PAGE = 40;
 const STUDIOS_PER_PAGE = 40;

@@ -26,7 +26,7 @@ import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import type { FlattenedComment } from '@/util/types';
-import { addPrefixUrl, relativeDate } from '@/util/functions';
+import { addPrefixUrl, relativeDate, sleep } from '@/util/functions';
 import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
 
 import { useSheet } from '@/hooks/useSheet';
@@ -37,6 +37,7 @@ import Button from '@/components/general/Button';
 import type { AddCommentMenuProps } from '@/components/menus/AddCommentMenu';
 import { useSession } from '@/hooks/useSession';
 import { ICONS } from '@/util/assets';
+import ListLoading from './ListLoading';
 
 const COLOR_NOHIGHLIGHT = '#4177FF00';
 const COLOR_HIGHLIGHT = '#4177FF44';
@@ -109,13 +110,13 @@ const Comment = memo(({
                     <Text style={styles.commentSubtext}>
                         { relativeDate(comment.createdAt) }
                     </Text>
-                    <Pressable
+                    { !isShowMore && <Pressable
                         onPress={onReply}
                         style={styles.commentReplyBtn}
                     >
                         <Text style={styles.commentReplyBtnText}>reply</Text>
                         <ReplyIcon style={styles.commentReplyBtnIcon} height={16} />
-                    </Pressable>
+                    </Pressable> }
                 </View>
             </View>
             { isShowMore && <LinearGradient
@@ -156,6 +157,7 @@ type CommentSectionProps = {
 
     hasNextPage?: boolean;
     isLoading?: boolean;
+    isFirstLoading?: boolean;
     fetchNextPage?: () => void;
     fetchReplies?: (parentId: number, from: number, limit: number) => void;
     isRefreshing?: boolean;
@@ -173,6 +175,7 @@ const CommentSection = forwardRef(({
 
     hasNextPage = false,
     isLoading = false,
+    isFirstLoading = false,
     fetchNextPage = () => {},
     fetchReplies,
     isRefreshing = false,
@@ -272,7 +275,7 @@ const CommentSection = forwardRef(({
                     viewPosition: 0.4,
                 });
             } catch (e) {
-                console.log(e);
+                console.error(e);
             }
         },
         revealRepliesUntil: revealRepliesUntil,
@@ -293,7 +296,10 @@ const CommentSection = forwardRef(({
                     isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
                     onShowMore={async () => {
                         if (item.isReply) {
-                            await fetchReplies?.(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
+                            if (fetchReplies) {
+                                await fetchReplies(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
+                                await sleep(0);
+                            }
                             revealMoreReplies(item.parent);
                         }
                     }}
@@ -309,11 +315,14 @@ const CommentSection = forwardRef(({
             stickyHeaderIndices={[1]}
 
             ListHeaderComponent={header}
-            ListFooterComponent={<ListLoadMore
-                hasNextPage={hasNextPage}
-                isLoading={isLoading}
-                fetchNextPage={fetchNextPage}
-            />}
+            ListFooterComponent={isFirstLoading 
+                ? <ListLoading />
+                : <ListLoadMore
+                    hasNextPage={hasNextPage}
+                    isLoading={isLoading}
+                    fetchNextPage={fetchNextPage}
+                />
+            }
             refreshControl={<RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={() => {

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import type { ProjectQueryData, ScratchProject, ScratchProjectFile } from "@/util/types";
 import { apiReq } from "@/util/api";
-import { useSession } from "./useSession";
+import { useSession } from "../useSession";
 
 export const useProject = (projectId: number) => {
     const { session } = useSession();

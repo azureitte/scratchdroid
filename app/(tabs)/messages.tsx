@@ -14,10 +14,10 @@ import type { MessageQueryItem } from '@/util/types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
-import { useUnreadMessages } from '@/hooks/useUnreadMessages';
-import { useInfiniteMessages } from '@/hooks/useInfiniteMessages';
-import { useMarkMessagesRead } from '@/hooks/useMarkMessagesRead';
-import { useDeleteMessage } from '@/hooks/useDeleteMessage';
+import { useUnreadMessages } from '@/hooks/queries/useUnreadMessages';
+import { useInfiniteMessages } from '@/hooks/queries/useInfiniteMessages';
+import { useMarkMessagesRead } from '@/hooks/mutations/useMarkMessagesRead';
+import { useDeleteMessage } from '@/hooks/mutations/useDeleteMessage';
 
 import MessageRow from '@/components/panels/MessageRow';
 import ListLoadMore from '@/components/panels/ListLoadMore';

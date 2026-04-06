@@ -1,14 +1,16 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { parseR2AddCommentResponse } from "@/util/functions";
-import type { FlattenedComment } from "@/util/types";
+import { getCommentFromWww3 } from "@/util/functions";
+import type { Comment, ModernAddCommentResponse, ModernAddCommentResponseRejected, ScratchComment } from "@/util/types";
 import { apiReq } from "@/util/api";
 
-import { useSession } from "./useSession";
+import { useSession } from "../useSession";
+import { FAIL_REASON_MESSAGES } from "@/util/constants";
 
-type AddUserCommentOptions = {
-    username: string;
-    onSuccess?: (comment?: FlattenedComment) => void;
+type AddModernCommentOptions = {
+    type: 'project' | 'studio';
+    objectId: number;
+    onSuccess?: (comment?: Comment) => void;
     onError?: (error: string) => void;
 }
 
@@ -18,18 +20,19 @@ type AddCommentFormData = {
     replyToId?: number;
 }
 
-export const useAddUserComment = ({
-    username,
+export const useAddModernComment = ({
+    type,
+    objectId,
     onSuccess,
     onError,
-}: AddUserCommentOptions) => {
+}: AddModernCommentOptions) => {
     const { isLoggedIn, session } = useSession();
     
     const action = useMutation({
-        mutationKey: ['add-comment', 'user', username],
+        mutationKey: ['add-comment', type, objectId],
         mutationFn: async (payload: AddCommentFormData): Promise<({
             success: true;
-            comment?: FlattenedComment;
+            comment?: Comment;
         }|{
             success: false;
             error: string;
@@ -44,16 +47,18 @@ export const useAddUserComment = ({
                 error: 'You can\'t post an empty comment!'
             };
 
-            const res = await apiReq({
-                path: `/site-api/comments/user/${username}/add/`,
+            const res = await apiReq<ModernAddCommentResponse>({
+                host: 'https://api.scratch.mit.edu',
+                path: `/proxy/comments/${type}/${objectId}`,
                 method: 'POST',
                 body: {
                     content: payload.content,
-                    parent_id: payload.parentId ?? null,
-                    commentee_id: payload.replyToId ?? null,
+                    parent_id: payload.parentId ?? '',
+                    commentee_id: payload.replyToId ?? '',
                 },
                 useCrsf: true,
-                responseType: 'html',
+                auth: session?.user?.token,
+                responseType: 'json',
             });
             if (!res.success) return {
                 success: false,
@@ -64,11 +69,23 @@ export const useAddUserComment = ({
                 error: 'A server-side error occurred. Please try again later.'
             }
 
-            const parsedRes = parseR2AddCommentResponse(res.data, {
-                isReply: !!payload.parentId,
-                parentId: payload.parentId,
-            });
-            return parsedRes;
+            const rejected = res.data as ModernAddCommentResponseRejected;
+            if (rejected.rejected) {
+                return {
+                    success: false,
+                    error: FAIL_REASON_MESSAGES[rejected.rejected](rejected.status.mute_status),
+                };
+            }
+
+            const comment = getCommentFromWww3({
+                ...res.data,
+                parent_id: payload.parentId,
+                commentee_id: payload.replyToId,
+            } as ScratchComment);
+            return {
+                success: true,
+                comment,
+            }
         },
         onSettled: (data) => {
             if (data?.success) {

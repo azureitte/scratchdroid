@@ -51,6 +51,16 @@ export type ScratchSession = {
     };
 };
 
+export type MuteStatus = {
+    currentMessageType: string;
+    muteExpiresAt: number;
+    offenses: {
+        messageType: string;
+        createdAt: number;
+        expiresAt: number;
+    }[];
+}
+
 
 
 export enum CommentType {
@@ -359,7 +369,7 @@ export type ScratchComment = {
     visibility: "visible";
 }
 
-export type FlattenedComment = {
+type CommentBase = {
     id: number;
     content: string;
     author: {
@@ -370,6 +380,22 @@ export type FlattenedComment = {
     };
     createdAt: Date;
     modifiedAt: Date;
+}
+export type RootComment = CommentBase & {
+    isReply: false;
+    replies: ReplyComment[];
+    totalReplies: number;
+}
+export type ReplyComment = CommentBase & {
+    isReply: true;
+    parent: number;
+    replyTo: string;
+}
+export type Comment =
+    | RootComment
+    | ReplyComment;
+
+export type FlattenedComment = CommentBase & {
     isLastInBlock: boolean;  // is the comment the last one in the reply chain
     isHighlighted: boolean;
 } & ({
@@ -392,16 +418,6 @@ export type ModernAddCommentResponseRejected = {
     status: {
         mute_status?: MuteStatus;
     }
-}
-
-export type MuteStatus = {
-    currentMessageType: string;
-    muteExpiresAt: number;
-    offenses: {
-        messageType: string;
-        createdAt: number;
-        expiresAt: number;
-    }[];
 }
 
 

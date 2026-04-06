@@ -7,8 +7,8 @@ import { emit } from '@/util/eventBus';
 
 import { useSheet } from '@/hooks/useSheet';
 import { useSession } from '@/hooks/useSession';
-import { useAddUserComment } from '@/hooks/useAddUserComment';
-import { useAddModernComment } from '@/hooks/useAddModernComment';
+import { useAddUserComment } from '@/hooks/mutations/useAddUserComment';
+import { useAddModernComment } from '@/hooks/mutations/useAddModernComment';
 
 import Button from '@/components/general/Button';
 import TextArea from '@/components/general/TextArea';

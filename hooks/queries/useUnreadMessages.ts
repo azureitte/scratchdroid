@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { apiReq } from "../util/api";
-import { useSession } from "./useSession";
+import { apiReq } from "../../util/api";
+import { useSession } from "../useSession";
 
 export const useUnreadMessages = (persist: boolean = false) => {
     const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();

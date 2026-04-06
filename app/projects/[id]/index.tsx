@@ -12,10 +12,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { projectHasCloudVariables, scrollCommentSectionToId } from '@/util/functions';
 import { off, on } from '@/util/eventBus';
-import type { FlattenedComment } from '@/util/types';
+import type { Comment, FlattenedComment } from '@/util/types';
 
-import { useProject } from '@/hooks/useProject';
-import { useInfiniteProjectComments } from '@/hooks/useInfiniteProjectComments';
+import { useProject } from '@/hooks/queries/useProject';
+import { useProjectComments } from '@/hooks/queries/useProjectComments';
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 
@@ -32,7 +32,7 @@ const ProjectPage = () => {
 
     const project = useProject(Number(id));
     const data = project.data;
-    const comments = useInfiniteProjectComments({
+    const comments = useProjectComments({
         project: Number(id),
         author: data?.project.author.username ?? '',
         highlightedComment: commentId ? Number(commentId) : undefined,
@@ -91,18 +91,19 @@ const ProjectPage = () => {
 
     // insert comments directly when recieved event
     
-    const handleAddComment = useCallback((comment?: FlattenedComment) => {
+    const handleAddComment = useCallback((comment?: Comment) => {
         if (!comment) return;
-        comments.addCommentDirectly(comment);
+        let newData = comments.addCommentDirectly(comment);
         
         setTimeout(() => {
-            let targetIdx = 0;
-            if (comment.isReply) {
-                targetIdx = comments.data.findLastIndex(c => c.parent === comment.parent || c.id === comment.parent);
-                targetIdx++;
-                listRef.current?.revealRepliesUntil(comment.parent, comment.replyIdx);
-            }
-            listRef.current?.scrollToIndex(targetIdx);
+            if (comment.isReply)
+                scrollCommentSectionToId(
+                    listRef.current, 
+                    newData, 
+                    comment.id,
+                );
+            else
+                listRef.current?.scrollToIndex(0);
         }, 100);
     }, [comments.data]);
 
@@ -157,6 +158,7 @@ const ProjectPage = () => {
                 />}
                 hasNextPage={comments.hasNextPage}
                 isLoading={comments.isLoading}
+                isFirstLoading={comments.isFirstLoading}
                 fetchNextPage={comments.fetchNextPage}
                 fetchReplies={comments.fetchRepliesFor}
                 isRefreshing={isRefreshing}

@@ -16,7 +16,7 @@ import { off, on } from '@/util/eventBus';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
-import { useInfiniteMystuff } from '@/hooks/useInfiniteMystuff';
+import { useInfiniteMystuff } from '@/hooks/queries/useInfiniteMystuff';
 import { useGlobalScroll } from '@/hooks/useGlobalScroll';
 
 import MystuffRow from '@/components/panels/MystuffRow';
