@@ -33,7 +33,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✅ View project/studio comments
    - ✖️ Display links, mentions and emojis in comments
    - ✅ Post comments
-   - ✖️ Delete/report comments
+   - 🟡 Delete/report comments
 
 - 🟡 Project management
    - ✅ View public projects
