@@ -1,6 +1,5 @@
 import React, { 
     forwardRef, 
-    memo, 
     ReactElement,
     useImperativeHandle, 
     useRef, 
@@ -14,128 +13,23 @@ import {
     FlatList, 
     ViewStyle, 
     RefreshControl, 
-    Pressable
+    Pressable,
 } from 'react-native';
-import Animated, { 
-    Easing,
-    useAnimatedStyle, 
-    useDerivedValue, 
-    withTiming 
-} from 'react-native-reanimated';
-import { Link } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 import type { FlattenedComment } from '@/util/types';
-import { addPrefixUrl, relativeDate, sleep } from '@/util/functions';
+import { addPrefixUrl, sleep } from '@/util/functions';
 import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
 
+import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
 
 import Heading from '@/components/general/Heading';
 import ListLoadMore from '@/components/panels/ListLoadMore';
-import Button from '@/components/general/Button';
+import ListLoading from '@/components/panels/ListLoading';
+import CommentItem from '@/components/panels/CommentItem';
 import type { AddCommentMenuProps } from '@/components/menus/AddCommentMenu';
-import { useSession } from '@/hooks/useSession';
-import { ICONS } from '@/util/assets';
-import ListLoading from './ListLoading';
-
-const COLOR_NOHIGHLIGHT = '#4177FF00';
-const COLOR_HIGHLIGHT = '#4177FF44';
-
-type CommentProps = {
-    comment: FlattenedComment;
-    isHighlighted?: boolean;
-    isShowMore?: boolean;
-    onShowMore?: () => void;
-    onReply?: () => void;
-}
-
-const Comment = memo(({
-    comment,
-    isHighlighted = false,
-    isShowMore = false,
-    onShowMore,
-    onReply,
-}: CommentProps) => {
-
-    const [ isFetching, setIsFetching ] = useState(false);
-
-    const highlightColor = useDerivedValue(() => {
-        return withTiming(
-            isHighlighted ? COLOR_HIGHLIGHT : COLOR_NOHIGHLIGHT,
-            { duration: 700, easing: Easing.inOut(Easing.cubic) }
-        );
-    }, [isHighlighted]);
-
-    const wrapperStyle = useAnimatedStyle(() => ({
-        backgroundColor: highlightColor.value,
-    }));
-
-    const ReplyIcon = ICONS.reply;
-
-    return (<Animated.View style={[
-        styles.commentWrapper,
-        comment.isReply && styles.reply,
-        comment.isLastInBlock && styles.commentLast,
-        wrapperStyle,
-    ]}>
-        <Link href={`/users/${comment.author.username}`} style={[
-                styles.commentAvatarWrap,
-                comment.isHighlighted && styles.commentAvatarHighlight,
-            ]}>
-            <Image source={{ uri: comment.author.image }} style={styles.commentAvatar} />
-        </Link>
-        <View style={styles.commentRight}>
-            { comment.isHighlighted && <View style={styles.commentBadge}>
-                <Text style={styles.commentBadgeText}>
-                    { comment.isReply ? 'Highlighted reply' : 'Highlighted comment' }
-                </Text>
-            </View> }
-
-            <Text style={styles.authorStatus} numberOfLines={1}>
-                <Link href={`/users/${comment.author.username}`} style={styles.mentionLink}>
-                    @{ comment.author.username }
-                </Link>
-                { comment.replyTo && ` to @${comment.replyTo}` }
-            </Text>
-            <View style={[
-                styles.commentBubbleWrap,
-                isShowMore && styles.replyMore,
-            ]}>
-                <View style={styles.commentBubbleDeco} />
-                <View style={styles.commentBubble}>
-                    <Text style={styles.commentText} selectable>
-                        { comment.content }
-                    </Text>
-                    <Text style={styles.commentSubtext}>
-                        { relativeDate(comment.createdAt) }
-                    </Text>
-                    { !isShowMore && <Pressable
-                        onPress={onReply}
-                        style={styles.commentReplyBtn}
-                    >
-                        <Text style={styles.commentReplyBtnText}>reply</Text>
-                        <ReplyIcon style={styles.commentReplyBtnIcon} height={16} />
-                    </Pressable> }
-                </View>
-            </View>
-            { isShowMore && <LinearGradient
-                colors={['#12121200', '#121212']}
-                style={styles.commentReplyFade}
-            /> }
-            { isShowMore && <Button
-                text="More Replies"
-                onPress={async () => {
-                    setIsFetching(true);
-                    await onShowMore?.();
-                    setIsFetching(false);
-                }}
-                role="secondary"
-                isLoading={isFetching}
-            /> }
-        </View>
-    </Animated.View>);
-});
+import { CommentOptionsMenuProps } from '../menus/CommentOptionsMenu';
 
 
 export type CommentSectionRef = {
@@ -154,6 +48,7 @@ type CommentSectionProps = {
     comments: FlattenedComment[];
     listStyle?: ViewStyle;
     header?: ReactElement;
+    isOwn?: boolean;
 
     hasNextPage?: boolean;
     isLoading?: boolean;
@@ -172,6 +67,7 @@ const CommentSection = forwardRef(({
     comments,
     listStyle,
     header,
+    isOwn = false,
 
     hasNextPage = false,
     isLoading = false,
@@ -215,6 +111,24 @@ const CommentSection = forwardRef(({
             parentId: parentId,
             replyToId: replyToId,
             replyToUsername: replyToUsername,
+        });
+    }
+
+    const handleCommentOptions = (comment: FlattenedComment) => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        sheet.push<CommentOptionsMenuProps>('commentOptions', { 
+            comment,
+            type,
+            objectId,
+            objectName,
+            canDelete: isOwn,
+            canReport: comment.author.id !== session?.user?.id,
+            canReply: true,
+            getUrl: () => (
+                type === 'user' ? `/users/${objectName}/` :
+                type === 'project' ? `/projects/${objectId}/` :
+                type === 'studio' && `/studios/${objectId}/`
+            ) + `#comments-${comment.id}`
         });
     }
 
@@ -290,23 +204,29 @@ const CommentSection = forwardRef(({
             }) => {
                 if (index === 0 || item === null) return stickyHeader;
                 if (item.isReply && getReplyRevealCount(item.parent) <= item.replyIdx) return null;
-                return <Comment 
-                    comment={item!} 
-                    isHighlighted={index === highlightIdx.current && isHighlighting}
-                    isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
-                    onShowMore={async () => {
-                        if (item.isReply) {
-                            if (fetchReplies) {
-                                await fetchReplies(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
-                                await sleep(0);
+                return <Pressable
+                    style={styles.commentPressableWrapper}
+                    onLongPress={() => handleCommentOptions(item)}
+                    delayLongPress={500}
+                >
+                    <CommentItem 
+                        comment={item!} 
+                        isHighlighted={index === highlightIdx.current && isHighlighting}
+                        isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
+                        onShowMore={async () => {
+                            if (item.isReply) {
+                                if (fetchReplies) {
+                                    await fetchReplies(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
+                                    await sleep(0);
+                                }
+                                revealMoreReplies(item.parent);
                             }
-                            revealMoreReplies(item.parent);
-                        }
-                    }}
-                    onReply={() => {
-                        handleAddReply(item.parent ?? item.id, Number(item.author.id), item.author.username)
-                    }}
-                />
+                        }}
+                        onReply={() => {
+                            handleAddReply(item.parent ?? item.id, Number(item.author.id), item.author.username)
+                        }}
+                    />
+                </Pressable>
             }}
             keyExtractor={(item): any => item?.id}
             style={[styles.commentsList, listStyle]} 
@@ -425,140 +345,7 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
 
-    commentWrapper: {
+    commentPressableWrapper: {
         flex: 1,
-        flexDirection: "row",
-        marginBottom: 16,
-        paddingHorizontal: 16,
-        position: 'relative',
-    },
-    reply: {
-        paddingLeft: 64,
-    },
-    commentLast: {
-        paddingBottom: 20,
-        marginBottom: 20,
-        borderBottomWidth: 1,
-        borderBottomColor: '#262626',
-    },
-    commentHighlighted: {
-        backgroundColor: '#4177ff44',  
-    },
-    replyMore: {
-        height: 50,
-        overflow: 'hidden',
-    },
-
-    commentAvatarWrap: {
-        display: 'flex',
-        width: 42, 
-        height: 42,
-        marginRight: 10,
-    },
-    commentAvatar: { 
-        width: 42, 
-        height: 42, 
-        borderRadius: 8,
-    },
-    commentAvatarHighlight: {
-        marginTop: 24,
-    },
-
-    commentRight: {
-        gap: 8,
-        flex: 1,
-    },
-    commentBubbleWrap: {
-        flex: 1,
-        flexDirection: "row",
-    },
-
-    commentBadge: {
-        flexDirection: "row",
-    },
-    commentBadgeText: {
-        color: "#ffffff9e",
-        fontSize: 12,
-        backgroundColor: "#ffffff22",
-        paddingHorizontal: 8,
-        height: 16,
-        borderRadius: 4,
-        flex: 0,
-    },
-
-    commentBubbleDeco: {
-        width: 20,
-        height: 16,
-        borderBottomStartRadius: 16,
-        backgroundColor: "#212121",
-        borderWidth: 2,
-        borderEndColor: "#212121",
-        marginRight: -2.5,
-        zIndex: 1,
-        borderColor: "#353535",
-    },
-    commentBubble: {
-        padding: 16,
-        paddingBottom: 12,
-        minHeight: 58,
-        borderRadius: 8,
-        borderTopStartRadius: 0,
-        backgroundColor: "#212121",
-        borderWidth: 2,
-        borderColor: "#353535",
-        flex: 1,
-    },
-    commentText: {
-        fontSize: 16,
-        lineHeight: 24,
-        fontWeight: 400,
-        color: "#fff",
-    },
-    commentSubtext: {
-        marginTop: 16,
-        fontSize: 14,
-        fontWeight: 400,
-        color: "#6C6C6C",
-    },
-
-    commentReplyBtn: {
-        position: 'absolute',
-        bottom: -10,
-        right: 8,
-        paddingLeft: 40,
-        height: 60,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-end',
-        // backgroundColor: '#fff',
-    },
-    commentReplyBtnText: {
-        fontSize: 14,
-        fontWeight: 600,
-        color: '#93C0FF',
-    },
-    commentReplyBtnIcon: {
-        marginLeft: 2,
-    },
-
-    commentReplyFade: {
-        position: 'absolute',
-        bottom: 40,
-        left: 0,
-        right: 0,
-        height: 80,
-    },
-
-    authorStatus: {
-        fontSize: 14,
-        fontWeight: 500,
-        color: '#666',
-        fontStyle: 'italic',
-    },
-    mentionLink: {
-        color: "#93C0FF",
-        fontWeight: 600,
-        fontSize: 16,
-        fontStyle: 'normal',
     },
 });

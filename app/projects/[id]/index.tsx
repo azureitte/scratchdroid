@@ -107,10 +107,22 @@ const ProjectPage = () => {
         }, 100);
     }, [comments.data]);
 
+    const handleDeleteComment = useCallback((comment: Comment) => {
+        comments.deleteCommentDirectly(comment);
+    }, [comments]);
+
+    const handleReplaceComment = useCallback((comment: Comment) => {
+        comments.replaceCommentDirectly(comment);
+    }, [comments]);
+
     useFocusEffect(() => {
         on('add-comment', handleAddComment);
+        on('delete-comment', handleDeleteComment);
+        on('replace-comment', handleReplaceComment);
         return () => {
             off('add-comment', handleAddComment);
+            off('delete-comment', handleDeleteComment);
+            off('replace-comment', handleReplaceComment);
         };
     });
 
@@ -145,6 +157,7 @@ const ProjectPage = () => {
                 type='project'
                 objectId={Number(id)}
                 comments={comments.data}
+                isOwn={session?.user?.username === data?.project.author.username}
                 header={<ProjectPageHeader 
                     project={data.project}
                     projectId={Number(id)}

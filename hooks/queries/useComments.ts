@@ -155,6 +155,39 @@ export const useComments = ({
         return flattenComments(newData.pages.flat(), { highlightedId: comment.id });
     }
 
+    const deleteCommentDirectly = (comment?: Comment) => {
+        if (!comment) return;
+        queryClient.setQueryData(queryKey, (oldData: InfiniteData<RootComment[]>) => produce(oldData, draft => {
+            if (comment.isReply) {
+                const parentComment = draft.pages.flat().find(c => c.id === comment.parent);
+                if (!parentComment) return;
+                parentComment.replies = parentComment.replies.filter(r => r.id !== comment.id);
+            } else {
+                const targetPageIdx = draft.pages.findIndex(p => !!p.find(c => c.id === comment.id));
+                if (targetPageIdx === -1) return;
+                draft.pages[targetPageIdx] = draft.pages[targetPageIdx].filter(c => c.id !== comment.id);
+            }
+        }));
+    };
+
+    const replaceCommentDirectly = (comment?: Comment) => {
+        if (!comment) return;
+        queryClient.setQueryData(queryKey, (oldData: InfiniteData<RootComment[]>) => produce(oldData, draft => {
+            if (comment.isReply) {
+                const parentComment = draft.pages.flat().find(c => c.id === comment.parent);
+                if (!parentComment) return;
+                const targetReplyIdx = parentComment.replies.findIndex(r => r.id === comment.id);
+                if (targetReplyIdx === -1) return;
+                parentComment.replies[targetReplyIdx] = comment;
+            } else {
+                const targetPageIdx = draft.pages.findIndex(p => !!p.find(c => c.id === comment.id));
+                if (targetPageIdx === -1) return;
+                const targetCommentIdx = draft.pages[targetPageIdx].findIndex(c => c.id === comment.id);
+                draft.pages[targetPageIdx][targetCommentIdx] = comment;
+            }
+        }));
+    };
+
     const data = useMemo(() => commentsQuery.data?.pages.flat() ?? [], [commentsQuery.data]);
     const flatData = useMemo(() => flattenComments(data, { highlightedId }), [commentsQuery.data, highlightedId]);
 
@@ -173,7 +206,9 @@ export const useComments = ({
         resetToFirstPage,
         refresh,
         
-        addCommentDirectly, 
+        addCommentDirectly,
+        deleteCommentDirectly,
+        replaceCommentDirectly,
     };
 
 }

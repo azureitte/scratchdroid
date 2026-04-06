@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { View, StyleSheet, TextInput, Text, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { View, StyleSheet, Text, Image } from 'react-native';
 
 import { addPrefixUrl, buildMenu } from '@/util/functions';
 import { emit } from '@/util/eventBus';

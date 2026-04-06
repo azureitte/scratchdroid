@@ -24,6 +24,8 @@ export const useUserComments = ({
         resetToFirstPage,
         refresh,
         addCommentDirectly,
+        deleteCommentDirectly,
+        replaceCommentDirectly,
     } = useComments({
         queryKey,
         firstPage: 1,
@@ -59,5 +61,7 @@ export const useUserComments = ({
         resetToFirstPage,
         refresh,
         addCommentDirectly,
+        deleteCommentDirectly,
+        replaceCommentDirectly,
     };
 };

@@ -94,8 +94,10 @@ export const useProjectComments = ({
         fetchNextPage,
         resetToFirstPage,
         refresh,
-        addCommentDirectly,
         fetchRepliesFor,
+        addCommentDirectly,
+        deleteCommentDirectly,
+        replaceCommentDirectly,
     } = useComments({
         queryKey,
         firstPage: 0,
@@ -210,6 +212,32 @@ export const useProjectComments = ({
         }
     }
 
+    const deleteCommentDirectlyHightlight = (comment?: Comment) => {
+        if (!comment) return;
+        deleteCommentDirectly(comment);
+        setHighlight(null);
+    }
+
+    const replaceCommentDirectlyHightlight = (comment?: Comment) => {
+        if (!comment) return;
+        if (highlight !== null) {
+            setHighlight(prev => produce(prev, draft => {
+                if (!draft) return;
+                if (comment.isReply) {
+                    const targetCommentIdx = draft.replies.findIndex(c => c.id === comment.parent);
+                    if (targetCommentIdx === -1) return;
+                    draft.replies[targetCommentIdx] = comment;
+                } else {
+                    if (draft.id === comment.id) {
+                        return comment;
+                    }
+                }
+            }));
+        } else {
+            replaceCommentDirectly(comment);
+        }
+    }
+
     return { 
         data: highlight 
             ? flattenComments([highlight], { highlightedId: highlightedComment })
@@ -224,6 +252,8 @@ export const useProjectComments = ({
         refresh: clearAndRefresh,
         fetchRepliesFor,
         addCommentDirectly: addCommentDirectlyWithHighlight,
+        deleteCommentDirectly: deleteCommentDirectlyHightlight,
+        replaceCommentDirectly: replaceCommentDirectlyHightlight,
         isSuccess,
     };
 };

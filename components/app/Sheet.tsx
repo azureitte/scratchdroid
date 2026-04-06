@@ -13,12 +13,14 @@ import Test from '../menus/Test';
 import Test2 from '../menus/Test2';
 import CreateMenu from '../menus/CreateMenu';
 import AddCommentMenu from '../menus/AddCommentMenu';
+import CommentOptionsMenu from '../menus/CommentOptionsMenu';
 
 const MENUS = {
     test1: Test,
     test2: Test2,
     create: CreateMenu,
-    addComment: AddCommentMenu
+    addComment: AddCommentMenu,
+    commentOptions: CommentOptionsMenu,
 } as const;
 
 export type SheetMenuName = keyof typeof MENUS;

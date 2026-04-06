@@ -3,6 +3,8 @@ import type { MuteStatus } from "./types";
 
 export const IS_DEV = process.env.NODE_ENV === 'development';
 
+export const WEBSITE_URL = 'https://scratch.mit.edu';
+
 export const DEFAULT_RIPPLE_CONFIG = { 
     color: "#fff3", 
     foreground: true 

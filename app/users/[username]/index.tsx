@@ -6,11 +6,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { scrollCommentSectionToId } from '@/util/functions';
 import { off, on } from '@/util/eventBus';
-import type { Comment, FlattenedComment } from '@/util/types';
+import type { Comment } from '@/util/types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useUserComments } from '@/hooks/queries/useUserComments';
 import { useUser } from '@/hooks/queries/useUser';
+import { useSession } from '@/hooks/useSession';
 
 import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
 import ListLoading from '@/components/panels/ListLoading';
@@ -23,6 +24,8 @@ const UserPage = () => {
         username: string,
         commentId?: string,
     }>();
+
+    const { session } = useSession();
 
     const user = useUser(username);
     const comments = useUserComments({
@@ -85,10 +88,22 @@ const UserPage = () => {
         }, 100);
     }, [comments.data]);
 
+    const handleDeleteComment = useCallback((comment: Comment) => {
+        comments.deleteCommentDirectly(comment);
+    }, [comments]);
+
+    const handleReplaceComment = useCallback((comment: Comment) => {
+        comments.replaceCommentDirectly(comment);
+    }, [comments]);
+
     useFocusEffect(() => {
         on('add-comment', handleAddComment);
+        on('delete-comment', handleDeleteComment);
+        on('replace-comment', handleReplaceComment);
         return () => {
             off('add-comment', handleAddComment);
+            off('delete-comment', handleDeleteComment);
+            off('replace-comment', handleReplaceComment);
         };
     });
 
@@ -126,6 +141,7 @@ const UserPage = () => {
             objectId={user.data.user.id}
             objectName={username}
             comments={comments.data} 
+            isOwn={session?.user?.username === username}
             header={<UserPageHeader 
                 data={user.data} 
                 username={username}
