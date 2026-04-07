@@ -35,6 +35,11 @@ export const useProjectComments = ({
     // map between user id and username
     const userMap = useRef<Map<number, string>>(new Map());
 
+    useEffect(() => {
+        if (!session?.user) return;
+        userMap.current.set(session.user.id, session.user.username);
+    }, [session]);
+
 
     const fetchRootComments = useCallback(async (
         from: number = 0, 
@@ -54,10 +59,13 @@ export const useProjectComments = ({
         if (!commentsRes.success) throw new Error(commentsRes.error);
         if (commentsRes.status === 404) return [];
 
-        return commentsRes.data.map(comment => getCommentFromWww3(comment, {
-            replies: [],
-            userMap: userMap.current,
-        }) as RootComment);
+        return commentsRes.data.map(comment => {
+            userMap.current.set(comment.author.id, comment.author.username);
+            return getCommentFromWww3(comment, {
+                replies: [],
+                userMap: userMap.current,
+            }) as RootComment;
+        });
     }, [author, project, session]);
 
     const fetchReplies = useCallback(async (
@@ -79,9 +87,12 @@ export const useProjectComments = ({
         if (!repliesRes.success) throw new Error(repliesRes.error);
         if (repliesRes.status === 404) return [];
         
-        return repliesRes.data.map(comment => getCommentFromWww3(comment, {
-            userMap: userMap.current,
-        }) as ReplyComment);
+        return repliesRes.data.map(comment => {
+            userMap.current.set(comment.author.id, comment.author.username);
+            return getCommentFromWww3(comment, {
+                userMap: userMap.current,
+            }) as ReplyComment;
+        });
     }, [author, project, session]);
 
     const {
@@ -105,8 +116,8 @@ export const useProjectComments = ({
         optimistic: false,
         fetchRootComments: page => fetchRootComments(page * COMMENTS_PER_PAGE),
         fetchRepliesFor: fetchReplies,
-        enabled: isLoggedIn && !!author,
-    })
+        enabled: isLoggedIn && !!author && enabled,
+    });
 
     const fetchHighlight = useCallback(async (commentId: number) => {
         setHighlightLoaded(false);

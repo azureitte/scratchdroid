@@ -23,6 +23,7 @@ import { relativeDate } from '@/util/functions';
 
 import Button from '@/components/general/Button';
 import { ICONS } from '@/util/assets';
+import CommentContent from './CommentContent';
 
 const COLOR_NOHIGHLIGHT = '#4177FF00';
 const COLOR_HIGHLIGHT = '#4177FF44';
@@ -92,9 +93,10 @@ const CommentItem = memo(({
             ]}>
                 <View style={styles.commentBubbleDeco} />
                 <View style={styles.commentBubble}>
-                    <Text style={styles.commentText} numberOfLines={isIsolated ? 1 : undefined}>
-                        { comment.content }
-                    </Text>
+                    <CommentContent 
+                        content={comment.content} 
+                        numberOfLines={isIsolated ? 1 : undefined} 
+                    />
                     { !isIsolated && <Text style={styles.commentSubtext}>
                         { relativeDate(comment.createdAt) }
                     </Text> }
@@ -218,12 +220,6 @@ const styles = StyleSheet.create({
         borderColor: "#353535",
         flex: 1,
     },
-    commentText: {
-        fontSize: 16,
-        lineHeight: 24,
-        fontWeight: 400,
-        color: "#fff",
-    },
     commentSubtext: {
         marginTop: 16,
         fontSize: 14,
@@ -264,6 +260,7 @@ const styles = StyleSheet.create({
         color: '#666',
         fontStyle: 'italic',
     },
+    
     mentionLink: {
         color: "#93C0FF",
         fontWeight: 600,

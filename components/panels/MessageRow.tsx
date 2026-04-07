@@ -1,11 +1,12 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Image, StyleSheet, Text, View, Dimensions } from "react-native";
 
 import { CommentType, type ScratchMessage } from "@/util/types";
 import { SVGS } from "@/util/assets";
 
 import { Link } from "expo-router";
-import { shortRelativeDate } from "@/util/functions";
+import { getCommentContentFromString, shortRelativeDate } from "@/util/functions";
+import CommentContent from "./CommentContent";
 
 
 const getIcon = (message: ScratchMessage) => {
@@ -39,6 +40,11 @@ const MessageRow = memo(({
 }: MessageRowProps) => {
 
     const Icon = getIcon(message);
+
+    const messageContent = useMemo(() => {
+        if (message.type !== 'addcomment') return [];
+        return getCommentContentFromString(message.comment_fragment);
+    }, [(message as any).comment_fragment]);
 
     return (
         <View style={[styles.container, isUnread && styles.unread]}>
@@ -182,16 +188,10 @@ const MessageRow = memo(({
                         <Image source={{ uri: `https://uploads.scratch.mit.edu/get_image/user/${message.actor_id}_32x32.png` }} style={styles.commentAvatar} />
                         <View style={styles.commentBubbleDeco} />
                         <View style={styles.commentBubble}>
-                            <Text style={styles.commentText} selectable>
-                                {
-                                    message.comment_fragment
-                                        .replaceAll('\n', ' ')
-                                        .replaceAll('&quot;', '"')
-                                        .replaceAll('&amp;', '&')
-                                        .replaceAll('&lt;', '<')
-                                        .replaceAll('&gt;', '>')
-                                }
-                            </Text>
+                            <CommentContent 
+                                content={messageContent}
+                                numberOfLines={16}
+                            />
                         </View>
                     </View>
                 }

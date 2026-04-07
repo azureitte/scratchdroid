@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { reloadAsync } from 'expo-updates';
 
+import { IMAGES } from '@/util/assets';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import Button from '@/components/general/Button';
-import { IMAGES } from '@/util/assets';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ServiceUnavailablePage = () => {
 

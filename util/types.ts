@@ -369,9 +369,40 @@ export type ScratchComment = {
     visibility: "visible";
 }
 
+export type CommentContentNode =
+    | CommentContentNodeText
+    | CommentContentNodeLink
+    | CommentContentNodeMention
+    | CommentContentNodeEmoji;
+
+type CommentContentNodeText = {
+    type: 'text';
+    text: string;
+    key: string;
+}
+type CommentContentNodeLink = {
+    type: 'link';
+    text: string;
+    url: string;
+    isExternal: boolean;
+    key: string;
+}
+type CommentContentNodeMention = {
+    type: 'mention';
+    text: string;
+    username: string;
+    key: string;
+}
+type CommentContentNodeEmoji = {
+    type: 'emoji';
+    text: string;
+    imageUrl: string;
+    key: string;
+}
+
 type CommentBase = {
     id: number;
-    content: string;
+    content: CommentContentNode[];
     author: {
         id: number;
         username: string;

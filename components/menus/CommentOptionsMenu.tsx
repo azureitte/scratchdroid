@@ -1,7 +1,7 @@
 import { Share, StyleSheet, View, Alert, AlertButton } from 'react-native';
 import * as Clipboard from "expo-clipboard";
 
-import { buildMenu } from '@/util/functions';
+import { buildMenu, commentContentToString } from '@/util/functions';
 import { WEBSITE_URL } from '@/util/constants';
 import type { FlattenedComment } from '@/util/types';
 
@@ -56,7 +56,7 @@ const CommentOptionsMenu = ({
     });
 
     const handleCopy = async () => {
-        await Clipboard.setStringAsync(comment.content);
+        await Clipboard.setStringAsync(commentContentToString(comment.content));
         sheet.pop();
     }
 

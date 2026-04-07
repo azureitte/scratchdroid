@@ -61,3 +61,24 @@ export const FAIL_REASON_MESSAGES: Record<string, (muteStatus?: MuteStatus) => s
     isTooLong: (_?: MuteStatus) =>
         "That's too long!",
 }
+
+export const SCRATCH_EMOJI_CODES: Record<string, string> = {
+    'meow': '_meow_',
+    'camera': '_camera_',
+    'map': '_map_',
+    'pizza': '_pizza_',
+    'cat': '_:)_',
+    'aww-cat': '_:D_',
+    'wink-cat': '_;P_',
+    'lol-cat': '_:\'P_',
+    'love-it-cat': '_<3_',
+    'fav-it-cat': '_**_',
+    'cool-cat': '_B)_',
+    'tongue-out-cat': '_:P_',
+    'pizza-cat': '_:D<_',
+    'rainbow-cat': '_:))_',
+}
+
+export const EMOJI_CONTAIN_CODES = [
+    '_camera_', '_map_', '_pizza_', '_meow_',
+]

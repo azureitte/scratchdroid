@@ -31,7 +31,7 @@ This project is currently in development and is incomplete. Here is where it's c
 - 🟡 Comment management
    - ✅ View user comments
    - ✅ View project/studio comments
-   - ✖️ Display links, mentions and emojis in comments
+   - ✅ Display links, mentions and emojis in comments
    - ✅ Post comments
    - 🟡 Delete/report comments
 

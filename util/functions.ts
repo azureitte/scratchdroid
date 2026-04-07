@@ -1,9 +1,9 @@
-import { HTMLElement } from "node-html-parser";
-import he from "he";
+import { HTMLElement, Node, NodeType, parse } from "node-html-parser";
 import { formatDistanceToNow, format } from 'date-fns';
 
 import type { 
     Comment,
+    CommentContentNode,
     FlattenedComment, 
     PartialSheetMenuDefinition, 
     ReplyComment, 
@@ -13,8 +13,7 @@ import type {
     SheetMenuDefinition 
 } from "./types";
 import { CommentSectionRef } from "@/components/panels/CommentSection";
-import { FAIL_REASON_MESSAGES } from "./constants";
-import { InfiniteData } from "@tanstack/react-query";
+import { FAIL_REASON_MESSAGES, SCRATCH_EMOJI_CODES, WEBSITE_URL } from "./constants";
 
 export function shortRelativeDate(date: Date) {
     const diff = (Date.now() - date.getTime()) / 1000;
@@ -83,6 +82,185 @@ export const truncateText = (text: string, maxLength: number, charPerNewLine: nu
     return [text.slice(0, idx).trimEnd() + '...', true];
 }
 
+export const randstr = (len: number) => {
+    const soup = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_';
+    let str = '';
+    for (let i = 0; i < len; i++) {
+        str += soup.charAt(Math.floor(Math.random() * soup.length));
+    }
+    return str;
+}
+
+export const parseMention = (text: string): [false, null, null]|[true, string, string] => {
+    const mentionRegex = /^(@[A-Za-z0-9_-]+)(.*)$/;
+    const match = text.match(mentionRegex);
+    if (!match) return [false, null, null];
+    return [true, match[1], match[2]];
+}
+
+export const splitTextContentNode = (text: string) => {
+    const nodes: CommentContentNode[] = [];
+    const textSpl = text.split(' ');
+
+    const urlRegex = /^https?:\/\/([\w-]+\.)+[\w-]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/;
+
+    let acc = '';
+    for (const word of textSpl) {
+        const [isMention, mention, rest] = parseMention(word);
+        const isUrl = urlRegex.test(word);
+
+        if (isMention || isUrl) {
+            if (acc.length > 0) {
+                nodes.push({
+                    type: 'text',
+                    text: acc.replace(/\s+/g, ' '),
+                    key: randstr(8),
+                });
+            }
+            acc = ' ';
+            if (isMention) {
+                nodes.push({
+                    type: 'mention',
+                    text: mention,
+                    username: word.slice(1),
+                    key: randstr(8),
+                });
+                nodes.push({
+                    type: 'text',
+                    text: rest,
+                    key: randstr(8),
+                });
+            } else {
+                nodes.push({
+                    type: 'link',
+                    text: word,
+                    url: word,
+                    isExternal: true,
+                    key: randstr(8),
+                });
+            }
+        } else {
+            acc += word + ' ';
+        }
+    }
+    
+    // add last text node
+    if (acc.length > 0) {
+        nodes.push({
+            type: 'text',
+            text: acc.replace(/\s+/g, ' '),
+            key: randstr(8),
+        });
+        acc = '';
+    }
+
+    return nodes;
+}
+
+export function decodeCommentContent (root: HTMLElement|null, skipFirst = false): [CommentContentNode[], CommentContentNode|undefined] {
+    if (!root) return [[], undefined];
+
+    let skip: CommentContentNode|undefined;
+
+    let nodes = root.childNodes;
+    if (nodes[0].nodeType === NodeType.TEXT_NODE && nodes[0].textContent.trim() === '') {
+        nodes = nodes.slice(1);
+    }
+
+    const content = nodes.reduce((acc, node, idx) => {
+        const key = randstr(8);
+        let contentNode: CommentContentNode|undefined;
+        const shouldSkip = skipFirst && idx === 0;
+        const shouldPush = !shouldSkip;
+
+        // text nodes
+        if (node.nodeType === NodeType.TEXT_NODE) {
+            let text = (node.textContent ?? '')
+                .replaceAll('\n', ' ') // turn newlines into spaces
+                .replace(/\s+/g, ' ') // remove multiple spaces
+
+            if (idx === 0 || (skipFirst && idx === 1)) 
+                text = text.trimStart();
+            if (idx === nodes.length - 1) 
+                text = text.trimEnd();
+
+            const splitNodes = splitTextContentNode(text);
+
+            contentNode = splitNodes[0];
+            acc.push(...splitNodes);
+
+        // link and mention nodes
+        } else if (node.nodeType === NodeType.ELEMENT_NODE) {
+            const elem = node as HTMLElement;
+            if (elem.tagName === 'A') {
+                let href = elem.getAttribute('href') ?? '';
+                const text = elem.innerText;
+
+                // mention nodes
+                if (text.startsWith('@') && href.startsWith('/users/')) {
+                    contentNode = {
+                        type: 'mention',
+                        text,
+                        username: text.slice(1),
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+
+                // link nodes
+                } else {
+                    const isExternal = href.startsWith(WEBSITE_URL);
+                    if (isExternal) href = href.slice(WEBSITE_URL.length);
+                    contentNode = {
+                        type: 'link',
+                        text,
+                        url: href,
+                        isExternal,
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+                }
+
+            // emoji nodes
+            } else if (elem.tagName === 'IMG') {
+                if (elem.classList.contains('easter-egg')) {
+                    const src = elem.getAttribute('src') ?? '';
+                    const emojiName = src.slice(src.lastIndexOf('/') + 1).split('.')[0];
+                    contentNode = {
+                        type: 'emoji',
+                        text: SCRATCH_EMOJI_CODES[emojiName] ?? emojiName,
+                        imageUrl: addPrefixUrl(src),
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+                } else if (elem.classList.contains('emoji')) {
+                    const src = WEBSITE_URL + (elem.getAttribute('src') ?? '');
+                    const emojiName = src.slice(src.lastIndexOf('/') + 1).split('.')[0];
+                    contentNode = {
+                        type: 'emoji',
+                        text: SCRATCH_EMOJI_CODES[emojiName] ?? emojiName,
+                        imageUrl: addPrefixUrl(src),
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+                }
+            }
+        }
+
+        if (shouldSkip) skip = contentNode;
+        return acc;
+    }, [] as CommentContentNode[]);
+
+    return [content, skip];
+}
+
+export function commentContentToString (content: CommentContentNode[]) {
+    return content.reduce((acc, node) => {
+        //if ()
+        return acc + (node?.text ?? '');
+    }, '');
+}
+
+
 type CommentR2Return<T> = T extends true 
     ? ReplyComment 
     : RootComment;
@@ -95,11 +273,9 @@ export function getCommentFromR2 <T extends boolean>(
     }
 ): CommentR2Return<T> {
     const id = Number(commentElem.getAttribute('data-comment-id'));
-    let content = commentElem.querySelector('.content')?.innerText ?? '';
-    content = content
-        .replaceAll('\n', ' ') // turn newlines into spaces
-        .replace(/\s+/g, ' ') // remove multiple spaces
-        .trim();
+    let contentElem = commentElem.querySelector('.content');
+
+    let [content, skip] = decodeCommentContent(contentElem, opts.isReply);
 
     const authorUsername = commentElem.querySelector('.name')?.children[0]?.innerText ?? '';
     const authorId = commentElem.querySelector('[data-commentee-id]')?.getAttribute('data-commentee-id') ?? authorUsername;
@@ -114,12 +290,7 @@ export function getCommentFromR2 <T extends boolean>(
     const createdAtStr = commentElem.querySelector('.time')?.getAttribute('title');
     const createdAt = createdAtStr ? new Date(createdAtStr) : new Date(0);
 
-    let replyTo = null;
-    if (opts.isReply) {
-        const contentSpl = content.split(' ')
-        replyTo = contentSpl[0].slice(1);
-        content = contentSpl.slice(1).join(' ');
-    }
+    const replyTo = skip?.type === 'mention' && skip.username;
 
     if (opts.isReply) {
         return {
@@ -130,7 +301,7 @@ export function getCommentFromR2 <T extends boolean>(
             modifiedAt: createdAt,
             isReply: true,
             parent: opts.parentId!,
-            replyTo: replyTo!,
+            replyTo: replyTo || '',
         } as any;
     } else {
         return {
@@ -216,15 +387,21 @@ export function parseR2AddCommentResponse (root: HTMLElement, opts: {
     };
 }
 
+export const getCommentContentFromString = (content: string): CommentContentNode[] => {
+    return decodeCommentContent(parse(content))[0];
+}
+
 export const getCommentFromWww3 = (comment: ScratchComment, opts?: {
     replies?: ReplyComment[];
     userMap?: Map<number, string>;
 }): Comment => {
     const isReply = comment.parent_id != null;
 
+    const content = getCommentContentFromString(comment.content);
+
     if (isReply) { return {
         id: comment.id,
-        content: decodeWww3Comment(comment.content),
+        content,
         author: {
             id: comment.author.id,
             username: comment.author.username,
@@ -239,7 +416,7 @@ export const getCommentFromWww3 = (comment: ScratchComment, opts?: {
     } }
     return {
         id: comment.id,
-        content: decodeWww3Comment(comment.content),
+        content,
         author: {
             id: comment.author.id,
             username: comment.author.username,
@@ -281,7 +458,7 @@ export const flattenComments = (comments: RootComment[], opts?: {
                 isHighlighted: opts?.highlightedId === reply.id,
                 isReply: true,
                 parent: comment.id,
-                replyTo: reply.author.username,
+                replyTo: reply.replyTo,
                 replyIdx: idx,
             });
         });
@@ -292,13 +469,6 @@ export const flattenComments = (comments: RootComment[], opts?: {
 export const addPrefixUrl = (url: string) => {
     if (url.startsWith('https:')) return url;
     return 'https:' + url;
-}
-
-export const decodeWww3Comment = (comment: string) => {
-    return he.decode(comment) // html escape decode
-        .replaceAll('\n', ' ') // turn newlines into spaces
-        .replace(/\s+/g, ' ') // remove multiple spaces
-        .trim();
 }
 
 export const projectHasCloudVariables = (project?: ScratchProjectFile|null) => {
