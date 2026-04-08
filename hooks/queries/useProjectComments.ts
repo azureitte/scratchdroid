@@ -223,7 +223,7 @@ export const useProjectComments = ({
         }
     }
 
-    const deleteCommentDirectlyHightlight = (comment?: Comment) => {
+    const deleteCommentDirectlyHightlight = (comment?: Comment|FlattenedComment) => {
         if (!comment) return;
         deleteCommentDirectly(comment);
         setHighlight(null);

@@ -5,7 +5,7 @@ import {
     type InfiniteData 
 } from "@tanstack/react-query";
 
-import type { Comment, ReplyComment, RootComment } from "@/util/types";
+import type { Comment, FlattenedComment, ReplyComment, RootComment } from "@/util/types";
 import { DEFAULT_REPLY_COUNT } from "@/util/constants";
 import { addOrReplace, flattenComments } from "@/util/functions";
 import { useMemo } from "react";
@@ -155,7 +155,7 @@ export const useComments = ({
         return flattenComments(newData.pages.flat(), { highlightedId: comment.id });
     }
 
-    const deleteCommentDirectly = (comment?: Comment) => {
+    const deleteCommentDirectly = (comment?: Comment|FlattenedComment) => {
         if (!comment) return;
         queryClient.setQueryData(queryKey, (oldData: InfiniteData<RootComment[]>) => produce(oldData, draft => {
             if (comment.isReply) {

@@ -11,6 +11,7 @@ import CommentItem from '@/components/panels/CommentItem';
 import type { AddCommentMenuProps } from './AddCommentMenu';
 import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';
 import { emit } from '@/util/eventBus';
+import { useDeleteModernComment } from '@/hooks/mutations/useDeleteModernComment';
 
 export type CommentOptionsMenuProps = {
     type: 
@@ -38,21 +39,33 @@ const CommentOptionsMenu = ({
 }: CommentOptionsMenuProps) => {
     const sheet = useSheet();
 
-    const userAction = useDeleteUserComment({
+    const displayDeleteError = (error: string) => {
+        sheet.pop();
+        Alert.alert(
+            'Cannot delete comment!',
+            error,
+            [{ text: 'OK' }],
+            { cancelable: true }
+        );
+    }
+
+    const deleteUserAction = useDeleteUserComment({
         username: objectName!,
         onSuccess: (comment) => {
             sheet.pop();
             emit('delete-comment', comment);
         },
-        onError: (error) => {
+        onError: displayDeleteError,
+    });
+
+    const deleteProjectAction = useDeleteModernComment({
+        type: 'project',
+        objectId: Number(objectId),
+        onSuccess: () => {
             sheet.pop();
-            Alert.alert(
-                'Cannot delete comment!',
-                error,
-                [{ text: 'OK' }],
-                { cancelable: true }
-            );
+            emit('delete-comment', comment);
         },
+        onError: displayDeleteError,
     });
 
     const handleCopy = async () => {
@@ -70,7 +83,12 @@ const CommentOptionsMenu = ({
 
     const deleteComment = () => {
         if (type === 'user') 
-            userAction.mutate({ 
+            deleteUserAction.mutate({ 
+                id: comment.id,
+                parentId: comment.parent,
+            });
+        else if (type === 'project')
+            deleteProjectAction.mutate({ 
                 id: comment.id,
                 parentId: comment.parent,
             });
