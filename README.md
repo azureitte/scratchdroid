@@ -72,6 +72,25 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✖️ Delete/restore projects
    - ✖️ Clear trash
 
+- ✖️ Teacher accounts
+   - ✖️ Display teacher dashboard on home page for teacher accounts
+   - ✖️ Display more info on teacher profile pages
+   - ✖️ Allow teachers to edit student profiles
+   - ✖️ Display verification pending message for unverified teacher accounts
+   - ✖️ View all classes/ended classes
+   - ✖️ View class alerts
+   - ✖️ View class profile pages
+   - ✖️ View own class details
+   - ✖️ Create classes
+   - ✖️ Edit/end own classes
+   - ✖️ Create students/student invite links
+   - ✖️ Create class studios
+
+- ✖️ Student accounts
+   - ✖️ Display onboarding screen for new student accounts
+   - ✖️ Display more info on student profile pages
+   - ✖️ Restrict students from creating studios
+
 - ✅ Home page
 - ✖️ Explore/search page
 - ✖️ Custom project viewer
