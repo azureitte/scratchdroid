@@ -1,17 +1,20 @@
 import { Share, StyleSheet, View, Alert, AlertButton } from 'react-native';
 import * as Clipboard from "expo-clipboard";
 
-import { buildMenu, commentContentToString } from '@/util/functions';
+import { buildMenu, commentContentToString, unflattenComment } from '@/util/functions';
 import { WEBSITE_URL } from '@/util/constants';
+import { emit } from '@/util/eventBus';
 import type { FlattenedComment } from '@/util/types';
 
 import { useSheet } from '@/hooks/useSheet';
+import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';
+import { useDeleteModernComment } from '@/hooks/mutations/useDeleteModernComment';
+import { useReportUserComment } from '@/hooks/mutations/useReportUserComment';
+
 import Button from '@/components/general/Button';
 import CommentItem from '@/components/panels/CommentItem';
 import type { AddCommentMenuProps } from './AddCommentMenu';
-import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';
-import { emit } from '@/util/eventBus';
-import { useDeleteModernComment } from '@/hooks/mutations/useDeleteModernComment';
+import { useReportModernComment } from '@/hooks/mutations/useReportModernComment';
 
 export type CommentOptionsMenuProps = {
     type: 
@@ -49,37 +52,43 @@ const CommentOptionsMenu = ({
         );
     }
 
+    const displayReportError = (error: string) => {
+        sheet.pop();
+        Alert.alert(
+            'Cannot report comment!',
+            error,
+            [{ text: 'OK' }],
+            { cancelable: true }
+        );
+    }
+
+    const displayReportSuccess = () => {
+        sheet.pop();
+        Alert.alert(
+            'Done!',
+            'The comment has been reported, and the Scratch Team has been notified.',
+            [{ text: 'OK' }],
+            { cancelable: true }
+        );
+    }
+
     const deleteUserAction = useDeleteUserComment({
         username: objectName!,
         onSuccess: (comment) => {
-            sheet.pop();
             emit('delete-comment', comment);
+            sheet.pop();
         },
         onError: displayDeleteError,
     });
-
     const deleteProjectAction = useDeleteModernComment({
         type: 'project',
         objectId: Number(objectId),
         onSuccess: () => {
-            sheet.pop();
             emit('delete-comment', comment);
+            sheet.pop();
         },
         onError: displayDeleteError,
     });
-
-    const handleCopy = async () => {
-        await Clipboard.setStringAsync(commentContentToString(comment.content));
-        sheet.pop();
-    }
-
-    const handleShare = async () => {
-        sheet.pop();
-        await Share.share({
-            message: WEBSITE_URL + (getUrl?.() ?? comment.id.toString()),
-            url: WEBSITE_URL + (getUrl?.() ?? comment.id.toString()),
-        });
-    }
 
     const deleteComment = () => {
         if (type === 'user') 
@@ -94,12 +103,61 @@ const CommentOptionsMenu = ({
             });
     }
 
+
+    const reportUserAction = useReportUserComment({
+        username: objectName!,
+        onSuccess: (comment) => {
+            emit('replace-comment', comment);
+            displayReportSuccess();
+            sheet.pop();
+        },
+        onError: displayReportError,
+    });
+    const reportProjectAction = useReportModernComment({
+        type: 'project',
+        objectId: Number(objectId),
+        onSuccess: () => {
+            emit('replace-comment', unflattenComment({ ...comment, isReported: true }));
+            displayReportSuccess();
+            sheet.pop();
+        },
+        onError: displayReportError,
+    });
+
+    const reportComment = () => {
+        if (type === 'user') 
+            reportUserAction.mutate({ 
+                id: comment.id,
+                parentId: comment.parent,
+            });
+        else if (type === 'project')
+            reportProjectAction.mutate({ 
+                id: comment.id,
+                parentId: comment.parent,
+            });
+    }
+
+
+    const handleCopy = async () => {
+        await Clipboard.setStringAsync(commentContentToString(comment.content));
+        sheet.pop();
+    }
+
+    const handleShare = async () => {
+        sheet.pop();
+        await Share.share({
+            message: WEBSITE_URL + (getUrl?.() ?? comment.id.toString()),
+            url: WEBSITE_URL + (getUrl?.() ?? comment.id.toString()),
+        });
+    }
+    
+
     const handleDelete = () => {
         const buttons: AlertButton[] = [
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', onPress: deleteComment, style: 'destructive' },
         ]
-        if (canReport) buttons.push({ text: 'Report', onPress: () => {} });
+        if (canReport) buttons.push({ text: 'Report', onPress: () => reportComment });
 
         let description = 'Are you sure you want to delete this comment?';
         if (canReport) description += ' If the comment is mean or disrespectful, please click report instead, to let the Scratch Team know about it.';
@@ -119,7 +177,7 @@ const CommentOptionsMenu = ({
             'Are you sure you want to report this comment?',
             [
                 { text: 'Cancel', style: 'cancel' },
-                { text: 'Report', onPress: () => {}, style: 'destructive' },
+                { text: 'Report', onPress: reportComment, style: 'destructive' },
             ],
             { cancelable: true }
         );

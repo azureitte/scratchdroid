@@ -302,6 +302,7 @@ export function getCommentFromR2 <T extends boolean>(
             isReply: true,
             parent: opts.parentId!,
             replyTo: replyTo || '',
+            isReported: false,
         } as any;
     } else {
         return {
@@ -313,6 +314,7 @@ export function getCommentFromR2 <T extends boolean>(
             isReply: false,
             replies: [],
             totalReplies: 0,
+            isReported: false,
         } as any;
     }
 }
@@ -413,6 +415,7 @@ export const getCommentFromWww3 = (comment: ScratchComment, opts?: {
         isReply: true,
         parent: comment.parent_id!,
         replyTo: opts?.userMap?.get(comment.commentee_id!) ?? comment.commentee_id?.toString() ?? '',
+        isReported: false,
     } }
     return {
         id: comment.id,
@@ -428,6 +431,7 @@ export const getCommentFromWww3 = (comment: ScratchComment, opts?: {
         isReply: false,
         replies: opts?.replies ?? [],
         totalReplies: comment.reply_count,
+        isReported: false,
     }
 }
 
@@ -446,6 +450,7 @@ export const flattenComments = (comments: RootComment[], opts?: {
             isReply: false,
             parent: null,
             replyTo: null,
+            isReported: comment.isReported,
         });
         comment.replies.forEach((reply, idx) => {
             acc.push({
@@ -460,10 +465,39 @@ export const flattenComments = (comments: RootComment[], opts?: {
                 parent: comment.id,
                 replyTo: reply.replyTo,
                 replyIdx: idx,
+                isReported: reply.isReported,
             });
         });
         return acc;
     }, [] as FlattenedComment[]));
+}
+
+export const unflattenComment = (comment: FlattenedComment): Comment => {
+    if (comment.isReply) {
+        return {
+            id: comment.id,
+            content: comment.content,
+            author: comment.author,
+            createdAt: comment.createdAt,
+            modifiedAt: comment.modifiedAt,
+            isReply: true,
+            parent: comment.parent,
+            replyTo: comment.replyTo,
+            isReported: comment.isReported,
+        }
+    } else {
+        return {
+            id: comment.id,
+            content: comment.content,
+            author: comment.author,
+            createdAt: comment.createdAt,
+            modifiedAt: comment.modifiedAt,
+            isReply: false,
+            replies: [],
+            totalReplies: 0,
+            isReported: comment.isReported,
+        }
+    }
 }
 
 export const addPrefixUrl = (url: string) => {

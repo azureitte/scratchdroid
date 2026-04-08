@@ -183,7 +183,13 @@ export const useComments = ({
                 const targetPageIdx = draft.pages.findIndex(p => !!p.find(c => c.id === comment.id));
                 if (targetPageIdx === -1) return;
                 const targetCommentIdx = draft.pages[targetPageIdx].findIndex(c => c.id === comment.id);
-                draft.pages[targetPageIdx][targetCommentIdx] = comment;
+                const prevComment = draft.pages[targetPageIdx][targetCommentIdx];
+
+                draft.pages[targetPageIdx][targetCommentIdx] = { 
+                    ...comment, 
+                    replies: prevComment.replies,
+                    totalReplies: prevComment.totalReplies,
+                };
             }
         }));
     };

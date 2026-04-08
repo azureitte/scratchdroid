@@ -1,33 +1,34 @@
 import { useMutation } from "@tanstack/react-query";
 
+import { parseR2AddCommentResponse } from "@/util/functions";
+import type { Comment } from "@/util/types";
 import { apiReq } from "@/util/api";
 
 import { useSession } from "../useSession";
 
-type DeleteModernCommentOptions = {
-    type: 'project' | 'studio';
-    objectId: number;
-    onSuccess?: () => void;
+type ReportUserCommentOptions = {
+    username: string;
+    onSuccess?: (comment?: Comment) => void;
     onError?: (error: string) => void;
 }
 
-type DeleteCommentFormData = {
+type ReportCommentFormData = {
     id: number;
     parentId: number|null;
 }
 
-export const useDeleteModernComment = ({
-    type,
-    objectId,
+export const useReportUserComment = ({
+    username,
     onSuccess,
     onError,
-}: DeleteModernCommentOptions) => {
+}: ReportUserCommentOptions) => {
     const { isLoggedIn, session } = useSession();
     
     const action = useMutation({
-        mutationKey: ['delete-comment', type, objectId],
-        mutationFn: async (payload: DeleteCommentFormData): Promise<({
+        mutationKey: ['report-comment', 'user', username],
+        mutationFn: async (payload: ReportCommentFormData): Promise<({
             success: true;
+            comment?: Comment;
         }|{
             success: false;
             error: string;
@@ -38,12 +39,13 @@ export const useDeleteModernComment = ({
             };
 
             const res = await apiReq({
-                host: 'https://api.scratch.mit.edu',
-                path: `/proxy/comments/${type}/${objectId}/comment/${payload.id}`,
-                method: 'DELETE',
+                path: `/site-api/comments/user/${username}/rep/`,
+                method: 'POST',
+                body: {
+                    id: payload.id,
+                },
                 useCrsf: true,
-                auth: session?.user?.token,
-                responseType: 'json',
+                responseType: 'html',
             });
             if (!res.success) return {
                 success: false,
@@ -53,16 +55,19 @@ export const useDeleteModernComment = ({
                 success: false,
                 error: 'A server-side error occurred. Please try again later.'
             }
-            if (res.status >= 400) return {
-                success: false,
-                error: res.data?.rejected ?? res.data?.error ?? 'Something went wrong'
-            }
 
-            return { success: true };
+            const parsedRes = parseR2AddCommentResponse(res.data, {
+                isReply: !!payload.parentId,
+                parentId: payload.parentId ?? undefined,
+            });
+            if (parsedRes.success && parsedRes.comment) 
+                parsedRes.comment.isReported = true;
+
+            return parsedRes;
         },
         onSettled: (data) => {
             if (data?.success) {
-                onSuccess?.();
+                onSuccess?.(data.comment);
             } else {
                 onError?.(data?.error ?? 'Something went wrong');
             }

@@ -4,29 +4,29 @@ import { apiReq } from "@/util/api";
 
 import { useSession } from "../useSession";
 
-type DeleteModernCommentOptions = {
+type ReportModernCommentOptions = {
     type: 'project' | 'studio';
     objectId: number;
     onSuccess?: () => void;
     onError?: (error: string) => void;
 }
 
-type DeleteCommentFormData = {
+type ReportCommentFormData = {
     id: number;
     parentId: number|null;
 }
 
-export const useDeleteModernComment = ({
+export const useReportModernComment = ({
     type,
     objectId,
     onSuccess,
     onError,
-}: DeleteModernCommentOptions) => {
+}: ReportModernCommentOptions) => {
     const { isLoggedIn, session } = useSession();
     
     const action = useMutation({
-        mutationKey: ['delete-comment', type, objectId],
-        mutationFn: async (payload: DeleteCommentFormData): Promise<({
+        mutationKey: ['report-comment', type, objectId],
+        mutationFn: async (payload: ReportCommentFormData): Promise<({
             success: true;
         }|{
             success: false;
@@ -39,8 +39,8 @@ export const useDeleteModernComment = ({
 
             const res = await apiReq({
                 host: 'https://api.scratch.mit.edu',
-                path: `/proxy/comments/${type}/${objectId}/comment/${payload.id}`,
-                method: 'DELETE',
+                path: `/proxy/${type}/${objectId}/comment/${payload.id}/report`,
+                method: 'POST',
                 useCrsf: true,
                 auth: session?.user?.token,
                 responseType: 'json',

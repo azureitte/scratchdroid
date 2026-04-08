@@ -28,12 +28,12 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✖️ Account settings
    - ✖️ Multiple accounts
 
-- 🟡 Comment management
+- ✅ Comment management
    - ✅ View user comments
    - ✅ View project/studio comments
    - ✅ Display links, mentions and emojis in comments
    - ✅ Post comments
-   - 🟡 Delete/report comments
+   - ✅ Delete/report comments
 
 - 🟡 Project management
    - ✅ View public projects

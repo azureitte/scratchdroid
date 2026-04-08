@@ -411,6 +411,7 @@ type CommentBase = {
     };
     createdAt: Date;
     modifiedAt: Date;
+    isReported: boolean;
 }
 export type RootComment = CommentBase & {
     isReply: false;

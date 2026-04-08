@@ -8,15 +8,20 @@ import { EMOJI_CONTAIN_CODES } from '@/util/constants';
 type CommentContentProps = {
     content: CommentContentNode[];
     numberOfLines?: number;
+    isReported?: boolean;
 }
 
 const CommentContent = ({
     content,
     numberOfLines,
+    isReported,
 }: CommentContentProps) => {
     return (
         <Text
-            style={styles.text}
+            style={[
+                styles.text,
+                isReported && styles.textReported,
+            ]}
             numberOfLines={numberOfLines}
         >
             {content.map((node) => {
@@ -81,6 +86,9 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         fontWeight: 400,
         color: "#fff",
+    },
+    textReported: {
+        color: "#FFC2C2",
     },
     link: {
         color: "#93C0FF",

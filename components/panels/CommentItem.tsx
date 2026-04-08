@@ -91,13 +91,23 @@ const CommentItem = memo(({
                 styles.commentBubbleWrap,
                 isShowMore && styles.replyMore,
             ]}>
-                <View style={styles.commentBubbleDeco} />
-                <View style={styles.commentBubble}>
+                <View style={[
+                    styles.commentBubbleDeco,
+                    comment.isReported && styles.commentBubbleDecoReported,
+                ]} />
+                <View style={[
+                    styles.commentBubble,
+                    comment.isReported && styles.commentBubbleReported,
+                ]}>
                     <CommentContent 
                         content={comment.content} 
-                        numberOfLines={isIsolated ? 1 : undefined} 
+                        numberOfLines={isIsolated ? 1 : undefined}
+                        isReported={comment.isReported}
                     />
-                    { !isIsolated && <Text style={styles.commentSubtext}>
+                    { !isIsolated && <Text style={[
+                        styles.commentSubtext,
+                        comment.isReported && styles.commentSubtextReported,
+                    ]}>
                         { relativeDate(comment.createdAt) }
                     </Text> }
                     { !isShowMore && !isIsolated && <Pressable
@@ -209,6 +219,11 @@ const styles = StyleSheet.create({
         zIndex: 1,
         borderColor: "#353535",
     },
+    commentBubbleDecoReported: {
+        backgroundColor: "#3A1D1D",
+        borderEndColor: "#3A1D1D",
+        borderColor: "#9F4D4D",
+    },
     commentBubble: {
         padding: 16,
         paddingBottom: 12,
@@ -220,11 +235,19 @@ const styles = StyleSheet.create({
         borderColor: "#353535",
         flex: 1,
     },
+    commentBubbleReported: {
+        backgroundColor: "#3A1D1D",
+        borderColor: "#9F4D4D",
+    },
+
     commentSubtext: {
         marginTop: 16,
         fontSize: 14,
         fontWeight: 400,
         color: "#6C6C6C",
+    },
+    commentSubtextReported: {
+        color: "#915353",
     },
 
     commentReplyBtn: {
