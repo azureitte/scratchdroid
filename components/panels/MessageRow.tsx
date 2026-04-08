@@ -1,11 +1,12 @@
 import { memo, useMemo } from "react";
 import { Image, StyleSheet, Text, View, Dimensions } from "react-native";
-
-import { CommentType, type ScratchMessage } from "@/util/types";
-import { SVGS } from "@/util/assets";
-
 import { Link } from "expo-router";
-import { getCommentContentFromString, shortRelativeDate } from "@/util/functions";
+
+import { SVGS } from "@/util/assets";
+import { shortRelativeDate } from "@/util/functions";
+import { stringToCommentContent } from "@/util/parsing/comments";
+import { CommentType, type ScratchMessage } from "@/util/types/api/message.types";
+
 import CommentContent from "./CommentContent";
 
 
@@ -43,7 +44,7 @@ const MessageRow = memo(({
 
     const messageContent = useMemo(() => {
         if (message.type !== 'addcomment') return [];
-        return getCommentContentFromString(message.comment_fragment);
+        return stringToCommentContent(message.comment_fragment);
     }, [(message as any).comment_fragment]);
 
     return (

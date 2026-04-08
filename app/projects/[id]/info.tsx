@@ -5,10 +5,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
+import { shortDate } from '@/util/functions';
+import { projectHasCloudVariables } from '@/util/parsing/projects';
+
 import { useProject } from '@/hooks/queries/useProject';
 import ListLoading from '@/components/panels/ListLoading';
 import InfoCard from '@/components/panels/InfoCard';
-import { dateShort, projectHasCloudVariables } from '@/util/functions';
 import ExtensionChip from '@/components/panels/ExtensionChip';
 
 
@@ -34,8 +36,8 @@ const ProjectInfoPage = () => {
     if (project.isError) return <Text>{project.error.message}</Text>;
     if (project.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
 
-    const publishedStr = dateShort(new Date(data.project.history.shared));
-    const modifiedStr = dateShort(new Date(data.project.history.modified));
+    const publishedStr = shortDate(new Date(data.project.history.shared));
+    const modifiedStr = shortDate(new Date(data.project.history.modified));
     const publishedEqModified = publishedStr === modifiedStr;
 
     const extensions = data.file?.extensions ?? [];

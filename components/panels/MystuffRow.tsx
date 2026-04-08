@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types';
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
+import type { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types/api/account.types';
 
 type MystuffRowProps = {
     type: 'project';

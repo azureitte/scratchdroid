@@ -1,8 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { getCommentFromWww3 } from "@/util/functions";
-import type { Comment, ModernAddCommentResponse, ModernAddCommentResponseRejected, ScratchComment } from "@/util/types";
+import { getCommentFromWww3 } from "@/util/parsing/comments";
 import { apiReq } from "@/util/api";
+import type { Comment } from "@/util/types/app/comments.types";
+import type { 
+    ModernAddCommentResponse, 
+    ModernAddCommentResponseRejected, 
+    ScratchComment 
+} from "@/util/types/api/comment.types";
 
 import { useSession } from "../useSession";
 import { FAIL_REASON_MESSAGES } from "@/util/constants";

@@ -1,10 +1,11 @@
 import { Share, StyleSheet, View, Alert, AlertButton } from 'react-native';
 import * as Clipboard from "expo-clipboard";
 
-import { buildMenu, commentContentToString, unflattenComment } from '@/util/functions';
+import { buildMenu } from '@/util/functions';
+import { commentContentToString, unflattenComment } from '@/util/parsing/comments';
 import { WEBSITE_URL } from '@/util/constants';
 import { emit } from '@/util/eventBus';
-import type { FlattenedComment } from '@/util/types';
+import type { FlattenedComment } from '@/util/types/app/comments.types';
 
 import { useSheet } from '@/hooks/useSheet';
 import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';

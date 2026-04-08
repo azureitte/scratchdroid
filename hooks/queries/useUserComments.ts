@@ -1,5 +1,5 @@
 import { apiReq } from "@/util/api";
-import { getCommentsFromR2 } from "@/util/functions";
+import { getCommentsFromR2 } from "@/util/parsing/comments";
 import { useComments } from "./useComments";
 
 type InfiniteUserCommentsProps = {

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { produce } from "immer";
 import { 
     useInfiniteQuery, 
@@ -5,10 +6,15 @@ import {
     type InfiniteData 
 } from "@tanstack/react-query";
 
-import type { Comment, FlattenedComment, ReplyComment, RootComment } from "@/util/types";
 import { DEFAULT_REPLY_COUNT } from "@/util/constants";
-import { addOrReplace, flattenComments } from "@/util/functions";
-import { useMemo } from "react";
+import { addOrReplace } from "@/util/functions";
+import { flattenComments } from "@/util/parsing/comments";
+import type { 
+    Comment, 
+    FlattenedComment, 
+    ReplyComment, 
+    RootComment 
+} from "@/util/types/app/comments.types";
 
 type UseCommentsProps = {
     queryKey: readonly any[];

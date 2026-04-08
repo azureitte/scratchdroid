@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { scrollCommentSectionToId } from '@/util/functions';
 import { off, on } from '@/util/eventBus';
-import type { Comment } from '@/util/types';
+import type { Comment } from '@/util/types/app/comments.types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useUserComments } from '@/hooks/queries/useUserComments';

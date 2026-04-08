@@ -1,10 +1,10 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
-
-import type { ScratchSession } from '../util/types';
-import { apiReq } from '../util/api';
 import CookieManager from '@preeternal/react-native-cookie-manager';
+
+import { apiReq } from '../util/api';
+import type { ScratchSession } from '../util/types/api/account.types';
 
 type SessionContextType = 
 ({

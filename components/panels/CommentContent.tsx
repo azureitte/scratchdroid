@@ -2,8 +2,8 @@ import React from 'react';
 import { StyleSheet, Text, Image, View } from 'react-native';
 import { Link } from 'expo-router';
 
-import { CommentContentNode } from '@/util/types';
 import { EMOJI_CONTAIN_CODES } from '@/util/constants';
+import type { CommentContentNode } from '@/util/types/app/comments.types';
 
 type CommentContentProps = {
     content: CommentContentNode[];

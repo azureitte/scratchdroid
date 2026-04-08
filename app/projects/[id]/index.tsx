@@ -10,9 +10,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { projectHasCloudVariables, scrollCommentSectionToId } from '@/util/functions';
+import { scrollCommentSectionToId } from '@/util/functions';
+import { projectHasCloudVariables } from '@/util/parsing/projects';
 import { off, on } from '@/util/eventBus';
-import type { Comment, FlattenedComment } from '@/util/types';
+import type { Comment } from '@/util/types/app/comments.types';
 
 import { useProject } from '@/hooks/queries/useProject';
 import { useProjectComments } from '@/hooks/queries/useProjectComments';

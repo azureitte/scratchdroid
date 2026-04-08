@@ -1,8 +1,11 @@
 import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import type { BannerProject, ScratchProject, ScratchUser, UserQueryData } from "@/util/types";
 import { apiReq } from "@/util/api";
+
+import type { UserQueryData, BannerProject } from "@/util/types/app/query.types";
+import type { ScratchUser } from "@/util/types/api/user.types";
+import type { ScratchProject } from "@/util/types/api/project.types";
 
 export const useUser = (username: string) => {
 

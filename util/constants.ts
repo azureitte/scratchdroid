@@ -1,5 +1,5 @@
 import { muteStatusDateToString } from "./functions";
-import type { MuteStatus } from "./types";
+import type { MuteStatus } from "./types/api/account.types";
 
 export const IS_DEV = process.env.NODE_ENV === 'development';
 

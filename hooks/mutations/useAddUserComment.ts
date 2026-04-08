@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { parseR2AddCommentResponse } from "@/util/functions";
-import type { Comment } from "@/util/types";
+import { parseR2CommentMutationResponse } from "@/util/parsing/comments";
 import { apiReq } from "@/util/api";
+import type { Comment } from "@/util/types/app/comments.types";
 
 import { useSession } from "../useSession";
 
@@ -64,7 +64,7 @@ export const useAddUserComment = ({
                 error: 'A server-side error occurred. Please try again later.'
             }
 
-            const parsedRes = parseR2AddCommentResponse(res.data, {
+            const parsedRes = parseR2CommentMutationResponse(res.data, {
                 isReply: !!payload.parentId,
                 parentId: payload.parentId,
             });

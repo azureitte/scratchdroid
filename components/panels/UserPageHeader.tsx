@@ -4,10 +4,13 @@ import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import CountryFlag from "react-native-country-flag";
 
-import type { ScratchProject, ScratchUser, UserQueryData } from '@/util/types';
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
+
+import type { UserQueryData } from '@/util/types/app/query.types';
+import type { ScratchProject } from '@/util/types/api/project.types';
+import type { ScratchUser } from '@/util/types/api/user.types';
 
 
 import Carousel from '@/components/panels/Carousel';

@@ -4,8 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { apiReq } from '@/util/api';
-import { FeaturedProject, FeaturedTab, ScratchProject } from '@/util/types';
 import { off, on } from '@/util/eventBus';
+import type { FeaturedProject, FeaturedTab } from '@/util/types/api/featured.types';
+import type { ScratchProject } from '@/util/types/api/project.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';

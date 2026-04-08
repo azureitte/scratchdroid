@@ -18,8 +18,8 @@ import Animated, {
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { FlattenedComment } from '@/util/types';
 import { relativeDate } from '@/util/functions';
+import type { FlattenedComment } from '@/util/types/app/comments.types';
 
 import Button from '@/components/general/Button';
 import { ICONS } from '@/util/assets';

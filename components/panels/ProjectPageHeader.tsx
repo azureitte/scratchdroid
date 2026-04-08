@@ -10,8 +10,8 @@ import WebView from 'react-native-webview';
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { ScratchExtension, ScratchProject } from '@/util/types';
-import { addPrefixUrl, dateShort } from '@/util/functions';
+import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
+import { addPrefixUrl, shortDate } from '@/util/functions';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
 
@@ -58,8 +58,8 @@ const ProjectPageHeader = ({
 
     const IconViewMore = ICONS.cardViewMore;
 
-    const publishedStr = dateShort(new Date(project.history.shared));
-    const modifiedStr = dateShort(new Date(project.history.modified));
+    const publishedStr = shortDate(new Date(project.history.shared));
+    const modifiedStr = shortDate(new Date(project.history.modified));
 
     const publishedEqModified = publishedStr === modifiedStr;
 

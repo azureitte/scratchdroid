@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { apiReq } from "@/util/api";
-import { Comment, FlattenedComment, ReplyComment, RootComment, ScratchComment } from "@/util/types";
-import { flattenComments, getCommentFromWww3 } from "@/util/functions";
+import { flattenComments, getCommentFromWww3 } from "@/util/parsing/comments";
 import { REPLY_INCREMENT_COUNT } from "@/util/constants";
+import type { 
+    Comment, 
+    FlattenedComment, 
+    ReplyComment, 
+    RootComment, 
+} from "@/util/types/app/comments.types";
+import { ScratchComment } from "@/util/types/api/comment.types";
 
 import { useSession } from "../useSession";
 import { useComments } from "./useComments";

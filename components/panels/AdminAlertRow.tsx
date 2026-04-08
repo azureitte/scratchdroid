@@ -1,9 +1,9 @@
 import { memo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import type { ScratchAdminAlert } from "@/util/types";
+import type { ScratchAdminAlert } from "@/util/types/api/message.types";
 
-import { dateShort } from "@/util/functions";
+import { shortDate } from "@/util/functions";
 import { ICONS } from "@/util/assets";
 
 
@@ -26,7 +26,7 @@ const MessageRow = memo(({
                 </Text>
 
                 <Text style={styles.subtext}>
-                    { dateShort(new Date(message.datetime_created)) } • Scratch Team
+                    { shortDate(new Date(message.datetime_created)) } • Scratch Team
                 </Text>
 
                 <Pressable

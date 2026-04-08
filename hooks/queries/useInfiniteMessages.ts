@@ -1,9 +1,11 @@
+import { useCallback } from "react";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiReq } from "../../util/api";
+import { apiReq } from "@/util/api";
+import type { MessageQueryItem } from "@/util/types/app/query.types";
+import type { ScratchAdminAlert, ScratchMessage } from "@/util/types/api/message.types";
+
 import { useSession } from "../useSession";
-import type { MessageQueryItem, ScratchAdminAlert, ScratchMessage } from "../../util/types";
-import { useCallback } from "react";
 
 const MESSAGES_PER_PAGE = 40;
 

@@ -1,8 +1,10 @@
 import { useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import type { ProjectQueryData, ScratchProject, ScratchProjectFile } from "@/util/types";
 import { apiReq } from "@/util/api";
+import type { ProjectQueryData } from "@/util/types/app/query.types";
+import type { ScratchProject, ScratchProjectFile } from "@/util/types/api/project.types";
+
 import { useSession } from "../useSession";
 
 export const useProject = (projectId: number) => {

@@ -11,7 +11,7 @@ import { useRouter } from 'expo-router';
 import type { 
     ScratchMystuffProjectItem, 
     ScratchMystuffStudioItem 
-} from '@/util/types';
+} from '@/util/types/api/account.types';
 import { off, on } from '@/util/eventBus';
 
 import { useSession } from '@/hooks/useSession';
