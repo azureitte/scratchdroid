@@ -13,6 +13,9 @@ import icMenu from "../assets/icons/ic-menu.svg";
 import icCardViewMore from "../assets/icons/ic-card-viewmore.svg";
 import icClose from "../assets/icons/ic-close.svg";
 import icReply from "../assets/icons/ic-reply.svg";
+import icAdd from "../assets/icons/ic-add.svg";
+import icAccountSettings from "../assets/icons/ic-account-settings.svg";
+import icLogout from "../assets/icons/ic-logout.svg";
 
 import icStatView from "../assets/icons/ic-stat-view.svg";
 import icStatLove from "../assets/icons/ic-stat-love.svg";
@@ -60,6 +63,9 @@ export const ICONS = {
     cardViewMore: icCardViewMore,
     close: icClose,
     reply: icReply,
+    add: icAdd,
+    accountSettings: icAccountSettings,
+    logout: icLogout,
 
     statView: icStatView,
     statLove: icStatLove,

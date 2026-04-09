@@ -10,3 +10,9 @@ export type StoredPublicAccount = {
     id: number;
     cookies?: string[];
 }
+
+export type RemoteAccount = {
+    username: string;
+    id: number;
+    unread: number;
+}

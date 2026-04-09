@@ -22,11 +22,11 @@ export type ScratchSession = {
         educator: boolean;
         educator_invitee: boolean;
         invited_scratcher: boolean;
-        mute_status?: any;
         new_scratcher: boolean;
         scratcher: boolean;
         social: boolean;
         student: boolean;
+        mute_status: MuteStatus|{};
     };
 
     user?: {

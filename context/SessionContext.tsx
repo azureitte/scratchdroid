@@ -1,13 +1,22 @@
-import React, { createContext, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
-import { apiReq } from '../util/api';
-import type { ScratchSession } from '../util/types/api/account.types';
-import { addAccount, clearAccounts, getAccountCredentials, updateAccountCookies } from '@/util/accountStorage';
 import { WEBSITE_URL } from '@/util/constants';
-import { cookieObjToHeaders, cookieObjToStr } from '@/util/functions';
+import { cookieObjToHeaders } from '@/util/functions';
+import { apiReq } from '@/util/api';
+import { emit } from '@/util/eventBus';
+import { 
+    addAccount, 
+    clearAccounts, 
+    getAccountCredentials, 
+    getActiveAccount, 
+    setActiveAccount, 
+    updateAccountCookies 
+} from '@/util/accountStorage';
+import type { ScratchSession } from '@/util/types/api/account.types';
+
 import { useAccountStorage } from '@/hooks/queries/useAccountStorage';
 
 type SessionContextType = 
@@ -21,9 +30,9 @@ type SessionContextType =
     isLoading: false;
 })
 & {
-    login: (username: string, password: string) => Promise<void>;
-    switchAccount: (username: string) => Promise<void>;
-    logout: () => Promise<void>;
+    login: (username: string, password: string, silent?: boolean) => Promise<void>;
+    switchAccount: (username: string, silent?: boolean) => Promise<void>;
+    logout: (silent?: boolean) => Promise<void>;
     logoutAll: () => Promise<void>;
 };
 
@@ -38,6 +47,14 @@ export const SessionContext = createContext<SessionContextType>({
     logoutAll: async () => {},
 });
 
+type TransitionState =
+    | 'logged-out'
+    | 'logged-in'
+    | 'switching'
+    | 'logging-in'
+    | 'logging-out'
+    | '503';
+
 export const SessionProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
     const pathname = usePathname();
@@ -46,9 +63,9 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     const { refresh } = useAccountStorage();
 
     const [ session, setSession ] = useState<ScratchSession|null>(null);
-    const [ isLoggedIn, setIsLoggedIn ] = useState(false);
-    const [ errorPage, setErrorPage ] = useState<number|null>(null);
-    const [ isLoading, setIsLoading ] = useState(true);
+    const [ transitionState, setTransitionState ] = useState<TransitionState>('logging-in');
+
+    const isFirstLoad = useRef(true);
 
     const getCookies = useCallback(async () => {
         const cookiesObj = await CookieManager.get(WEBSITE_URL);
@@ -57,32 +74,50 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     }, []);
 
     useEffect(() => {
-        getSession().then(([session, status]) => {
-            setIsLoading(false);
-            setErrorPage(null);
+        (async () => {
+            if (!isFirstLoad.current) {
+                if (transitionState === 'logging-in') return;
+                if (transitionState === 'logging-out') return;
+                if (transitionState === 'switching') return;
+                if (transitionState === '503') return;
+            }
+
+            if (isFirstLoad.current) {
+                isFirstLoad.current = false;
+                const activeAccount = await getActiveAccount();
+                if (activeAccount) {
+                    await switchAccount(activeAccount, true);
+                }
+            }
+
+            const [session, status] = await getSession();
             
             if (status == '503') {
-                setErrorPage(503);
+                setTransitionState('503');
                 return;
             }
 
             if (session) {
                 setSession(session);
-                setIsLoggedIn(!!session.user);
+                setTransitionState(session.user 
+                    ? 'logged-in' 
+                    : 'logged-out');
                 return;
             }
 
             console.log('error!', session, status);
-        });
-    }, [isLoggedIn]);
+            setTransitionState('logged-out');
+        })();
+    }, [transitionState]);
 
     useEffect(() => {
-        if (isLoading) return;
-
-        if (errorPage === 503) {
+        if (transitionState === '503') {
             if (pathname !== '/503') router.replace('/503');
-        } else if (isLoggedIn) {
-            if (pathname !== '/home') router.replace('/home');
+        } else if (transitionState === 'logged-in') {
+            if (pathname !== '/home') {
+                router.replace('/home');
+                emit('tab-navigate', 'home');
+            }
 
             // update cookies
             getCookies().then(async (cookies) => {
@@ -91,13 +126,18 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
                     console.log('updated cookies for stored account', session.user.username);
                 }
             });
-        } else {
-            if (pathname !== '/account/login' && pathname !== '/account/switching') {
+        } else if (transitionState === 'switching') {
+            if (pathname !== '/account/switching') {
+                router.replace('/account/switching');
+                setTimeout(() => queryClient.clear(), 100);
+            }
+        } else if (transitionState === 'logged-out') {
+            if (pathname !== '/account/login') {
                 router.replace('/account/login');
                 setTimeout(() => queryClient.clear(), 100);
             }
         }
-    }, [isLoading, isLoggedIn, errorPage]);
+    }, [transitionState]);
 
     const getSession = useCallback(async (): Promise<[ScratchSession, null]|[null, string]> => {
         const res = await apiReq<ScratchSession>({
@@ -113,8 +153,16 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         return [null, res.error];
     }, []);
 
-    const login = async (username: string, password: string) => {
-        setIsLoading(true);
+    const handleLoginSuccess = () => {
+        setTransitionState('logged-in');
+        queryClient.invalidateQueries({ queryKey: ['unread'] });
+        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+    }
+
+    const login = async (username: string, password: string, silent = false) => {
+        if (!silent)
+            setTransitionState('logging-in');
+
         const response = await apiReq({
             path: '/accounts/login/',
             method: 'POST',
@@ -127,8 +175,11 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             useCrsf: true,
         });
 
-        const err = (message: string) => {
-            setIsLoading(false);
+        const err = (message: string, shouldClearActiveAccount = true) => {
+            if (shouldClearActiveAccount) 
+                setActiveAccount(null);
+
+            setTransitionState('logged-out')
             throw new Error(message);
         }
 
@@ -136,16 +187,23 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             const message = response.data?.[0];
             
             if (response.status >= 500) {
-                return err('Scratch is currently down for maintenance or unavailable. Please try again later.');
+                return err(
+                    'Scratch is currently down for maintenance or unavailable. Please try again later.',
+                    false,
+                );
             } else if (message?.success === 1) {
-                setIsLoggedIn(true);
+                const newUsername = message.username ?? username;
+                await setActiveAccount(newUsername);
+
                 const cookies = await getCookies();
                 addAccount({
-                    username: message.username,
+                    username: newUsername,
                     password: password,
                     id: message.id,
                     cookies,
                 }).then(() => refresh());
+
+                handleLoginSuccess();
             } else if (message?.redirect) {  
                 err('Too many login attempts. Please try again later.');
             } else {
@@ -157,30 +215,34 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     };
 
     const logoutAll = async () => {
-        setIsLoading(true);
+        setTransitionState('logging-out');
         await CookieManager.clearAll();
         clearAccounts().then(() => refresh());
-        setIsLoggedIn(false);
-        setIsLoading(false);
+        setTransitionState('logged-out');
     };
 
-    const logout = async () => {
-        setIsLoading(true);
+    const logout = async (silent = false) => {
+        setTransitionState('logging-out');
         await CookieManager.clearAll();
-        setIsLoggedIn(false);
-        setIsLoading(false);
+        if (!silent) await setActiveAccount(null);
+        setTransitionState('logged-out');
     };
 
-    const switchAccount = async (username: string) => {
-        router.replace('/account/switching');
+    const switchAccount = async (username: string, silent = false) => {
+        const prevState = transitionState === 'logged-in' 
+            ? 'logged-in' 
+            : 'logged-out';
 
-        setIsLoading(true);
-        setIsLoggedIn(false);
+        if (!silent)
+            setTransitionState('switching');
+
         const account = await getAccountCredentials(username);
         if (!account) {
-            setIsLoading(false);
+            setTransitionState(prevState);
             return;
         }
+
+        console.log(`Switching to @${username}...`);
 
         // first, attempt to replace the cookies 
         // with the new csrf token
@@ -190,6 +252,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         let newSession: ScratchSession|null = null;
 
         if (account.cookies) {
+            console.log('Trying replacing cookies directly first...');
             try {
                 await CookieManager.clearAll();
                 
@@ -206,22 +269,31 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         }
 
         if (directLoginSuccess && newSession) {
+            console.log('Success!', newSession.user?.username, username);
+            await setActiveAccount(newSession.user?.username ?? null);
             setSession(newSession);
-            setIsLoggedIn(!!newSession.user);
-            setIsLoading(false);
+            handleLoginSuccess();
             return;
         }
 
+        
+        console.log('Failed. Logging in manually instead...');
+        setSession(null);
+
 
         // if failed, login manually with username and password
-        await login(account.username, account.password);
+        await CookieManager.clearAll();
+        await login(account.username, account.password, true);
     }
 
     return (
         <SessionContext.Provider value={{
             session,
-            isLoggedIn,
-            isLoading,
+            isLoggedIn: transitionState === 'logged-in',
+            isLoading: 
+                transitionState === 'logging-in' || 
+                transitionState === 'logging-out' || 
+                transitionState === 'switching',
 
             login,
             switchAccount,
