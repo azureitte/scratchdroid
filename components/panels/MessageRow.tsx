@@ -77,7 +77,7 @@ const MessageRow = memo(({
                             <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
                                 {message.actor_username}
                             </Link> favorited your project <Link style={styles.linkText} href={`/projects/${message.project_id}`}>
-                                {message.title}
+                                {message.project_title}
                             </Link>
                         </Text>
                     }

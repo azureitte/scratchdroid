@@ -50,7 +50,7 @@ type MessageLoveProject = MessageBase & {
 type MessageFavoriteProject = MessageBase & {
     type: "favoriteproject";
     project_id: number;
-    title: string;
+    project_title: string;
 }
 type MessageAddComment = MessageBase & {
     type: "addcomment";
