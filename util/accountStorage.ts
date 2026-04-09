@@ -1,5 +1,6 @@
 import * as Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Cookies } from '@preeternal/react-native-cookie-manager';
 
 import type { StoredAccount, StoredPublicAccount } from './types/app/accounts.types';
 
@@ -30,7 +31,7 @@ export async function addAccount (account: StoredAccount) {
     await saveAccounts(accounts);
 }
 
-export async function updateAccountCookies (username: string, cookies: string[]) {
+export async function updateAccountCookies (username: string, cookies: Cookies) {
     const accounts = await getAccounts();
     const account = accounts.find(a => a.username === username);
     if (!account) return;

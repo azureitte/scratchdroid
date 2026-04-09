@@ -159,7 +159,7 @@ const CommentOptionsMenu = ({
             { text: 'Cancel', style: 'cancel' },
             { text: 'Delete', onPress: deleteComment, style: 'destructive' },
         ]
-        if (canReport) buttons.push({ text: 'Report', onPress: () => reportComment });
+        if (canReport) buttons.splice(1, 0, { text: 'Report', onPress: () => reportComment });
 
         let description = 'Are you sure you want to delete this comment?';
         if (canReport) description += ' If the comment is mean or disrespectful, please click report instead, to let the Scratch Team know about it.';

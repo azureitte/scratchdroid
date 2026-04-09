@@ -68,7 +68,7 @@ const Drawer = () => {
             });
         }
 
-        if (!accountSwitcherCollapsed) {
+        if (!accountSwitcherCollapsed || !otherAccounts.length) {
             otherAccounts.forEach((account) => {
                 menu.push({
                     key: `switch-to-${account.username}`,

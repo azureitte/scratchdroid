@@ -1,14 +1,16 @@
+import type { Cookies } from "@preeternal/react-native-cookie-manager";
+
 export type StoredAccount = {
     username: string;
     id: number;
     password: string;
-    cookies?: string[];
+    cookies?: Cookies;
 }
 
 export type StoredPublicAccount = {
     username: string;
     id: number;
-    cookies?: string[];
+    cookies?: Cookies;
 }
 
 export type RemoteAccount = {

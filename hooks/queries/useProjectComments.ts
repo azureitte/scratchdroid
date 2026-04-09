@@ -136,7 +136,11 @@ export const useProjectComments = ({
             responseType: 'json',
         });
         if (!targetCommentRes.success) throw new Error(targetCommentRes.error);
-        if (targetCommentRes.status === 404) return;
+        if (targetCommentRes.status === 404 || !targetCommentRes.data) {
+            setHighlight(null);
+            setHighlightLoaded(true);
+            return;
+        }
     
         // if it's a root comment, set the highlight to be just this comment
         const targetComment = targetCommentRes.data;
@@ -182,7 +186,7 @@ export const useProjectComments = ({
 
     useEffect(() => {
         if (author && highlightedComment) {
-            fetchHighlight(highlightedComment);
+            fetchHighlight(highlightedComment).catch(() => setHighlight(null));
         }
     }, [author, highlightedComment]);
 

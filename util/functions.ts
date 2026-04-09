@@ -155,6 +155,15 @@ export function cookieObjToStr (cookies: Cookies) {
     }
 }
 
+export function cookieObjToRequestHeader (cookies: Cookies) {
+    return Object.entries(cookies)
+        .map(([name, cookie]) => {
+            if (name === 'scratchsessionsid') return `${name}="${cookie.value}"`;
+            return `${name}=${cookie.value}`
+        })
+        .join('; ');
+}
+
 export function getRoleNameFromSession (session: ScratchSession) {
     if (!session.permissions) return 'Anonymous';
     if (session.permissions.admin) return 'Scratch Team';

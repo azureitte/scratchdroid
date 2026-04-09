@@ -34,7 +34,7 @@ export const useAccountStorage = () => {
 
             return remoteAccounts;
         },
-        staleTime: 5 * 60 * 1000, // 5 minutes
+        staleTime: 60 * 1000, // 1 minute
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,
     });

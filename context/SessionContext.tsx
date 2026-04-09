@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
 import { WEBSITE_URL } from '@/util/constants';
-import { cookieObjToHeaders, sleep } from '@/util/functions';
+import { cookieObjToHeaders, cookieObjToRequestHeader, sleep } from '@/util/functions';
 import { apiReq } from '@/util/api';
 import { emit } from '@/util/eventBus';
 import { 
@@ -68,9 +68,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     const isFirstLoad = useRef(true);
 
     const getCookies = useCallback(async () => {
-        const cookiesObj = await CookieManager.get(WEBSITE_URL);
-        const cookies = cookieObjToHeaders(cookiesObj);
-        return cookies;
+        return CookieManager.get(WEBSITE_URL);
     }, []);
 
     useEffect(() => {
@@ -236,6 +234,13 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         if (!silent)
             setTransitionState('switching');
 
+        if (session?.user) {
+            const currentCookies = await getCookies();
+            console.log('saving cookies for the current account before leaving...', session.user.username);
+            await updateAccountCookies(session.user.username, currentCookies);
+        }
+
+
         const account = await getAccountCredentials(username);
         if (!account) {
             setTransitionState(prevState);
@@ -258,9 +263,18 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
                 try {
                     await CookieManager.clearAll();
                     
-                    for (const cookie of account.cookies) {
-                        await CookieManager.setFromResponse(WEBSITE_URL, cookie);
-                }
+                    for (const [name, cookie] of Object.entries(account.cookies)) {
+                        await CookieManager.set(WEBSITE_URL, {
+                            name,
+                            value: cookie.value,
+                            domain: cookie.domain,
+                            path: cookie.path ?? '/',
+                            secure: cookie.secure,
+                            httpOnly: cookie.httpOnly,
+                            expires: cookie.expires,
+                            version: '1',
+                        });
+                    }
                 } catch (e) {
                     console.error(e);
                 }
@@ -276,14 +290,6 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             await setActiveAccount(newSession.user?.username ?? null);
             setSession(newSession);
             handleLoginSuccess();
-
-            // if (!silent) {
-            //     await sleep(1000);
-            //     console.log('Still logging in just to make sure');
-            //     await CookieManager.clearAll();
-            //     await login(account.username, account.password, true);
-            //     console.log('Done');
-            // }
             return;
         }
 
