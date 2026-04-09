@@ -26,7 +26,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✅ Logging in
    - ❌ Account creation
    - ✖️ Account settings
-   - 🟡 Multiple accounts
+   - ✅ Multiple accounts
 
 - ✅ Comment management
    - ✅ View user comments
