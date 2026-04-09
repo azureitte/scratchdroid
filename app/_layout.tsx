@@ -61,8 +61,8 @@ export default function RootLayout() {
             <GestureHandlerRootView style={{ flex: 1 }}>
 
                 <TabBar />
-                <Drawer />
                 <Header />
+                <Drawer />
                 
                 <Stack
                     screenOptions={{

@@ -10,6 +10,7 @@ import type {
 
 import type { CommentSectionRef } from "@/components/panels/CommentSection";
 import { Cookies } from '@preeternal/react-native-cookie-manager';
+import { ScratchSession } from './types/api/account.types';
 
 export function shortDate (date: Date) {
     return format(date, 'MMM d, yyyy');
@@ -151,4 +152,15 @@ export function cookieObjToStr (cookies: Cookies) {
     } catch {
         return '[]';
     }
+}
+
+export function getRoleNameFromSession (session: ScratchSession) {
+    if (!session.permissions) return 'Anonymous';
+    if (session.permissions.admin) return 'Scratch Team';
+    if (session.permissions.educator) return 'Teacher Account';
+    if (session.permissions.educator_invitee) return 'Teacher Account (Pending)';
+    if (session.permissions.invited_scratcher) return 'Invited Scratcher';
+    if (session.permissions.student) return 'Student';
+    if (session.permissions.new_scratcher) return 'New Scratcher';
+    return 'Scratcher';
 }
