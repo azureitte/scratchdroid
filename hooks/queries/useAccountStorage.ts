@@ -12,9 +12,10 @@ export const useAccountStorage = () => {
         queryFn: async () => {
             const accounts = await getAccounts();
             const activeAccount = await getActiveAccount();
-            const otherAccounts = accounts.filter(a => a.username !== activeAccount);
 
             const fetchUnreadFor = async (username: string) => {
+                if (username === activeAccount) return 0;
+
                 const messageCountRes = await apiReq<{ count: number }>({
                     host: 'https://api.scratch.mit.edu',
                     path: `/users/${username}/messages/count?a=${Math.random()}`,
@@ -24,9 +25,9 @@ export const useAccountStorage = () => {
                 return messageCountRes.data.count;
             }
 
-            const unreadCounts = await Promise.all(otherAccounts.map(a => fetchUnreadFor(a.username)));
+            const unreadCounts = await Promise.all(accounts.map(a => fetchUnreadFor(a.username)));
 
-            const remoteAccounts: RemoteAccount[] = otherAccounts.map((a, idx) => ({
+            const remoteAccounts: RemoteAccount[] = accounts.map((a, idx) => ({
                 ...a,
                 unread: unreadCounts[idx],
             }));
