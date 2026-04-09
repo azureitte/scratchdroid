@@ -1,6 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { addAccount, clearAccounts, getAccountCredentials, getAccounts } from "@/util/accountStorage";
+import { addAccount, clearAccounts, getAccountCredentials, getAccounts, getActiveAccount } from "@/util/accountStorage";
+import type { RemoteAccount } from "@/util/types/app/accounts.types";
+import { apiReq } from "@/util/api";
+
 
 export const useAccountStorage = () => {
 
@@ -8,11 +11,31 @@ export const useAccountStorage = () => {
         queryKey: ['accounts'],
         queryFn: async () => {
             const accounts = await getAccounts();
-            return accounts;
+            const activeAccount = await getActiveAccount();
+            const otherAccounts = accounts.filter(a => a.username !== activeAccount);
+
+            const fetchUnreadFor = async (username: string) => {
+                const messageCountRes = await apiReq<{ count: number }>({
+                    host: 'https://api.scratch.mit.edu',
+                    path: `/users/${username}/messages/count?a=${Math.random()}`,
+                });
+                if (!messageCountRes.success) throw new Error(messageCountRes.error);
+    
+                return messageCountRes.data.count;
+            }
+
+            const unreadCounts = await Promise.all(otherAccounts.map(a => fetchUnreadFor(a.username)));
+
+            const remoteAccounts: RemoteAccount[] = otherAccounts.map((a, idx) => ({
+                ...a,
+                unread: unreadCounts[idx],
+            }));
+
+            return remoteAccounts;
         },
         staleTime: 5 * 60 * 1000, // 5 minutes
         refetchOnWindowFocus: true,
-        refetchOnReconnect: false,
+        refetchOnReconnect: true,
     });
 
     const queryClient = useQueryClient();

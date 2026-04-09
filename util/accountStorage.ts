@@ -63,6 +63,17 @@ export async function getAccountCredentials (username: string): Promise<StoredAc
     };
 }
 
+export async function getActiveAccount (): Promise<string|null> {
+    const activeUsername = await AsyncStorage.getItem('activeAccount');
+    if (!activeUsername) return null;
+    return activeUsername;
+}
+
+export async function setActiveAccount (username: string|null) {
+    if (username === null) await AsyncStorage.removeItem('activeAccount');
+    else await AsyncStorage.setItem('activeAccount', username);
+}
+
 export async function clearAccounts () {
     const accounts = await getAccounts();
     await Promise.all(accounts.flatMap(account => Keychain.resetGenericPassword({
@@ -70,6 +81,7 @@ export async function clearAccounts () {
     })));
 
     await AsyncStorage.removeItem('accounts');
+    await AsyncStorage.removeItem('activeAccount');
 }
 
 
