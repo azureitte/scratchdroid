@@ -143,3 +143,5 @@ export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<any> {
         };
     }
 }
+
+(globalThis as any).CookieManager = CookieManager;

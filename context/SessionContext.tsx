@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
 import { WEBSITE_URL } from '@/util/constants';
-import { cookieObjToHeaders } from '@/util/functions';
+import { cookieObjToHeaders, sleep } from '@/util/functions';
 import { apiReq } from '@/util/api';
 import { emit } from '@/util/eventBus';
 import { 
@@ -253,14 +253,17 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
         if (account.cookies) {
             console.log('Trying replacing cookies directly first...');
-            try {
-                await CookieManager.clearAll();
-                
-                for (const cookie of account.cookies) {
-                    await CookieManager.setFromResponse(WEBSITE_URL, cookie);
-            }
-            } catch (e) {
-                console.error(e);
+            // only override cookies, when the silent flag is false
+            if (!silent) {
+                try {
+                    await CookieManager.clearAll();
+                    
+                    for (const cookie of account.cookies) {
+                        await CookieManager.setFromResponse(WEBSITE_URL, cookie);
+                }
+                } catch (e) {
+                    console.error(e);
+                }
             }
 
             [newSession] = await getSession();
@@ -273,6 +276,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             await setActiveAccount(newSession.user?.username ?? null);
             setSession(newSession);
             handleLoginSuccess();
+
+            // if (!silent) {
+            //     await sleep(1000);
+            //     console.log('Still logging in just to make sure');
+            //     await CookieManager.clearAll();
+            //     await login(account.username, account.password, true);
+            //     console.log('Done');
+            // }
             return;
         }
 
