@@ -131,7 +131,11 @@ const Sheet = () => {
             onDidPresent={() => {
                 isSheetOpen.current = true;
             }}
-            backgroundColor={'#1C1C1C'}
+            backgroundColor={
+                currentMenuDef?.isDark 
+                    ? '#121212' 
+                    : '#1C1C1C'
+            }
             style={{ 
                 paddingBottom: 20,
             }}

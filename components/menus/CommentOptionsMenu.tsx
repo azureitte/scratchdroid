@@ -16,6 +16,7 @@ import Button from '@/components/general/Button';
 import CommentItem from '@/components/panels/CommentItem';
 import type { AddCommentMenuProps } from './AddCommentMenu';
 import { useReportModernComment } from '@/hooks/mutations/useReportModernComment';
+import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
 
 export type CommentOptionsMenuProps = {
     type: 
@@ -196,17 +197,24 @@ const CommentOptionsMenu = ({
         });
     }
 
+    const menu1: ContextMenuItem[] = [
+        { key: 'copy', label: 'Copy text', onPress: handleCopy, icon: 'copy' },
+        { key: 'share', label: 'Share', onPress: handleShare, icon: 'share' },
+    ];
+
+    const menu2: ContextMenuItem[] = [];
+    if (canReply) menu2.push({ key: 'reply', label: 'Reply', onPress: handleReply, icon: 'replyAlt' });
+    if (canDelete) menu2.push({ key: 'delete', label: 'Delete', onPress: handleDelete, isDanger: true, icon: 'delete' });
+    if (canReport) menu2.push({ key: 'report', label: 'Report', onPress: handleReport, isDanger: true, icon: 'report' });
+
     return (
         <View style={styles.container}>
             <View style={styles.content}>
                 <View style={styles.commentWrapper}>
                     <CommentItem comment={comment} isIsolated />
                 </View>
-                <Button text="Copy text" onPress={handleCopy} />
-                <Button text="Share" onPress={handleShare} />
-                { canReply && <Button text="Reply" onPress={handleReply} /> }
-                { canDelete && <Button text="Delete" onPress={handleDelete} /> }
-                { canReport && <Button text="Report" onPress={handleReport} /> }
+                <ContextMenu items={menu1} />
+                { menu2.length > 0 && <ContextMenu items={menu2} /> }
             </View>
         </View>
     );
@@ -215,6 +223,7 @@ const CommentOptionsMenu = ({
 export default buildMenu({
     render: (props: CommentOptionsMenuProps) => <CommentOptionsMenu {...props} />,
     detents: ['auto', 1],
+    isDark: true,
 });
 
 const styles = StyleSheet.create({

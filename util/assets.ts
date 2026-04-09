@@ -16,6 +16,11 @@ import icReply from "../assets/icons/ic-reply.svg";
 import icAdd from "../assets/icons/ic-add.svg";
 import icAccountSettings from "../assets/icons/ic-account-settings.svg";
 import icLogout from "../assets/icons/ic-logout.svg";
+import icCopy from "../assets/icons/ic-copy.svg";
+import icShare from "../assets/icons/ic-share.svg";
+import icReplyAlt from "../assets/icons/ic-reply-alt.svg";
+import icDelete from "../assets/icons/ic-delete.svg";
+import icReport from "../assets/icons/ic-report.svg";
 
 import icStatView from "../assets/icons/ic-stat-view.svg";
 import icStatLove from "../assets/icons/ic-stat-love.svg";
@@ -66,6 +71,11 @@ export const ICONS = {
     add: icAdd,
     accountSettings: icAccountSettings,
     logout: icLogout,
+    copy: icCopy,
+    share: icShare,
+    replyAlt: icReplyAlt,
+    delete: icDelete,
+    report: icReport,
 
     statView: icStatView,
     statLove: icStatLove,

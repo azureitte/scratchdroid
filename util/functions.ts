@@ -115,6 +115,7 @@ export const buildMenu = (def: PartialSheetMenuDefinition): SheetMenuDefinition 
     ...def,
     detents: def.detents ?? ['auto'],
     dismissible: def.dismissible ?? true,
+    isDark: def.isDark ?? false,
 });
 
 export function uniqueById<T extends { id: number; [key: string]: any }>(arr: T[]): T[] {
