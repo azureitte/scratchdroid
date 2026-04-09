@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
         pointerEvents: "none",
     },
     buttonFullWidth: {
-        flexGrow: 1,
+        width: '100%',
     },
 
     primary: {

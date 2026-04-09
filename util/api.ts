@@ -1,6 +1,8 @@
 import CookieManager from '@preeternal/react-native-cookie-manager';
 import { HTMLElement, parse } from 'node-html-parser';
 
+import { WEBSITE_URL } from './constants';
+
 type ScratchApiBaseOptions = {
     host: string;
     path: string;
@@ -36,7 +38,7 @@ export type ScratchApiResponse<T = any> = {
     error: string;
 }
 
-const DEFAULT_HOST = 'https://scratch.mit.edu';
+const DEFAULT_HOST = WEBSITE_URL;
 const DEFAULT_OPTIONS: ScratchApiOptions = {
     host: DEFAULT_HOST,
     method: 'GET',

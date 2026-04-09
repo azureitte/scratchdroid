@@ -9,6 +9,7 @@ import type {
 } from "@/util/types/app/misc.types";
 
 import type { CommentSectionRef } from "@/components/panels/CommentSection";
+import { Cookies } from '@preeternal/react-native-cookie-manager';
 
 export function shortDate (date: Date) {
     return format(date, 'MMM d, yyyy');
@@ -127,3 +128,27 @@ export function uniqueById<T extends { id: number; [key: string]: any }>(arr: T[
 }
 
 export const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export function cookieObjToHeaders(cookies: Cookies) {
+    const setCookieHeaders = Object.entries(cookies).map(([name, cookie]) => {
+        let cookieString = `${name}=${cookie.value}`;
+
+        if (cookie.path) cookieString += `; Path=${cookie.path}`;
+        if (cookie.domain) cookieString += `; Domain=${cookie.domain}`;
+        if (cookie.expires) cookieString += `; Expires=${cookie.expires}`;
+        if (cookie.httpOnly) cookieString += `; HttpOnly`;
+        if (cookie.secure) cookieString += `; Secure`;
+
+        return cookieString;
+    });
+
+    return setCookieHeaders;
+}
+
+export function cookieObjToStr (cookies: Cookies) {
+    try {
+        return JSON.stringify(cookieObjToHeaders(cookies));
+    } catch {
+        return '[]';
+    }
+}

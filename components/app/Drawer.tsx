@@ -1,11 +1,13 @@
 import { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, DrawerLayoutAndroid } from 'react-native';
+import { StyleSheet, View, DrawerLayoutAndroid, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { emit, off, on } from '@/util/eventBus';
 import { AppContext } from '@/context/AppContext';
 import { useSession } from '@/hooks/useSession';
+import { useAccountStorage } from '@/hooks/queries/useAccountStorage';
 import Button from '@/components/general/Button';
+import { useRouter } from 'expo-router';
 
 type DrawerState = 'Dragging' | 'Idle' | 'Settling';
 
@@ -13,7 +15,8 @@ const Drawer = () => {
 
     const insets = useSafeAreaInsets();
     const { headerVisible } = useContext(AppContext);
-    const { logout } = useSession();
+    const { session, logout, logoutAll, switchAccount } = useSession();
+    const { accounts } = useAccountStorage();
 
     const drawer = useRef<DrawerLayoutAndroid>(null);
     const drawerOpened = useRef(false);
@@ -42,19 +45,36 @@ const Drawer = () => {
         <View style={[styles.container, styles.navigationContainer, {
             paddingTop: insets.top + 80,
         }]} >
+            <Text style={styles.paragraph}>
+                Current account: @{session?.user?.username}
+            </Text>
+
+            { accounts.filter(a => a.username !== session?.user?.username).map(account => (
+                <Button
+                    key={account.id}
+                    text={'@' + account.username}
+                    onPress={() => {
+                        drawer.current?.closeDrawer();
+                        drawerOpened.current = false;
+                        switchAccount(account.username);
+                    }}
+                />
+            )) }
             <Button
-                text="Log out"
-                fullWidth
-                onPress={() => {
+                text="Add another account"
+                onPress={async () => {
                     drawer.current?.closeDrawer();
+                    drawerOpened.current = false;
                     logout();
                 }}
             />
+
             <Button
-                text="Bottom Sheet"
-                fullWidth
+                text="Log out of all accounts"
                 onPress={() => {
-                    emit('sheet-push', 'test1');
+                    drawer.current?.closeDrawer();
+                    drawerOpened.current = false;
+                    logoutAll();
                 }}
             />
         </View>
