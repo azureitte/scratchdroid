@@ -6,7 +6,8 @@ import { useRouter } from 'expo-router';
 import {  off, on } from '@/util/eventBus';
 import { IMAGES } from '@/util/assets';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
-import { addPrefixUrl, getRoleNameFromSession } from '@/util/functions';
+import { getRoleNameFromSession } from '@/util/functions';
+import { $u } from '@/util/thumbnailCaching';
 
 import { AppContext } from '@/context/AppContext';
 import { useSession } from '@/hooks/useSession';
@@ -73,7 +74,8 @@ const Drawer = () => {
                 menu.push({
                     key: `switch-to-${account.username}`,
                     label: '@' + account.username,
-                    icon: `https://cdn2.scratch.mit.edu/get_image/user/${account.id}_32x32.png`,
+                    icon: $u(`https://cdn2.scratch.mit.edu/get_image/user/${account.id}_32x32.png`, 
+                        account.username, account.id),
                     iconIsPng: true,
                     badge: account.unread,
                     isBold: true,
@@ -140,7 +142,9 @@ const Drawer = () => {
                 >
                     <Image 
                         source={{ 
-                            uri: addPrefixUrl(session.user.thumbnailUrl),
+                            uri: $u(session.user.thumbnailUrl, 
+                                session.user.username, 
+                                session.user.id),
                         }} 
                         style={styles.currentUserAvatar} 
                     />

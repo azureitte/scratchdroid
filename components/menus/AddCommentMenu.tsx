@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
 
-import { addPrefixUrl, buildMenu } from '@/util/functions';
+import { buildMenu } from '@/util/functions';
+import { $u } from '@/util/thumbnailCaching';
 import { emit } from '@/util/eventBus';
 
 import { useSheet } from '@/hooks/useSheet';
@@ -82,7 +83,8 @@ const AddCommentMenu = ({
             </Text>
             <View style={styles.commentBox}>
                 <Image
-                    source={{ uri: addPrefixUrl(session?.user?.thumbnailUrl!) }}
+                    source={{ uri: $u(session!.user!.thumbnailUrl,
+                        session!.user!.username, session!.user!.id) }}
                     style={styles.avatar}
                 />
                 <TextArea

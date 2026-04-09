@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
 import { addPrefixUrl, shortDate } from '@/util/functions';
+import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
 
@@ -66,7 +67,11 @@ const ProjectPageHeader = ({
     return (<View style={[styles.content]}>
         <View style={styles.titleSection}>
             <Image
-                source={{ uri: addPrefixUrl(project.author.profile.images['60x60']) }}
+                source={{ uri: $u(
+                    project.author.profile.images['60x60'],
+                    project.author.username,
+                    project.author.id,
+                ) }}
                 style={styles.authorAvatar}
             />
             <View style={styles.title}>

@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import CountryFlag from "react-native-country-flag";
 
 import { addPrefixUrl, relativeDate } from '@/util/functions';
+import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
 
@@ -22,13 +23,13 @@ import InfoCard from './InfoCard';
 type UserPageHeaderProps = {
     data: UserQueryData;
     username: string;
-    pfpCachePrevent: RefObject<number>;
+    rerender: number;
 }
 
 const UserPageHeader = memo(({
     data,
     username: myUsername,
-    pfpCachePrevent,
+    rerender,
 }: UserPageHeaderProps) => {
 
     const router = useRouter();
@@ -79,7 +80,8 @@ const UserPageHeader = memo(({
         <View style={styles.info}>
             <Image 
                 source={{
-                    uri: data.user.profile.images['90x90'] + '?a=' + pfpCachePrevent.current,
+                    uri: $u(data.user.profile.images['90x90'], 
+                        myUsername, data.user.id, rerender),
                 }}
                 width={480}
                 height={360}

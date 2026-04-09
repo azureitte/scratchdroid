@@ -4,6 +4,7 @@ import { Link } from "expo-router";
 
 import { SVGS } from "@/util/assets";
 import { shortRelativeDate } from "@/util/functions";
+import { $u } from "@/util/thumbnailCaching";
 import { stringToCommentContent } from "@/util/parsing/comments";
 import { CommentType, type ScratchMessage } from "@/util/types/api/message.types";
 
@@ -186,7 +187,9 @@ const MessageRow = memo(({
 
                 { message.type === 'addcomment' && 
                     <View style={styles.commentWrapper}>
-                        <Image source={{ uri: `https://uploads.scratch.mit.edu/get_image/user/${message.actor_id}_32x32.png` }} style={styles.commentAvatar} />
+                        <Image source={{ uri: $u(
+                            `https://uploads.scratch.mit.edu/get_image/user/${message.actor_id}_32x32.png`,
+                            message.actor_username, message.actor_id) }} style={styles.commentAvatar} />
                         <View style={styles.commentBubbleDeco} />
                         <View style={styles.commentBubble}>
                             <CommentContent 

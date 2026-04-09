@@ -2,6 +2,7 @@ import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { DEFAULT_RIPPLE_CONFIG, USER_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
+import { $u } from '@/util/thumbnailCaching';
 
 type UserCardProps = {
     id: number;
@@ -27,7 +28,7 @@ const UserCard = ({
             onPress={onPress ?? (() => router.push(`/users/${username}`))}
         >
             <Image 
-                source={{ uri: pfp }}
+                source={{ uri: $u(pfp, username, id) }}
                 style={styles.thumbnail} 
             />
             <Text style={styles.title} numberOfLines={1}>{username}</Text>

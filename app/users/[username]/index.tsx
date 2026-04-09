@@ -5,6 +5,7 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { scrollCommentSectionToId } from '@/util/functions';
+import { refreshCacheForUser } from '@/util/thumbnailCaching';
 import { off, on } from '@/util/eventBus';
 import type { Comment } from '@/util/types/app/comments.types';
 
@@ -34,8 +35,8 @@ const UserPage = () => {
     });
 
     const [ isRefreshing, setIsRefreshing ] = useState(false);
+    const [ headerRerender, setHeaderRerender ] = useState(0);
 
-    const pfpCachePrevent = useRef(Math.random());
     const listRef = useRef<CommentSectionRef>(null);
     const initPageFetchCount = useRef(0);
 
@@ -110,8 +111,9 @@ const UserPage = () => {
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
-        pfpCachePrevent.current = Math.random();
+        refreshCacheForUser(username);
         await fetchAll();
+        setHeaderRerender(prev => (prev + 1) % 64); // force header to rerender
         setIsRefreshing(false);
     };
 
@@ -145,7 +147,7 @@ const UserPage = () => {
             header={<UserPageHeader 
                 data={user.data} 
                 username={username}
-                pfpCachePrevent={pfpCachePrevent}
+                rerender={headerRerender}
             />}
             hasNextPage={comments.hasNextPage}
             isLoading={comments.isLoading}

@@ -12,14 +12,14 @@ import Animated, {
 import { emit } from "@/util/eventBus";
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
 import { ICONS, IMAGES } from "@/util/assets";
+import { $u } from "@/util/thumbnailCaching";
+
 import { AppContext } from "@/context/AppContext";
 import { useSession } from "@/hooks/useSession";
 
 const Header = memo(() => {
     const insets = useSafeAreaInsets();
     const router = useRouter();
-
-    const pfpCachePrevent = useRef(Math.random());
 
     const { session } = useSession();
     const { 
@@ -91,7 +91,8 @@ const Header = memo(() => {
             >
                 { session?.user && 
                     <Image 
-                        source={{ uri: `https://uploads.scratch.mit.edu/get_image/user/${session.user.id}_32x32.png?a=${pfpCachePrevent.current}` }}
+                        source={{ uri: $u(session.user.thumbnailUrl,
+                            session.user.username, session.user.id) }}
                         style={styles.userAvatar} 
                     /> }
             </Pressable>

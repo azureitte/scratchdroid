@@ -17,7 +17,8 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
-import { addPrefixUrl, sleep } from '@/util/functions';
+import { sleep } from '@/util/functions';
+import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
 import type { FlattenedComment } from '@/util/types/app/comments.types';
 
@@ -143,7 +144,8 @@ const CommentSection = forwardRef(({
                 android_ripple={DEFAULT_RIPPLE_CONFIG}
             >
                 <Image
-                    source={{ uri: addPrefixUrl(session?.user?.thumbnailUrl!) }}
+                    source={{ uri: $u(session!.user!.thumbnailUrl,
+                        session!.user!.username, session!.user!.id) }}
                     style={styles.addCommentAvatar}
                 />
                 <Text style={styles.addCommentText}>Leave a comment...</Text>

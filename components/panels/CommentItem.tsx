@@ -19,6 +19,7 @@ import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { relativeDate } from '@/util/functions';
+import { $u } from '@/util/thumbnailCaching';
 import type { FlattenedComment } from '@/util/types/app/comments.types';
 
 import Button from '@/components/general/Button';
@@ -72,7 +73,12 @@ const CommentItem = memo(({
                 styles.commentAvatarWrap,
                 comment.isHighlighted && styles.commentAvatarHighlight,
             ]}>
-            <Image source={{ uri: comment.author.image }} style={styles.commentAvatar} />
+            <Image 
+                source={{ uri: $u(comment.author.image, 
+                    comment.author.username, 
+                    comment.author.id) }} 
+                style={styles.commentAvatar} 
+            />
         </Link>
         <View style={styles.commentRight}>
             { comment.isHighlighted && <View style={styles.commentBadge}>
