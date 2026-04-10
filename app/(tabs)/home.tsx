@@ -74,7 +74,13 @@ const HomePage = () => {
             })
         ]);
 
-        if (lovesRes.success) setProjectLoves(lovesRes.data);
+        // newest projects first
+        if (lovesRes.success) setProjectLoves(
+            lovesRes.data
+                ?.sort((a, b) => 
+                    new Date(b.history.created).getTime() 
+                  - new Date(a.history.created).getTime())
+        );
         if (featuredRes.success) setFeaturedTab(featuredRes.data);
         if (activityRes.success) setActivity(activityRes.data);
 
