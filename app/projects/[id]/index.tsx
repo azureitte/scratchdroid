@@ -180,6 +180,8 @@ const ProjectPage = () => {
                     myUsername={session?.user?.username}
                     webviewActive={webviewActive}
                     onInfoPress={() => ignoreProjectUnload.current = true}
+                    onRemixesPress={() => ignoreProjectUnload.current = true}
+                    onStudiosPress={() => ignoreProjectUnload.current = true}
                 />}
                 hasNextPage={comments.hasNextPage}
                 isLoading={comments.isLoading}

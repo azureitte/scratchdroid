@@ -8,6 +8,7 @@ type UserCardProps = {
     id: number;
     username: string;
     image?: string;
+    isInsideGrid?: boolean;
     onPress?: () => void;
 };
 
@@ -15,6 +16,7 @@ const UserCard = ({
     id,
     username,
     image,
+    isInsideGrid = false,
     onPress,
 }: UserCardProps) => {
     const router = useRouter();
@@ -23,7 +25,10 @@ const UserCard = ({
 
     return (
         <Pressable 
-            style={styles.container}
+            style={[
+                styles.container,
+                isInsideGrid && styles.containerInsideGrid,
+            ]}
             android_ripple={DEFAULT_RIPPLE_CONFIG}
             onPress={onPress ?? (() => router.push(`/users/${username}`))}
         >
@@ -49,6 +54,10 @@ const styles = StyleSheet.create({
         position: 'relative',
         paddingVertical: 8,
         paddingHorizontal: 12,
+    },
+    containerInsideGrid: {
+        flex: 1,
+        alignItems: 'center',
     },
     thumbnail: {
         aspectRatio: 1,

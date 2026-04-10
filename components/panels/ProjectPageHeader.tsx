@@ -8,7 +8,7 @@ import {
     Pressable,
 } from 'react-native';
 import WebView from 'react-native-webview';
-import { Icon, Link } from 'expo-router';
+import { Icon, Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
@@ -44,6 +44,8 @@ type ProjectPageHeaderProps = {
     myUsername?: string;
     webviewActive?: boolean;
     onInfoPress?: () => void;
+    onRemixesPress?: () => void;
+    onStudiosPress?: () => void;
 }
 
 const ProjectPageHeader = ({
@@ -61,10 +63,13 @@ const ProjectPageHeader = ({
     myUsername,
     webviewActive = true,
     onInfoPress,
+    onRemixesPress,
+    onStudiosPress,
 }: ProjectPageHeaderProps) => {
 
     const screen = useWindowDimensions();
     const sheet = useSheet();
+    const router = useRouter();
 
     const loveAction = useLoveProject({
         projectId: project.id,
@@ -235,6 +240,10 @@ const ProjectPageHeader = ({
             { !!remixes.length && <Pressable 
                 style={styles.footerSection}
                 android_ripple={DEFAULT_RIPPLE_CONFIG}
+                onPress={() => {
+                    onRemixesPress?.();
+                    router.push(`/projects/${projectId}/remixes`);
+                }}
             >
                 <Heading style={styles.footerTitle}>Remixes</Heading>
                 <View style={styles.footerContentPartial}>
@@ -250,6 +259,10 @@ const ProjectPageHeader = ({
             { !!studios.length && <Pressable 
                 style={styles.footerSection}
                 android_ripple={DEFAULT_RIPPLE_CONFIG}
+                onPress={() => {
+                    onRemixesPress?.();
+                    router.push(`/projects/${projectId}/studios`);
+                }}
             >
                 <Heading style={styles.footerTitle}>Studios</Heading>
                 <View style={styles.footerContentPartial}>

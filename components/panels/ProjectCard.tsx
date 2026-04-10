@@ -11,6 +11,7 @@ type ProjectCardProps = {
     author: string;
     viewCount?: number;
     loveCount?: number;
+    isInsideGrid?: boolean;
     onPress?: () => void;
 };
 
@@ -20,6 +21,7 @@ const ProjectCard = ({
     author,
     viewCount,
     loveCount,
+    isInsideGrid = false,
     onPress,
 }: ProjectCardProps) => {
     const ViewIcon = ICONS.statView;
@@ -29,7 +31,10 @@ const ProjectCard = ({
 
     return (
         <Pressable 
-            style={styles.container}
+            style={[
+                styles.container,
+                isInsideGrid && styles.containerInsideGrid,
+            ]}
             android_ripple={DEFAULT_RIPPLE_CONFIG}
             onPress={onPress ?? (() => router.push(`/projects/${id}`))}
         >
@@ -67,6 +72,11 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 12,
     },
+    containerInsideGrid: {
+        flex: 1,
+        alignItems: 'center',
+    },
+
     thumbnail: {
         aspectRatio: 4/3,
         height: PROJECT_CARD_THUMBNAIL_HEIGHT,

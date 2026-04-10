@@ -11,6 +11,13 @@ import type {
 import type { CommentSectionRef } from "@/components/panels/CommentSection";
 import { Cookies } from '@preeternal/react-native-cookie-manager';
 import { ScratchSession } from './types/api/account.types';
+import { PROJECT_CARD_THUMBNAIL_HEIGHT, USER_CARD_THUMBNAIL_HEIGHT } from './constants';
+
+type Falsy = false | 0 | "" | null | undefined | 0n;
+type FalsyToNullRet<T> = T extends Falsy ? null : T;
+
+/** Converts any falsy values to null, keeps the rest as is */
+export const fnull = <T>(val: T) => (val || null) as FalsyToNullRet<T>;
 
 export function shortDate (date: Date) {
     return format(date, 'MMM d, yyyy');
@@ -180,8 +187,20 @@ export function getLastPathSegment (url: string) {
     return segments[segments.length - 1];
 }
 
-type Falsy = false | 0 | "" | null | undefined | 0n;
-type FalsyToNullRet<T> = T extends Falsy ? null : T;
+export function getProjectsPerRow (screenWidth: number, horizontalPadding = 16) {
+    const projectCardWidth = (PROJECT_CARD_THUMBNAIL_HEIGHT / 3 * 4) + 24;
+    const containerWidth = screenWidth - horizontalPadding * 2;
+    return Math.floor(containerWidth / projectCardWidth);
+}
 
-/** Converts any falsy values to null, keeps the rest as is */
-export const fnull = <T>(val: T) => (val || null) as FalsyToNullRet<T>;
+export function getStudiosPerRow (screenWidth: number, horizontalPadding = 16) {
+    const studioCardWidth = (PROJECT_CARD_THUMBNAIL_HEIGHT / 10 * 17) + 24;
+    const containerWidth = screenWidth - horizontalPadding * 2;
+    return Math.floor(containerWidth / studioCardWidth);
+}
+
+export function getUsersPerRow (screenWidth: number, horizontalPadding = 16) {
+    const userCardWidth = USER_CARD_THUMBNAIL_HEIGHT + 24;
+    const containerWidth = screenWidth - horizontalPadding * 2;
+    return Math.floor(containerWidth / userCardWidth);
+}
