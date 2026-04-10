@@ -1,48 +1,40 @@
-import { Share, StyleSheet, View, Alert, AlertButton } from 'react-native';
+import { Share, StyleSheet, View, Alert, AlertButton, Text } from 'react-native';
 import * as Clipboard from "expo-clipboard";
 
 import { buildMenu } from '@/util/functions';
 import { WEBSITE_URL } from '@/util/constants';
 
 import { useSheet } from '@/hooks/useSheet';
-import { useToggleProjectComments } from '@/hooks/mutations/useToggleProjectComments';
+import { useToggleUserComments } from '@/hooks/mutations/useToggleUserComments';
 
 import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
-import ScrollableText from '../general/ScrollableText';
 
-export type ProjectOptionsMenuProps = {
-    projectId: number;
-    projectTitle?: string;
-    canRemix?: boolean;
+export type UserOptionsMenuProps = {
+    username: string;
     canReport?: boolean;
     canComment?: boolean;
     canToggleCommenting?: boolean;
-    setCommentsAllowed?: (commentsAllowed: boolean) => void;
+    setCanComment?: (commentsAllowed: boolean) => void;
 }
 
-const ProjectOptionsMenu = ({
-    projectId,
-    projectTitle,
-    canRemix = true,
+const UserOptionsMenu = ({
+    username,
     canReport = true,
     canComment = true,
     canToggleCommenting = false,
-    setCommentsAllowed,
-}: ProjectOptionsMenuProps) => {
+    setCanComment,
+}: UserOptionsMenuProps) => {
 
     const sheet = useSheet();
 
-    const toggleCommentsAction = useToggleProjectComments({
-        projectId: projectId,
+    const toggleCommentsAction = useToggleUserComments({
+        username,
         onSuccess: (commentsAllowed) => {
-            setCommentsAllowed?.(commentsAllowed);
-        },
-        onError: () => {
-            setCommentsAllowed?.(canComment);
+            setCanComment?.(commentsAllowed);
         },
     });
 
-    const getUrl = () => `${WEBSITE_URL}/projects/${projectId}`;
+    const getUrl = () => `${WEBSITE_URL}/users/${username}/`;
 
     const handleCopy = async () => {
         await Clipboard.setStringAsync(getUrl());
@@ -70,14 +62,9 @@ const ProjectOptionsMenu = ({
     const menu1: ContextMenuItem[] = [
         { key: 'copy', label: 'Copy link', onPress: handleCopy, icon: 'link' },
         { key: 'share', label: 'Share', onPress: handleShare, icon: 'share' },
-        { key: 'download', label: 'Download', onPress: handleDefault, icon: 'download' },
     ];
 
-    const menu2: ContextMenuItem[] = [
-        { key: 'add-studio', label: 'Add to studio', onPress: handleDefault, icon: 'add' },
-    ];
-    if (canRemix) 
-        menu2.push({ key: 'remix', label: 'Remix', onPress: handleDefault, icon: 'remix' });
+    const menu2: ContextMenuItem[] = [];
     if (canToggleCommenting) 
         menu2.push({ 
             key: 'toggle-commenting', 
@@ -91,9 +78,9 @@ const ProjectOptionsMenu = ({
         <View style={styles.container}>
             <View style={styles.content}>
                 <View style={styles.titleWrapper}>
-                    <ScrollableText style={styles.titleText}>
-                        { projectTitle ?? '...' }
-                    </ScrollableText>
+                    <Text style={styles.titleText}>
+                        @{ username }
+                    </Text>
                 </View>
                 <ContextMenu items={menu1} />
                 <ContextMenu items={menu2} />
@@ -103,7 +90,7 @@ const ProjectOptionsMenu = ({
 };
 
 export default buildMenu({
-    render: (props: ProjectOptionsMenuProps) => <ProjectOptionsMenu {...props} />,
+    render: (props: UserOptionsMenuProps) => <UserOptionsMenu {...props} />,
     detents: ['auto', 1],
     isDark: true,
 });
@@ -124,9 +111,7 @@ const styles = StyleSheet.create({
     titleText: {
         fontSize: 24,
         fontWeight: 600,
-        marginRight: 56,
         color: '#fff',
-        overflow: 'scroll',
     },
     titleWrapper: {
         flexDirection: 'row',

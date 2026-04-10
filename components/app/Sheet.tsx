@@ -15,6 +15,7 @@ import CreateMenu from '../menus/CreateMenu';
 import AddCommentMenu from '../menus/AddCommentMenu';
 import CommentOptionsMenu from '../menus/CommentOptionsMenu';
 import ProjectOptionsMenu from '../menus/ProjectOptionsMenu';
+import UserOptionsMenu from '../menus/UserOptionsMenu';
 
 const MENUS = {
     test1: Test,
@@ -23,6 +24,7 @@ const MENUS = {
     addComment: AddCommentMenu,
     commentOptions: CommentOptionsMenu,
     projectOptions: ProjectOptionsMenu,
+    userOptions: UserOptionsMenu,
 } as const;
 
 export type SheetMenuName = keyof typeof MENUS;

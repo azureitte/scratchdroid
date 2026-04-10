@@ -12,6 +12,7 @@ import { countryToCode } from '@/util/countries';
 import type { ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
 import type { ScratchProject } from '@/util/types/api/project.types';
 
+import { useSheet } from '@/hooks/useSheet';
 import { useFollowUser } from '@/hooks/mutations/useFollowUser';
 
 import Carousel from '@/components/panels/Carousel';
@@ -20,6 +21,7 @@ import UserCard from '@/components/panels/UserCard';
 import StudioCard from './StudioCard';
 import InfoCard from './InfoCard';
 import Button from '../general/Button';
+import type { UserOptionsMenuProps } from '../menus/UserOptionsMenu';
 
 
 type UserPageHeaderProps = {
@@ -27,6 +29,7 @@ type UserPageHeaderProps = {
     username: string;
     isOwn?: boolean;
     setIsFollowing?: (to: boolean) => void;
+    setCanComment?: (commentsAllowed: boolean) => void;
     rerender: number;
 }
 
@@ -35,10 +38,12 @@ const UserPageHeader = memo(({
     username: myUsername,
     isOwn = false,
     setIsFollowing,
+    setCanComment,
     rerender,
 }: UserPageHeaderProps) => {
 
     const router = useRouter();
+    const sheet = useSheet();
 
     const followAction = useFollowUser({
         username: myUsername,
@@ -46,6 +51,16 @@ const UserPageHeader = memo(({
             setIsFollowing?.(following);
         },
     })
+
+    const handleProjectOptions = () => {
+        sheet.push<UserOptionsMenuProps>('userOptions', { 
+            username: myUsername,
+            canComment: data.canComment,
+            canToggleCommenting: isOwn,
+            canReport: !isOwn,
+            setCanComment,
+        });
+    }
     
     const renderProject = useCallback((project: ProfileProject) => <ProjectCard
         id={project.id}
@@ -134,17 +149,17 @@ const UserPageHeader = memo(({
             </View>
 
             <View style={styles.actionBar}>
+                <Button
+                    onPress={handleProjectOptions}
+                    icon="more" square
+                />
                 { isOwn 
                     ? <Button
                         text="Edit profile"
                         icon="accountSettings"
                     />
-                    : <>
-                        <Button
-                            icon="more" square
-                        />
-
-                        { data.canFollow && <Button
+                    : data.canFollow 
+                        && <Button
                             text={data.isFollowing ? 'Unfollow' : 'Follow'}
                             role={data.isFollowing ? 'secondary' : 'primary'}
                             icon="follow"
@@ -156,8 +171,7 @@ const UserPageHeader = memo(({
                                     to: !data.isFollowing 
                                 });
                             }}
-                        /> }
-                    </>
+                        />
                 }
             </View>
         </View>

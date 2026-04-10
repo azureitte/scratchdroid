@@ -96,9 +96,17 @@ export const useUser = (username: string) => {
         }));
     }
 
+    const setCommentsAllowedDirectly = (commentsAllowed: boolean) => {
+        queryClient.setQueryData(['user', username], (prev: UserQueryData|null) => produce(prev, (draft) => {
+            if (!draft || !prev) return;
+            draft.canComment = commentsAllowed;
+        }));
+    }
+
     return {
         user,
         setIsFollowingDirectly,
+        setCommentsAllowedDirectly,
     }
 
 }

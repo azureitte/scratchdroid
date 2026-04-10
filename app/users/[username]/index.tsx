@@ -28,7 +28,11 @@ const UserPage = () => {
 
     const { session } = useSession();
 
-    const { user, setIsFollowingDirectly } = useUser(username);
+    const { 
+        user, 
+        setIsFollowingDirectly,
+        setCommentsAllowedDirectly,
+    } = useUser(username);
     const comments = useUserComments({
         user: username,
         enabled: !!username,
@@ -151,6 +155,7 @@ const UserPage = () => {
                 rerender={headerRerender}
                 isOwn={session?.user?.username === username}
                 setIsFollowing={setIsFollowingDirectly}
+                setCanComment={setCommentsAllowedDirectly}
             />}
             hasNextPage={comments.hasNextPage}
             isLoading={comments.isLoading}
