@@ -56,6 +56,8 @@ export function getUserFromProfilePage (root: HTMLElement): UserDataR2|null {
     const canFollow = followButtonElem !== null;
     const isFollowing = followButtonElem?.getAttribute('data-control') === 'unfollow';
 
+    const commentsOff = content.querySelector('.comments-off');
+
     const carouselBoxElems = content.querySelectorAll('.box.slider-carousel-container');
     const matchedBoxes: Record<keyof typeof PROFILE_BOX_TITLES, ProfileBox|null> = {
         shared: null,
@@ -133,6 +135,7 @@ export function getUserFromProfilePage (root: HTMLElement): UserDataR2|null {
             thumbnail_url: `https://uploads.scratch.mit.edu/get_image/project/${bannerProjectId}_480x360.png`,
         }) as BannerProject|null,
 
+        canComment: commentsOff == null,
         canFollow,
         isFollowing,
 

@@ -75,6 +75,7 @@ export const useUser = (username: string) => {
             sharedProjectsCount: r2?.sharedProjectsCount,
             classroomsCount: r2?.classroomsCount,
 
+            canComment: r2?.canComment ?? true,
             canFollow: r2?.canFollow ?? false,
             isFollowing: r2?.isFollowing ?? false,
         }

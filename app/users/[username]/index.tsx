@@ -144,6 +144,7 @@ const UserPage = () => {
             objectName={username}
             comments={comments.data} 
             isOwn={session?.user?.username === username}
+            canComment={user.data.canComment}
             header={<UserPageHeader 
                 data={user.data} 
                 username={username}

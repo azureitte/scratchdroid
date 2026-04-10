@@ -31,6 +31,7 @@ export type UserDataR2 = {
     roleLink: string|null;
     bannerProject: BannerProject|null;
 
+    canComment: boolean;
     canFollow: boolean;
     isFollowing: boolean;
     
@@ -62,6 +63,7 @@ export type UserQueryData = {
     sharedProjectsCount?: number;
     classroomsCount?: number;
 
+    canComment: boolean;
     canFollow: boolean;
     isFollowing: boolean;
 }

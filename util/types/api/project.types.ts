@@ -48,6 +48,7 @@ export type ScratchProject = {
         views: number;
         remixes: number;
     },
+    comments_allowed?: boolean;
     project_token: string;
 }
 

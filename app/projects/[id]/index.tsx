@@ -159,6 +159,7 @@ const ProjectPage = () => {
                 objectId={Number(id)}
                 comments={comments.data}
                 isOwn={session?.user?.username === data?.project.author.username}
+                canComment={data.project.comments_allowed ?? true}
                 header={<ProjectPageHeader 
                     project={data.project}
                     projectId={Number(id)}

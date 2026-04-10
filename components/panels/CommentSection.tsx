@@ -50,6 +50,7 @@ type CommentSectionProps = {
     listStyle?: ViewStyle;
     header?: ReactElement;
     isOwn?: boolean;
+    canComment?: boolean;
 
     hasNextPage?: boolean;
     isLoading?: boolean;
@@ -69,6 +70,7 @@ const CommentSection = forwardRef(({
     listStyle,
     header,
     isOwn = false,
+    canComment = true,
 
     hasNextPage = false,
     isLoading = false,
@@ -139,16 +141,29 @@ const CommentSection = forwardRef(({
         <View style={styles.header}>
             <Heading style={styles.headerTitle}>Comments</Heading>
             <Pressable
-                onPress={handleAddComment}
+                onPress={() => {
+                    if (!canComment) return;
+                    handleAddComment();
+                }}
                 style={styles.addCommentWrap}
-                android_ripple={DEFAULT_RIPPLE_CONFIG}
+                android_ripple={ canComment 
+                    ? DEFAULT_RIPPLE_CONFIG 
+                    : undefined }
             >
-                <Image
-                    source={{ uri: $u(session?.user?.thumbnailUrl!,
-                        session?.user?.username!, session?.user?.id!) }}
-                    style={styles.addCommentAvatar}
-                />
-                <Text style={styles.addCommentText}>Leave a comment...</Text>
+                { canComment 
+                    ? <>
+                        <Image
+                            source={{ uri: $u(session?.user?.thumbnailUrl!,
+                                session?.user?.username!, session?.user?.id!) }}
+                            style={styles.addCommentAvatar}
+                        />
+                        <Text style={styles.addCommentText}>
+                            Leave a comment...
+                        </Text>
+                    </>
+                    : <Text style={styles.addCommentText}>
+                        Sorry, comment posting has been turned off here.
+                    </Text> }
             </Pressable>
         </View>
     </View>;
