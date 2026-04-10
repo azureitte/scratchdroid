@@ -4,39 +4,40 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ScratchProject } from '@/util/types/api/project.types';
+import type { ProfileProject } from '@/util/types/app/users.types';
 
-import { useProject } from '@/hooks/queries/useProject';
+import { useUser } from '@/hooks/queries/useUser';
 import ListLoading from '@/components/panels/ListLoading';
 import StuffGrid from '@/components/panels/StuffGrid';
-import StudioCard from '@/components/panels/StudioCard';
+import ProjectCard from '@/components/panels/ProjectCard';
 
 
-const ProjectStudiosPage = () => {
+const UserFavoritesPage = () => {
 
-    const { id } = useLocalSearchParams<{ 
-        id: string,
+    const { username } = useLocalSearchParams<{ 
+        username: string,
     }>();
     const insets = useSafeAreaInsets();
 
-    const { project } = useProject(Number(id));
-    const data = project.data;
+    const { user } = useUser(username);
+    const data = user.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
-    const render = useCallback((studio: any, columns: number) => <StudioCard
-        id={studio.id}
-        title={studio.title}
+    const render = useCallback((project: ProfileProject, columns: number) => <ProjectCard
+        id={project.id}
+        title={project.title}
+        author={project.author}
         gridColumns={columns}
     />, []);
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
-        await project.refetch();
+        await user.refetch();
         setIsRefreshing(false);
     };
 
-    if (project.isError) return <Text>{project.error.message}</Text>;
-    if (project.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
+    if (user.isError) return <Text>{user.error.message}</Text>;
+    if (user.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
 
     return (<>
         <LinearGradient 
@@ -48,10 +49,10 @@ const ProjectStudiosPage = () => {
             paddingBottom: insets.bottom,
         }]}>
             <StuffGrid
-                type="studio"
-                title="Studios"
-                subtitle={data.project.title}
-                items={data.studios}
+                type="project"
+                title="Favorite Projects"
+                subtitle={`@${username}`}
+                items={data.favoriteProjects}
                 render={render}
                 refreshable
                 isRefreshing={isRefreshing}
@@ -63,7 +64,7 @@ const ProjectStudiosPage = () => {
     
 };
 
-export default ProjectStudiosPage;
+export default UserFavoritesPage;
 
 const styles = StyleSheet.create({
     topHide: {

@@ -23,11 +23,11 @@ const ProjectRemixesPage = () => {
     const data = project.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
-    const render = useCallback((project: ScratchProject) => <ProjectCard
+    const render = useCallback((project: ScratchProject, columns: number) => <ProjectCard
         id={project.id}
         title={project.title}
         author={project.author.username}
-        isInsideGrid
+        gridColumns={columns}
     />, []);
 
     const handleRefresh = async () => {

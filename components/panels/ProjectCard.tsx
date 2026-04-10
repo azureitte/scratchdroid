@@ -11,7 +11,7 @@ type ProjectCardProps = {
     author: string;
     viewCount?: number;
     loveCount?: number;
-    isInsideGrid?: boolean;
+    gridColumns?: number;
     onPress?: () => void;
 };
 
@@ -21,7 +21,7 @@ const ProjectCard = ({
     author,
     viewCount,
     loveCount,
-    isInsideGrid = false,
+    gridColumns = 1,
     onPress,
 }: ProjectCardProps) => {
     const ViewIcon = ICONS.statView;
@@ -33,7 +33,8 @@ const ProjectCard = ({
         <Pressable 
             style={[
                 styles.container,
-                isInsideGrid && styles.containerInsideGrid,
+                gridColumns > 1 && styles.containerInsideGrid,
+                gridColumns > 1 && { width: `${100 / gridColumns}%` },
             ]}
             android_ripple={DEFAULT_RIPPLE_CONFIG}
             onPress={onPress ?? (() => router.push(`/projects/${id}`))}

@@ -6,12 +6,14 @@ import { DelaGothicOne_400Regular } from '@expo-google-fonts/dela-gothic-one/400
 
 import { PROJECT_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
 import { FONTS } from '@/util/assets';
+import { Link } from 'expo-router';
 
 type CarouselProps = {
     title?: string;
     count?: number;
     capCountAt?: number;
     subtitle?: string;
+    href?: string;
     items: any[];
     render: (item: any) => JSX.Element;
 };
@@ -21,6 +23,7 @@ const Carousel = ({
     count,
     capCountAt = 100,
     subtitle,
+    href,
     items,
     render,
 }: CarouselProps) => {
@@ -34,6 +37,9 @@ const Carousel = ({
             </Text>}
         </View>
         { !!subtitle && <Text style={styles.subtitle}>{subtitle}</Text> }
+        { !!href && <Link href={href} style={styles.link}>
+            View all
+        </Link> }
         <FlatList 
             data={items}
             renderItem={({ item }) => render(item)}
@@ -54,6 +60,7 @@ const styles = StyleSheet.create({
         flex: 0,
         flexDirection: 'column',
         gap: 10,
+        position: 'relative',
     },
     carousel: {
         flex: 0,
@@ -83,4 +90,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 600,
     },
+    link: {
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        color: "#93C0FF",
+        fontWeight: 600,
+        fontSize: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        fontStyle: 'normal',
+    }
 });

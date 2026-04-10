@@ -1,4 +1,5 @@
 import { HTMLElement } from "node-html-parser";
+import he from "he";
 
 import { getLastPathSegment, fnull } from "@/util/functions";
 import type { 
@@ -30,6 +31,8 @@ type ProfileBox = {
     count?: number;
 }
 
+const dehe = <T extends string|null|undefined>(str?: T) => (str && he.decode(str)) as T|string;
+
 export function getUserFromProfilePage (root: HTMLElement): UserDataR2|null {
     const content = root.querySelector('body #content');
     if (!content) return null;
@@ -37,7 +40,7 @@ export function getUserFromProfilePage (root: HTMLElement): UserDataR2|null {
     const profileData = content.querySelector('#profile-data')!;
 
     const roleElem = profileData.querySelector('.profile-details .group')
-    const role = roleElem?.innerText.trim() ?? 'Scratcher';
+    const role = dehe(roleElem?.innerText.trim() ?? 'Scratcher');
 
     const roleLinkElem = roleElem?.querySelector('a');
     const roleLink = roleLinkElem?.getAttribute('href') ?? null;
@@ -46,7 +49,7 @@ export function getUserFromProfilePage (root: HTMLElement): UserDataR2|null {
     const bannerProjectHeading = bannerProjectHeadingElem?.innerText.trim() ?? 'Featured Project';
 
     const bannerProjectTitleElem = profileData.querySelector('.project-name');
-    const bannerProjectTitle = bannerProjectTitleElem?.innerText.trim() ?? null;
+    const bannerProjectTitle = dehe(bannerProjectTitleElem?.innerText.trim() ?? null);
 
     const bannerProjectLinkElem = profileData.querySelector('#featured-project');
     const bannerProjectLink = bannerProjectLinkElem?.getAttribute('href') ?? null;
@@ -172,7 +175,7 @@ function parseProfileProject (project: HTMLElement): ProfileProject {
     const titleElem = project.querySelector('.title');
     const titleLinkElem = titleElem?.querySelector('a');
 
-    const title = titleElem?.innerText.trim() ?? '';
+    const title = dehe(titleElem?.innerText.trim() ?? '');
     const link = titleLinkElem?.getAttribute('href') ?? null;
     const id = link ? Number(getLastPathSegment(link)) : 0;
 
@@ -186,7 +189,7 @@ function parseProfileStudio (studio: HTMLElement): ProfileStudio {
     const titleElem = studio.querySelector('.title');
     const titleLinkElem = titleElem?.querySelector('a');
 
-    const title = titleElem?.innerText.trim() ?? '';
+    const title = dehe(titleElem?.innerText.trim() ?? '');
     const link = titleLinkElem?.getAttribute('href') ?? null;
     const id = link ? Number(getLastPathSegment(link)) : 0;
 

@@ -6,10 +6,10 @@ import CountryFlag from "react-native-country-flag";
 
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
-import { DEFAULT_PFP_URL, DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
+import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
 
-import type { ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
+import type { ProfileClassroom, ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
 import type { ScratchProject } from '@/util/types/api/project.types';
 
 import { useSheet } from '@/hooks/useSheet';
@@ -78,12 +78,17 @@ const UserPageHeader = memo(({
     const renderUser = useCallback((user: ProfileUser) => <UserCard
         id={user.id}
         username={user.username}
-        image={user.id ? undefined : DEFAULT_PFP_URL}
     />, []);
 
     const renderStudio = useCallback((studio: ProfileStudio) => <StudioCard
         id={studio.id}
         title={studio.title}
+    />, []);
+
+    const renderClassroom = useCallback((classroom: ProfileClassroom) => <StudioCard
+        id={classroom.id}
+        title={classroom.title}
+        isClassroom
     />, []);
 
     const shouldRenderClassrooms = data.classrooms.length > 0;
@@ -191,7 +196,8 @@ const UserPageHeader = memo(({
                 title="Classrooms"
                 count={data.classroomsCount}
                 items={data.classrooms}
-                render={renderStudio}
+                render={renderClassroom}
+                href={`/users/${myUsername}/classes`}
             /> }
 
             <Carousel 
@@ -199,12 +205,14 @@ const UserPageHeader = memo(({
                 count={data.sharedProjectsCount}
                 items={data.sharedProjects}
                 render={renderMyProject}
+                href={`/users/${myUsername}/projects`}
             />
 
             <Carousel 
                 title="Favorite Projects" 
                 items={data.favoriteProjects}
                 render={renderProject}
+                href={`/users/${myUsername}/favorites`}
             />
 
             { 
@@ -217,12 +225,14 @@ const UserPageHeader = memo(({
                 title="Studios I'm Following" 
                 items={data.studiosFollowing}
                 render={renderStudio}
+                href={`/users/${myUsername}/studios_following`}
             /> }
 
             { shouldRenderStudiosCurating && <Carousel 
                 title="Studios I Curate" 
                 items={data.studiosCurating}
                 render={renderStudio}
+                href={`/users/${myUsername}/studios`}
             /> }
 
             <View style={styles.sep} /> 
@@ -231,12 +241,14 @@ const UserPageHeader = memo(({
                 title="Following" 
                 items={data.following}
                 render={renderUser}
+                href={`/users/${myUsername}/following`}
             />
 
             <Carousel 
                 title="Followers" 
                 items={data.followers}
                 render={renderUser}
+                href={`/users/${myUsername}/followers`}
             />
 
             <View style={styles.sep} /> 

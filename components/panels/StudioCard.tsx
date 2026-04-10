@@ -6,14 +6,16 @@ import { DEFAULT_RIPPLE_CONFIG, PROJECT_CARD_THUMBNAIL_HEIGHT } from '@/util/con
 type StudioCardProps = {
     id: number;
     title: string;
-    isInsideGrid?: boolean;
+    isClassroom?: boolean
+    gridColumns?: number;
     onPress?: () => void;
 };
 
 const StudioCard = ({
     id,
     title,
-    isInsideGrid = false,
+    isClassroom = false,
+    gridColumns = 1,
     onPress,
 }: StudioCardProps) => {
     const router = useRouter();
@@ -22,13 +24,16 @@ const StudioCard = ({
         <Pressable 
             style={[
                 styles.container,
-                isInsideGrid && styles.containerInsideGrid,
+                gridColumns > 1 && styles.containerInsideGrid,
+                gridColumns > 1 && { width: `${100 / gridColumns}%` },
             ]}
             android_ripple={DEFAULT_RIPPLE_CONFIG}
             onPress={onPress ?? (() => router.push(`/studios/${id}`))}
         >
             <Image 
-                source={{ uri: `https://uploads.scratch.mit.edu/galleries/thumbnails/${id}.png` }}
+                source={{ 
+                    uri: `https://cdn2.scratch.mit.edu/get_image/${isClassroom ? 'classroom' : 'gallery'}/${id}_170x100.png` 
+                }}
                 style={styles.thumbnail} 
             />
             <Text style={styles.title} numberOfLines={1}>{title}</Text>
@@ -51,7 +56,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
     },
     containerInsideGrid: {
-        flex: 1,
         alignItems: 'center',
     },
     thumbnail: {

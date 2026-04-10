@@ -14,7 +14,7 @@ type StuffGridProps = {
     capCountAt?: number;
     subtitle?: string;
     items: any[];
-    render: (item: any) => JSX.Element;
+    render: (item: any, columns: number) => JSX.Element;
     refreshable?: boolean;
     isRefreshing?: boolean;
     onRefresh?: () => void;
@@ -56,15 +56,15 @@ const StuffGrid = ({
         type === 'user' ? getUsersPerRow(screen.width) :
         1;
 
-    console.log(numColumns);
-
-    return (
+    return (<>
         <FlatList 
             data={items}
             key={numColumns}
             numColumns={numColumns}
-            renderItem={({ item }) => render(item)}
-            keyExtractor={(item) => item?.username ?? item?.id.toString()}
+            renderItem={({ item }) => render(item, numColumns)}
+            keyExtractor={(item) => typeof item?.username === 'string' 
+                ? item.username 
+                : item?.id.toString()}
             style={styles.list} 
             contentContainerStyle={[{
                 paddingTop: topOffset 
@@ -78,7 +78,7 @@ const StuffGrid = ({
                 /> 
                 : undefined}
         />
-    );
+    </>);
 };
 
 export default StuffGrid;
