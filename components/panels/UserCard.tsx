@@ -59,7 +59,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
     },
     containerInsideGrid: {
-        flex: 1,
         alignItems: 'center',
     },
     thumbnail: {
