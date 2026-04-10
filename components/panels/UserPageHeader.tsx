@@ -23,12 +23,14 @@ import Button from '../general/Button';
 type UserPageHeaderProps = {
     data: UserQueryData;
     username: string;
+    isOwn?: boolean;
     rerender: number;
 }
 
 const UserPageHeader = memo(({
     data,
     username: myUsername,
+    isOwn = false,
     rerender,
 }: UserPageHeaderProps) => {
 
@@ -48,7 +50,7 @@ const UserPageHeader = memo(({
     />, [data.user]);
 
     const renderUser = useCallback((user: ProfileUser) => <UserCard
-        id={user.id || Math.random()}
+        id={user.id}
         username={user.username}
         image={user.id ? undefined : DEFAULT_PFP_URL}
     />, []);
@@ -61,8 +63,6 @@ const UserPageHeader = memo(({
     const shouldRenderClassrooms = data.classrooms.length > 0;
     const shouldRenderStudiosFollowing = data.studiosFollowing.length > 0;
     const shouldRenderStudiosCurating = data.studiosCurating.length > 0;
-
-    console.log(data.following.filter(f => f.id === 0).map(f => f.username));
 
     return (<View style={[styles.content]}>
         <Pressable 
@@ -123,10 +123,23 @@ const UserPageHeader = memo(({
             </View>
 
             <View style={styles.actionBar}>
-                { data.canFollow && <Button
-                    text={data.isFollowing ? 'Unfollow' : 'Follow'}
-                    role={data.isFollowing ? 'secondary' : 'primary'}
-                /> }
+                { isOwn 
+                    ? <Button
+                        text="Edit profile"
+                        icon="accountSettings"
+                    />
+                    : <>
+                        <Button
+                            icon="more" square
+                        />
+
+                        { data.canFollow && <Button
+                            text={data.isFollowing ? 'Unfollow' : 'Follow'}
+                            role={data.isFollowing ? 'secondary' : 'primary'}
+                            icon="follow"
+                        /> }
+                    </>
+                }
             </View>
         </View>
 
@@ -303,6 +316,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 64,
         right: 16,
+        flexDirection: 'row',
+        gap: 6,
     },
 
     contentCard: {

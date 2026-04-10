@@ -148,6 +148,7 @@ const UserPage = () => {
                 data={user.data} 
                 username={username}
                 rerender={headerRerender}
+                isOwn={session?.user?.username === username}
             />}
             hasNextPage={comments.hasNextPage}
             isLoading={comments.isLoading}

@@ -9,6 +9,7 @@ export type ButtonProps = {
     isLoading?: boolean;
     isDisabled?: boolean;
     fullWidth?: boolean;
+    square?: boolean;
     style?: StyleProp<ViewStyle>,
     text?: string;
     icon?: keyof typeof ICONS;
@@ -21,6 +22,7 @@ const Button = ({
     isLoading = false,
     isDisabled = false,
     fullWidth = false,
+    square = false,
     style,
     text,
     icon,
@@ -38,6 +40,7 @@ const Button = ({
                 style,
                 (isLoading || isDisabled) && styles.buttonDisabled,
                 fullWidth && styles.buttonFullWidth,
+                square && styles.buttonSquare,
             ]} 
             android_ripple={DEFAULT_RIPPLE_CONFIG}
             disabled={isLoading}
@@ -73,6 +76,9 @@ const styles = StyleSheet.create({
     },
     buttonFullWidth: {
         width: '100%',
+    },
+    buttonSquare: {
+        width: 42,
     },
 
     primary: {
