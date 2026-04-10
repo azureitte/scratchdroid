@@ -443,7 +443,7 @@ function parseMention (text: string): [false, null, null]|[true, string, string]
  * @param text - The text of the node
  * @returns - The split nodes array
  */
-function splitTextContentNode (text: string) {
+export function splitTextContentNode (text: string) {
     const nodes: CommentContentNode[] = [];
     const textSpl = text.split(' ');
 
@@ -500,4 +500,16 @@ function splitTextContentNode (text: string) {
     }
 
     return nodes;
+}
+
+export function formatMultilineText (text: string) {
+    console.log('formatting multiline text');
+    const lineNodes = text.split('\n').map(splitTextContentNode);
+    return lineNodes.reduce((acc, lineNodes) => {
+        return [...acc, ...lineNodes, { 
+            type: 'text', 
+            text: '\n', 
+            key: randstr(8) 
+        }];
+    }, [] as CommentContentNode[]).slice(0, -1);
 }

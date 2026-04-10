@@ -1,8 +1,11 @@
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { truncateText } from '@/util/functions';
+import { formatMultilineText, splitTextContentNode } from '@/util/parsing/comments';
 import { Link, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
+import CommentContent from './CommentContent';
+import { CommentContentNode } from '@/util/types/app/comments.types';
 
 type InfoSection = {
     title: string;
@@ -39,9 +42,20 @@ const InfoCard = ({
 
     const nonEmptySections = sections.filter(s => !!s.text);
 
+    const memoKey = nonEmptySections.map(s => s.text).join('');
+    
     const lengthPerSection = (lengthBehavior === 'distribute')
         ? Math.round(maxLength / nonEmptySections.length)
         : maxLength;
+
+    // memoized formatted and truncated texts
+    // we do this to avoid calling the expensive format function as much as possible
+    const formattedContents = useMemo(() => {
+        return nonEmptySections.map((section): [CommentContentNode[], boolean] => {
+            const [text, isTruncated] = truncateText(section.text!, lengthPerSection);
+            return [formatMultilineText(text), isTruncated];
+        });
+    }, [memoKey, lengthPerSection]);
 
     return (
         <Pressable 
@@ -55,24 +69,24 @@ const InfoCard = ({
             }}
             android_ripple={href ? DEFAULT_RIPPLE_CONFIG : undefined}
         >
-            { nonEmptySections.map((section) => {
-                const [text, isTruncated] = truncateText(section.text!, lengthPerSection);
+            { nonEmptySections.map((section, idx) => {
+                const [content, isTruncated] = formattedContents[idx];
 
                 return <React.Fragment key={section.title}>
                     <Text style={[
                         styles.contentCardTitle,
                         variation === 'full' && styles.contentCardTitleFull,
                     ]}>{section.title}</Text>
-                    <Text style={[
-                        styles.contentCardText,
-                        variation === 'full' && styles.contentCardTextFull,
-                    ]} selectable>
-                        { text }
-                        { isTruncated && href && 
-                            <Link href={href} style={styles.link} onPress={onPress}>
-                                {'\nRead More'}
-                            </Link> }
-                    </Text>
+                    <CommentContent 
+                        content={content}
+                        style={[
+                            styles.contentCardText,
+                            variation === 'full' && styles.contentCardTextFull,
+                        ]} 
+                        selectable
+                        readMoreHref={isTruncated ? href : undefined}
+                        onReadMore={onPress}
+                    />
                 </React.Fragment>;
             }) }
             { !!childTitle && <Text style={styles.contentCardTitle}>
@@ -132,12 +146,5 @@ const styles = StyleSheet.create({
         fontWeight: 500,
         marginTop: 12,
         marginBottom: 8,
-    },
-    link: {
-        color: "#93C0FF",
-        fontWeight: 500,
-        fontSize: 16,
-        fontStyle: 'normal',
-        textDecorationLine: 'underline',
     },
 });

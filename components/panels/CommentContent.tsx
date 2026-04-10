@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, Image, View } from 'react-native';
+import { StyleSheet, Text, Image, View, TextStyle, StyleProp } from 'react-native';
 import { Link } from 'expo-router';
 
 import { EMOJI_CONTAIN_CODES } from '@/util/constants';
@@ -9,20 +9,30 @@ type CommentContentProps = {
     content: CommentContentNode[];
     numberOfLines?: number;
     isReported?: boolean;
+    style?: StyleProp<TextStyle>;
+    selectable?: boolean;
+    readMoreHref?: string;
+    onReadMore?: () => void;
 }
 
 const CommentContent = ({
     content,
     numberOfLines,
     isReported,
+    style,
+    selectable = false,
+    readMoreHref,
+    onReadMore,
 }: CommentContentProps) => {
     return (
         <Text
             style={[
                 styles.text,
                 isReported && styles.textReported,
+                style,
             ]}
             numberOfLines={numberOfLines}
+            selectable={selectable}
         >
             {content.map((node) => {
                 if (!node) return '';
@@ -74,6 +84,10 @@ const CommentContent = ({
 
                 return '';
             })}
+            { !!readMoreHref && 
+                <Link href={readMoreHref} style={styles.readMoreLink} onPress={onReadMore}>
+                    {'\nRead More'}
+                </Link> }
         </Text>
     );
 };
@@ -93,6 +107,12 @@ const styles = StyleSheet.create({
     link: {
         color: "#93C0FF",
         fontWeight: 500,
+        fontStyle: 'normal',
+        textDecorationLine: 'underline',
+    },
+    readMoreLink: {
+        color: "#93C0FF",
+        fontWeight: 500,
         fontSize: 16,
         fontStyle: 'normal',
         textDecorationLine: 'underline',
@@ -100,7 +120,6 @@ const styles = StyleSheet.create({
     mentionLink: {
         color: "#93C0FF",
         fontWeight: 500,
-        fontSize: 16,
         fontStyle: 'normal',
     },
     emojiWrapper: {
