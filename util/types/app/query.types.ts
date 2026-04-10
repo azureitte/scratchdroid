@@ -21,6 +21,8 @@ export type UserQueryData = {
 
 export type ProjectQueryData = {
     project: ScratchProject;
+    lovedByMe: boolean;
+    favedByMe: boolean;
     remixes: ScratchProject[];
     studios: any[];
     file: ScratchProjectFile|null;

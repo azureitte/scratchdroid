@@ -20,7 +20,7 @@ const ProjectInfoPage = () => {
         id: string,
     }>();
 
-    const project = useProject(Number(id));
+    const { project } = useProject(Number(id));
     const data = project.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
@@ -32,6 +32,9 @@ const ProjectInfoPage = () => {
         setIsRefreshing(false);
     };
 
+    const extensions = data?.file?.extensions ?? [];
+    const hasCloudData = useMemo(() => projectHasCloudVariables(data?.file), [data]);
+
 
     if (project.isError) return <Text>{project.error.message}</Text>;
     if (project.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
@@ -39,9 +42,6 @@ const ProjectInfoPage = () => {
     const publishedStr = shortDate(new Date(data.project.history.shared));
     const modifiedStr = shortDate(new Date(data.project.history.modified));
     const publishedEqModified = publishedStr === modifiedStr;
-
-    const extensions = data.file?.extensions ?? [];
-    const hasCloudData = useMemo(() => projectHasCloudVariables(data?.file), [data]);
 
     return (<>
         <LinearGradient 

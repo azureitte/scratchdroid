@@ -31,7 +31,7 @@ export const useAddModernComment = ({
     onSuccess,
     onError,
 }: AddModernCommentOptions) => {
-    const { isLoggedIn, session } = useSession();
+    const { isLoggedIn, session, reportFaultyLogin } = useSession();
     
     const action = useMutation({
         mutationKey: ['add-comment', type, objectId],
@@ -72,6 +72,13 @@ export const useAddModernComment = ({
             if (res.status >= 500) return {
                 success: false,
                 error: 'A server-side error occurred. Please try again later.'
+            }
+            if (res.status === 403) {
+                reportFaultyLogin();
+                return {
+                    success: false,
+                    error: 'Your session has expired. Please restart the app to fix the issue.',
+                }
             }
 
             const rejected = res.data as ModernAddCommentResponseRejected;

@@ -31,7 +31,7 @@ const ProjectPage = () => {
         commentId?: string,
     }>();
 
-    const project = useProject(Number(id));
+    const { project, setLovedByMeDirectly, setFavedByMeDirectly } = useProject(Number(id));
     const data = project.data;
     const comments = useProjectComments({
         project: Number(id),
@@ -164,6 +164,10 @@ const ProjectPage = () => {
                     projectId={Number(id)}
                     extensions={data.file?.extensions ?? []}
                     isCloud={hasCloudData}
+                    lovedByMe={data.lovedByMe}
+                    favedByMe={data.favedByMe}
+                    setLovedByMe={setLovedByMeDirectly}
+                    setFavedByMe={setFavedByMeDirectly}
                     remixes={data.remixes}
                     studios={data.studios}
                     myUsername={session?.user?.username}

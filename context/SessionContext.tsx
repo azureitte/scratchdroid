@@ -1,10 +1,10 @@
 import React, { createContext, useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'expo-router';
+import { reloadAsync } from 'expo-updates';
 import { useQueryClient } from '@tanstack/react-query';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
 import { WEBSITE_URL } from '@/util/constants';
-import { cookieObjToHeaders, cookieObjToRequestHeader, sleep } from '@/util/functions';
 import { apiReq } from '@/util/api';
 import { emit } from '@/util/eventBus';
 import { 
@@ -34,6 +34,7 @@ type SessionContextType =
     switchAccount: (username: string, silent?: boolean) => Promise<void>;
     logout: (silent?: boolean) => Promise<void>;
     logoutAll: () => Promise<void>;
+    reportFaultyLogin: () => Promise<void>;
 };
 
 export const SessionContext = createContext<SessionContextType>({
@@ -45,6 +46,7 @@ export const SessionContext = createContext<SessionContextType>({
     switchAccount: async () => {},
     logout: async () => {},
     logoutAll: async () => {},
+    reportFaultyLogin: async () => {},
 });
 
 type TransitionState =
@@ -303,6 +305,26 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         await login(account.username, account.password, true);
     }
 
+    const fixFaultyLogin = async () => {
+        console.log("Faulty login reported. Attempting to fix...");
+        await CookieManager.clearAll();
+
+        const activeAccount = await getActiveAccount();
+        if (!activeAccount) {
+            await reloadAsync();
+            return;
+        }
+
+        const account = await getAccountCredentials(activeAccount);
+        if (!account) {
+            await reloadAsync();
+            return;
+        }
+
+        console.log("Logging in manually...");
+        await login(account.username, account.password, true);
+    }
+
     return (
         <SessionContext.Provider value={{
             session,
@@ -316,6 +338,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
             switchAccount,
             logout,
             logoutAll,
+            reportFaultyLogin: fixFaultyLogin,
         } as SessionContextType}>
             {children}
         </SessionContext.Provider>

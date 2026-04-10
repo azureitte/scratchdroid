@@ -40,7 +40,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - 🟡 View private projects
    - ✅ View project metadata
    - ✅ View project extensions and cloud variable usage
-   - 🟡 View project stats
+   - ✅ View project stats
    - ✖️ Edit own projects
    - ✖️ Remix projects
    - ✖️ Create/delete projects

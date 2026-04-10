@@ -45,7 +45,7 @@ const ContextMenu = ({
                         <View style={styles.itemContent}>
                             { item.icon && (item.iconIsPng 
                                 ? <Image source={imgSrc} style={[styles.itemIcon, styles.itemIconPng]} />
-                                : <Icon style={styles.itemIcon} />
+                                : <Icon style={styles.itemIcon} width={20} />
                             ) }
                             <Text style={[
                                 styles.itemLabel,

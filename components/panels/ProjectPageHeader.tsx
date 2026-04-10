@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -7,7 +8,7 @@ import {
     Pressable,
 } from 'react-native';
 import WebView from 'react-native-webview';
-import { Link } from 'expo-router';
+import { Icon, Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
@@ -16,16 +17,27 @@ import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
 
+import { useSheet } from '@/hooks/useSheet';
+import { useLoveProject } from '@/hooks/mutations/useLoveProject';
+import { useFavProject } from '@/hooks/mutations/useFavProject';
+
 import Heading from '@/components/general/Heading';
+import Button from '@/components/general/Button';
 import ScrollableText from '@/components/general/ScrollableText';
-import ExtensionChip from './ExtensionChip';
-import InfoCard from './InfoCard';
+import ExtensionChip from '@/components/panels/ExtensionChip';
+import InfoCard from '@/components/panels/InfoCard';
+import LoveFavButton from '@/components/panels/LoveFavButton';
+import { ProjectOptionsMenuProps } from '@/components/menus/ProjectOptionsMenu';
 
 type ProjectPageHeaderProps = {
     project: ScratchProject;
     projectId: number;
     extensions?: ScratchExtension[];
     isCloud?: boolean;
+    lovedByMe?: boolean;
+    favedByMe?: boolean;
+    setLovedByMe?: (loved: boolean) => void;
+    setFavedByMe?: (faved: boolean) => void;
     remixes: ScratchProject[];
     studios: any[],
     myUsername?: string;
@@ -38,6 +50,10 @@ const ProjectPageHeader = ({
     projectId,
     extensions = [],
     isCloud = false,
+    lovedByMe = false,
+    favedByMe = false,
+    setLovedByMe,
+    setFavedByMe,
     remixes,
     studios,
     myUsername,
@@ -46,6 +62,35 @@ const ProjectPageHeader = ({
 }: ProjectPageHeaderProps) => {
 
     const screen = useWindowDimensions();
+    const sheet = useSheet();
+
+    const loveAction = useLoveProject({
+        projectId: project.id,
+        onSuccess: (loved) => {
+            setLovedByMe?.(loved);
+        },
+        onError: () => {
+            setLovedByMe?.(!lovedByMe);
+        },
+    });
+    const favAction = useFavProject({
+        projectId: project.id,
+        onSuccess: (faved) => {
+            setFavedByMe?.(faved);
+        },
+        onError: () => {
+            setFavedByMe?.(!favedByMe);
+        },
+    });
+
+    const handleProjectOptions = () => {
+        sheet.push<ProjectOptionsMenuProps>('projectOptions', { 
+            projectId: project.id,
+            projectTitle: project.title,
+            canRemix: project.author.username !== myUsername,
+            canReport: project.author.username !== myUsername,
+        });
+    }
 
     const projectWidth = Math.min(480, screen.width - 16);
     const projectHeight = (projectWidth / 4) * 3 + 45;
@@ -58,6 +103,8 @@ const ProjectPageHeader = ({
     />;
 
     const IconViewMore = ICONS.cardViewMore;
+    const IconRemix = ICONS.remix;
+    const IconView = ICONS.view;
 
     const publishedStr = shortDate(new Date(project.history.shared));
     const modifiedStr = shortDate(new Date(project.history.modified));
@@ -104,12 +151,46 @@ const ProjectPageHeader = ({
         </View>
 
         <View style={styles.actionBar}>
-            <Text style={{ color: '#fff', fontSize: 14 }}>
-                Loves: { project.stats.loves }
-                Favorites: { project.stats.favorites }
-                Remixes: { project.stats.remixes }
-                Views: { project.stats.views }
-            </Text>
+            <View style={styles.stats}>
+                <LoveFavButton
+                    loves={{
+                        count: project.stats.loves,
+                        active: lovedByMe,
+                        loading: loveAction.isPending,
+                        onPress: () => {
+                            setLovedByMe?.(!lovedByMe); // optimistic update
+                            loveAction.mutate({ from: lovedByMe, to: !lovedByMe });
+                        }
+                    }}
+                    favs={{
+                        count: project.stats.favorites,
+                        active: favedByMe,
+                        loading: favAction.isPending,
+                        onPress: () => {
+                            setFavedByMe?.(!favedByMe); // optimistic update
+                            favAction.mutate({ from: favedByMe, to: !favedByMe });
+                        }
+                    }}
+                />
+
+                <View style={styles.stat}>
+                    <IconRemix style={styles.statIcon} />
+                    <Text style={styles.statText}>
+                        { project.stats.remixes }
+                    </Text>
+                </View>
+                <View style={styles.stat}>
+                    <IconView style={styles.statIcon} />
+                    <Text style={styles.statText}>
+                        { project.stats.views }
+                    </Text>
+                </View>
+            </View>
+
+            <Button
+                icon="more"
+                onPress={handleProjectOptions}
+            />
         </View>
 
         <InfoCard
@@ -238,6 +319,27 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        paddingHorizontal: 8,
+    },
+
+    stats: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 20,
+    },
+    stat: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    statIcon: {
+        width: 24,
+        height: 24,
+    },
+    statText: {
+        fontSize: 16,
+        fontWeight: 500,
+        color: '#fff',
     },
 
     extensionsBar: {

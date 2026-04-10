@@ -11,6 +11,7 @@ import icMyStuffActive from "../assets/icons/ic-mystuff-active.svg";
 
 import icMenu from "../assets/icons/ic-menu.svg";
 import icCardViewMore from "../assets/icons/ic-card-viewmore.svg";
+import icMore from "../assets/icons/ic-more.svg";
 import icClose from "../assets/icons/ic-close.svg";
 import icReply from "../assets/icons/ic-reply.svg";
 import icAdd from "../assets/icons/ic-add.svg";
@@ -21,9 +22,17 @@ import icShare from "../assets/icons/ic-share.svg";
 import icReplyAlt from "../assets/icons/ic-reply-alt.svg";
 import icDelete from "../assets/icons/ic-delete.svg";
 import icReport from "../assets/icons/ic-report.svg";
+import icLink from "../assets/icons/ic-link.svg";
+import icDownload from "../assets/icons/ic-download.svg";
 
 import icStatView from "../assets/icons/ic-stat-view.svg";
 import icStatLove from "../assets/icons/ic-stat-love.svg";
+import icLoveInactive from "../assets/icons/ic-love-inactive.svg";
+import icLoveActive from "../assets/icons/ic-love-active.svg";
+import icFavInactive from "../assets/icons/ic-fav-inactive.svg";
+import icFavActive from "../assets/icons/ic-fav-active.svg";
+import icRemix from "../assets/icons/ic-remix.svg";
+import icView from "../assets/icons/ic-view.svg";
 
 import svgMessageComment from "../assets/svgs/messages/comment.svg";
 import svgMessageLove from "../assets/svgs/messages/love.svg";
@@ -66,6 +75,7 @@ export const ICONS = {
 
     menu: icMenu,
     cardViewMore: icCardViewMore,
+    more: icMore,
     close: icClose,
     reply: icReply,
     add: icAdd,
@@ -76,9 +86,17 @@ export const ICONS = {
     replyAlt: icReplyAlt,
     delete: icDelete,
     report: icReport,
+    link: icLink,
+    download: icDownload,
 
     statView: icStatView,
     statLove: icStatLove,
+    loveInactive: icLoveInactive,
+    loveActive: icLoveActive,
+    favInactive: icFavInactive,
+    favActive: icFavActive,
+    remix: icRemix,
+    view: icView,
 } as const;
 
 export const IMAGES = {

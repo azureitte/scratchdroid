@@ -144,8 +144,8 @@ const CommentSection = forwardRef(({
                 android_ripple={DEFAULT_RIPPLE_CONFIG}
             >
                 <Image
-                    source={{ uri: $u(session!.user!.thumbnailUrl,
-                        session!.user!.username, session!.user!.id) }}
+                    source={{ uri: $u(session?.user?.thumbnailUrl!,
+                        session?.user?.username!, session?.user?.id!) }}
                     style={styles.addCommentAvatar}
                 />
                 <Text style={styles.addCommentText}>Leave a comment...</Text>

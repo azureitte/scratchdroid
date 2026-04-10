@@ -1,6 +1,7 @@
 import { Pressable, StyleProp, Text, StyleSheet, ViewStyle, ActivityIndicator } from "react-native";
 
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
+import { ICONS } from "@/util/assets";
 
 export type ButtonProps = {
     role?: 'primary' | 'secondary' | 'danger';
@@ -9,7 +10,8 @@ export type ButtonProps = {
     isDisabled?: boolean;
     fullWidth?: boolean;
     style?: StyleProp<ViewStyle>,
-    text: string;
+    text?: string;
+    icon?: keyof typeof ICONS;
     onPress?: () => void;
 };
 
@@ -21,8 +23,11 @@ const Button = ({
     fullWidth = false,
     style,
     text,
+    icon,
     onPress,
 }: ButtonProps) => {
+    const Icon = icon && ICONS[icon];
+
     return (
         <Pressable 
             onPress={onPress}
@@ -39,10 +44,15 @@ const Button = ({
         >
             { isLoading 
                 ? <ActivityIndicator size="small" color="#fff" />
-                : <Text style={[
-                    styles.buttonText,
-                    styles[`${variation}Text`],
-                ]}>{text}</Text> }
+                : <>
+                    { !!Icon && <Icon style={styles.buttonIcon} height={18} /> }
+                    { !!text && <Text style={[
+                        styles.buttonText,
+                        styles[`${variation}Text`],
+                    ]}>
+                        {text}
+                    </Text> }
+                </> }
         </Pressable>
     );
 };
@@ -52,6 +62,10 @@ export default Button;
 const styles = StyleSheet.create({
     button: {
         overflow: "hidden",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
     },
     buttonDisabled: {
         opacity: 0.5,
@@ -83,6 +97,10 @@ const styles = StyleSheet.create({
     },
 
     
+    buttonIcon: {
+        width: 18,
+        height: 18,
+    },
     buttonText: {
         color: "#fff",
         textAlign: "center",

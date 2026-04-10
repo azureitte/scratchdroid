@@ -83,8 +83,8 @@ const AddCommentMenu = ({
             </Text>
             <View style={styles.commentBox}>
                 <Image
-                    source={{ uri: $u(session!.user!.thumbnailUrl,
-                        session!.user!.username, session!.user!.id) }}
+                    source={{ uri: $u(session?.user?.thumbnailUrl,
+                        session?.user?.username, session?.user?.id) }}
                     style={styles.avatar}
                 />
                 <TextArea
