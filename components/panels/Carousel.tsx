@@ -9,6 +9,8 @@ import { FONTS } from '@/util/assets';
 
 type CarouselProps = {
     title?: string;
+    count?: number;
+    capCountAt?: number;
     subtitle?: string;
     items: any[];
     render: (item: any) => JSX.Element;
@@ -16,6 +18,8 @@ type CarouselProps = {
 
 const Carousel = ({
     title,
+    count,
+    capCountAt = 100,
     subtitle,
     items,
     render,
@@ -23,7 +27,12 @@ const Carousel = ({
     const [fontsLoaded] = useFonts({ DelaGothicOne_400Regular });
 
     return (<View style={styles.container}>
-        { !!title && fontsLoaded && <Text style={styles.title}>{title}</Text> }
+        <View style={styles.titleWrap}>
+            { !!title && fontsLoaded && <Text style={styles.title}>{title}</Text> }
+            { count !== undefined && <Text style={styles.count}>
+                    ({count}{ count >= capCountAt ? '+' : ''})
+            </Text>}
+        </View>
         { !!subtitle && <Text style={styles.subtitle}>{subtitle}</Text> }
         <FlatList 
             data={items}
@@ -49,12 +58,23 @@ const styles = StyleSheet.create({
         flex: 0,
         maxHeight: PROJECT_CARD_THUMBNAIL_HEIGHT + 70,
     },
+    titleWrap: {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'baseline',
+        gap: 10,
+        paddingHorizontal: 16,
+    },
     title: {
         color: '#fff',
-        paddingHorizontal: 16,
         fontSize: 24,
         fontWeight: 400,
         fontFamily: FONTS.delaGothicOne,
+    },
+    count: {
+        color: '#888888',
+        fontSize: 20,
+        fontWeight: 500,
     },
     subtitle: {
         color: '#888888',

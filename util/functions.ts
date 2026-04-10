@@ -174,3 +174,14 @@ export function getRoleNameFromSession (session: ScratchSession) {
     if (session.permissions.new_scratcher) return 'New Scratcher';
     return 'Scratcher';
 }
+
+export function getLastPathSegment (url: string) {
+    const segments = url.split('/').filter(s => s.length > 0);
+    return segments[segments.length - 1];
+}
+
+type Falsy = false | 0 | "" | null | undefined | 0n;
+type FalsyToNullRet<T> = T extends Falsy ? null : T;
+
+/** Converts any falsy values to null, keeps the rest as is */
+export const fnull = <T>(val: T) => (val || null) as FalsyToNullRet<T>;

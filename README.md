@@ -48,7 +48,7 @@ This project is currently in development and is incomplete. Here is where it's c
 - 🟡 User management
    - ✅ View basic user profile
    - ✅ View user's featured project
-   - ✖️ View more user profile info (displayed on scratch.mit.edu/users)
+   - ✅ View more user profile info (displayed on scratch.mit.edu/users)
    - ✖️ View Scratch Membership info
    - ✖️ Follow/unfollow users
    - ✖️ Report users

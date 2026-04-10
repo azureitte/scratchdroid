@@ -1,6 +1,6 @@
-import { memo, RefObject, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import CountryFlag from "react-native-country-flag";
 
@@ -9,14 +9,13 @@ import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
 
-import type { UserQueryData } from '@/util/types/app/query.types';
+import type { ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
 import type { ScratchProject } from '@/util/types/api/project.types';
-import type { ScratchUser } from '@/util/types/api/user.types';
-
 
 import Carousel from '@/components/panels/Carousel';
 import ProjectCard from '@/components/panels/ProjectCard';
 import UserCard from '@/components/panels/UserCard';
+import StudioCard from './StudioCard';
 import InfoCard from './InfoCard';
 
 
@@ -34,11 +33,10 @@ const UserPageHeader = memo(({
 
     const router = useRouter();
     
-    const renderProject = useCallback((project: ScratchProject) => <ProjectCard
+    const renderProject = useCallback((project: ProfileProject) => <ProjectCard
         id={project.id}
         title={project.title}
-        author={project.author.username}
-        viewCount={project.stats.views}
+        author={project.author}
     />, [data.user]);
 
     const renderMyProject = useCallback((project: ScratchProject) => <ProjectCard
@@ -48,17 +46,25 @@ const UserPageHeader = memo(({
         viewCount={project.stats.views}
     />, [data.user]);
 
-    const renderUser = useCallback((user: ScratchUser) => <UserCard
+    const renderUser = useCallback((user: ProfileUser) => <UserCard
         id={user.id}
         username={user.username}
-        image={user.profile.images['60x60']}
     />, []);
+
+    const renderStudio = useCallback((studio: ProfileStudio) => <StudioCard
+        id={studio.id}
+        title={studio.title}
+    />, []);
+
+    const shouldRenderClassrooms = data.classrooms.length > 0;
+    const shouldRenderStudiosFollowing = data.studiosFollowing.length > 0;
+    const shouldRenderStudiosCurating = data.studiosCurating.length > 0;
 
     return (<View style={[styles.content]}>
         <Pressable 
             style={styles.banner}
             onPress={() => data.bannerProject && router.push(`/projects/${data.bannerProject.id}`)}
-            android_ripple={DEFAULT_RIPPLE_CONFIG}
+            android_ripple={data.bannerProject ? DEFAULT_RIPPLE_CONFIG : undefined}
         >
             <LinearGradient
                 colors={['#000', '#0000']}
@@ -88,14 +94,28 @@ const UserPageHeader = memo(({
                 style={styles.avatar}
             />
             <Text style={styles.infoText}>@{myUsername}</Text>
-            <Text style={styles.infoSubtext}>{ 
-                data.user.scratchteam ? 'Scratch Team' : 'Scratcher' 
-            } • Joined { 
-                relativeDate(new Date(data.user.history.joined))
-            }</Text>
+            <Text style={styles.infoSubtext}>
+                { 
+                    data.roleLink 
+                        ? <Link href={data.roleLink} style={styles.link}>{data.role}</Link>
+                        : data.role 
+                } • Joined { relativeDate(new Date(data.user.history.joined)) }
+            </Text>
             <View style={styles.infoSubtextWrap}>
-                <CountryFlag isoCode={countryToCode(data.user.profile.country)} size={14} style={{ opacity: 0.6, borderRadius: 4 }} />
-                <Text style={styles.infoSubtext}>{ data.user.profile.country }</Text>
+                { data.user.profile.country 
+                    ? <>
+                        <CountryFlag 
+                            isoCode={countryToCode(data.user.profile.country)} 
+                            size={14} 
+                            style={{ opacity: 0.6, borderRadius: 4 }} 
+                        />
+                        <Text style={styles.infoSubtext}>
+                            { data.user.profile.country }
+                        </Text>
+                    </>
+                    : <Text style={styles.infoSubtext}>
+                        Location not given
+                    </Text> }
             </View>
         </View>
 
@@ -107,29 +127,63 @@ const UserPageHeader = memo(({
             href={`/users/${myUsername}/info`}
         />
 
-        <Carousel 
-            title="Shared Projects" 
-            items={data.sharedProjects}
-            render={renderMyProject}
-        />
+        <View style={styles.carousels}>
+            <View style={styles.sep} /> 
 
-        <Carousel 
-            title="Favorite Projects" 
-            items={data.favoriteProjects}
-            render={renderProject}
-        />
+            { shouldRenderClassrooms && <Carousel 
+                title="Classrooms"
+                count={data.classroomsCount}
+                items={data.classrooms}
+                render={renderStudio}
+            /> }
 
-        <Carousel 
-            title="Following" 
-            items={data.following}
-            render={renderUser}
-        />
+            <Carousel 
+                title="Shared Projects"
+                count={data.sharedProjectsCount}
+                items={data.sharedProjects}
+                render={renderMyProject}
+            />
 
-        <Carousel 
-            title="Followers" 
-            items={data.followers}
-            render={renderUser}
-        />
+            <Carousel 
+                title="Favorite Projects" 
+                items={data.favoriteProjects}
+                render={renderProject}
+            />
+
+            { 
+                shouldRenderStudiosFollowing && 
+                shouldRenderStudiosCurating && 
+                <View style={styles.sep} /> 
+            }
+
+            { shouldRenderStudiosFollowing && <Carousel 
+                title="Studios I'm Following" 
+                items={data.studiosFollowing}
+                render={renderStudio}
+            /> }
+
+            { shouldRenderStudiosCurating && <Carousel 
+                title="Studios I Curate" 
+                items={data.studiosCurating}
+                render={renderStudio}
+            /> }
+
+            <View style={styles.sep} /> 
+
+            <Carousel 
+                title="Following" 
+                items={data.following}
+                render={renderUser}
+            />
+
+            <Carousel 
+                title="Followers" 
+                items={data.followers}
+                render={renderUser}
+            />
+
+            <View style={styles.sep} /> 
+        </View>
 
     </View>)
 });
@@ -171,7 +225,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'flex-end',
         gap: 4,
-        maxWidth: '80%',
+        maxWidth: '100%',
     },
     bannerTitle: {
         fontSize: 28,
@@ -226,6 +280,13 @@ const styles = StyleSheet.create({
         gap: 6,
         alignItems: 'center',
     },
+    link: {
+        color: "#93C0FF",
+        fontWeight: 500,
+        fontSize: 16,
+        fontStyle: 'normal',
+        textDecorationLine: 'underline',
+    },
 
     contentCard: {
         paddingHorizontal: 16,
@@ -249,4 +310,15 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginBottom: 8,
     },
+
+    carousels: {
+        gap: 20,
+        marginBottom: -28,
+    },
+    sep: {
+        height: 1,
+        width: '100%',
+        backgroundColor: '#222222',
+        marginVertical: -4,
+    }
 });

@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
         flex: 0,
         flexDirection: 'column',
         gap: 4,
-        height: USER_CARD_THUMBNAIL_HEIGHT + 64,
+        height: USER_CARD_THUMBNAIL_HEIGHT + 50,
         borderRadius: 8,
         overflow: 'hidden',
         position: 'relative',

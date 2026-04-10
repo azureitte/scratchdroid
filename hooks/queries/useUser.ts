@@ -3,9 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { apiReq } from "@/util/api";
 
-import type { UserQueryData, BannerProject } from "@/util/types/app/query.types";
+import type { UserQueryData } from "@/util/types/app/users.types";
 import type { ScratchUser } from "@/util/types/api/user.types";
 import type { ScratchProject } from "@/util/types/api/project.types";
+import { getUserFromProfilePage } from "@/util/parsing/users";
 
 export const useUser = (username: string) => {
 
@@ -33,97 +34,46 @@ export const useUser = (username: string) => {
         return [];
     }, [username]);
 
-    const fetchFavoriteProjects = useCallback(async () => {
-        const favoriteProjectsRes = await apiReq<ScratchProject[]>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${username}/favorites/`,
-            params: { limit: 20 },
-            responseType: 'json',
+    const fetchR2 = useCallback(async () => {
+        const res = await apiReq({
+            path: `/users/${username}/`,
+            responseType: 'html',
         });
-        if (favoriteProjectsRes.success)
-            return favoriteProjectsRes.data;
 
-        return [];
-    }, [username]);
-
-    const fetchBannerProject = useCallback(async (fallback?: ScratchProject): Promise<BannerProject|null> => {
-        const bannerProjectRes = await apiReq<any>({
-            path: `/site-api/users/all/${username}/`,
-            responseType: 'json',
-        });
-        if (!bannerProjectRes.success) return null;
-
-        const data = bannerProjectRes.data;
-        if (!data.featured_project_data) {
-            if (fallback)
-                return {
-                    id: fallback.id,
-                    title: fallback.title,
-                    thumbnail_url: fallback.image,
-                    label: data.featured_project_label_name ?? 'Featured Project',
-                };
-        } else {
-            return {
-                ...data.featured_project_data,
-                label: data.featured_project_label_name ?? 'Featured Project',
-            };
-        }
+        if (res.success && res.status === 200)
+            return getUserFromProfilePage(res.data);
 
         return null;
-    }, [username]);
-
-    const fetchSharedThenBanner = async () => {
-        const sharedProjects = await fetchSharedProjects();
-        const bannerProject = await fetchBannerProject(sharedProjects[0]);
-        return { sharedProjects, bannerProject };
-    };
-
-    const fetchFollowers = useCallback(async () => {
-        const followersRes = await apiReq<ScratchUser[]>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${username}/followers/`,
-            params: { limit: 20 },
-            responseType: 'json',
-        });
-        if (followersRes.success)
-            return followersRes.data;
-        return [];
-    }, [username]);
-
-    const fetchFollowing = useCallback(async () => {
-        const followingRes = await apiReq<ScratchUser[]>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${username}/following/`,
-            params: { limit: 20 },
-            responseType: 'json',
-        });
-        if (followingRes.success)
-            return followingRes.data;
-        return [];
     }, [username]);
 
     const fetchAll = async (): Promise<UserQueryData> => {
         const [
             user,
-            { sharedProjects, bannerProject },
-            favoriteProjects,
-            followers,
-            following,
+            sharedProjects,
+            r2,
         ] = await Promise.all([
             fetchUser(),
-            fetchSharedThenBanner(),
-            fetchFavoriteProjects(),
-            fetchFollowers(),
-            fetchFollowing(),
+            fetchSharedProjects(),
+            fetchR2(),
         ]);
 
         return {
             user,
-            bannerProject,
+            role: r2?.role ?? 'Scratcher',
+            roleLink: r2?.roleLink ?? null,
+            bannerProject: r2?.bannerProject ?? null,
             sharedProjects,
-            favoriteProjects,
-            followers,
-            following,
+            favoriteProjects: r2?.favoriteProjects ?? [],
+            studiosFollowing: r2?.studiosFollowing ?? [],
+            studiosCurating: r2?.studiosCurating ?? [],
+            followers: r2?.followers ?? [],
+            following: r2?.following ?? [],
+            classrooms: r2?.classrooms ?? [],
+            sharedProjectsCount: r2?.sharedProjectsCount,
+            classroomsCount: r2?.classroomsCount,
+
+            canFollow: r2?.canFollow ?? false,
+            isFollowing: r2?.isFollowing ?? false,
         }
     };
 
