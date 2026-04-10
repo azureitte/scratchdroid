@@ -8,12 +8,16 @@ import { useSheet } from '@/hooks/useSheet';
 
 import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
 import ScrollableText from '../general/ScrollableText';
+import { useToggleProjectComments } from '@/hooks/mutations/useToggleProjectComments';
 
 export type ProjectOptionsMenuProps = {
     projectId: number;
     projectTitle?: string;
     canRemix?: boolean;
     canReport?: boolean;
+    canComment?: boolean;
+    canToggleCommenting?: boolean;
+    setCommentsAllowed?: (commentsAllowed: boolean) => void;
 }
 
 const ProjectOptionsMenu = ({
@@ -21,8 +25,22 @@ const ProjectOptionsMenu = ({
     projectTitle,
     canRemix = true,
     canReport = true,
+    canComment = true,
+    canToggleCommenting = false,
+    setCommentsAllowed,
 }: ProjectOptionsMenuProps) => {
+
     const sheet = useSheet();
+
+    const toggleCommentsAction = useToggleProjectComments({
+        projectId: projectId,
+        onSuccess: (commentsAllowed) => {
+            setCommentsAllowed?.(commentsAllowed);
+        },
+        onError: () => {
+            setCommentsAllowed?.(canComment);
+        },
+    });
 
     const getUrl = () => `${WEBSITE_URL}/projects/${projectId}`;
 
@@ -39,6 +57,14 @@ const ProjectOptionsMenu = ({
         });
     }
 
+    const handleToggleCommenting = async () => {
+        sheet.pop();
+        await toggleCommentsAction.mutate({ 
+            from: canComment, 
+            to: !canComment 
+        });
+    }
+
     const handleDefault = () => sheet.pop();
 
     const menu1: ContextMenuItem[] = [
@@ -50,8 +76,16 @@ const ProjectOptionsMenu = ({
     const menu2: ContextMenuItem[] = [
         { key: 'add-studio', label: 'Add to studio', onPress: handleDefault, icon: 'add' },
     ];
-    if (canRemix) menu2.push({ key: 'remix', label: 'Remix', onPress: handleDefault, icon: 'remix' });
-    if (canReport) menu2.push({ key: 'report', label: 'Report', onPress: handleDefault, isDanger: true, icon: 'report' });
+    if (canRemix) 
+        menu2.push({ key: 'remix', label: 'Remix', onPress: handleDefault, icon: 'remix' });
+    if (canToggleCommenting) 
+        menu2.push({ 
+            key: 'toggle-commenting', 
+            label: `${canComment ? 'Disable' : 'Enable'} commenting`, 
+            onPress: handleToggleCommenting, icon: 'comments' 
+        });
+    if (canReport) 
+        menu2.push({ key: 'report', label: 'Report', onPress: handleDefault, isDanger: true, icon: 'report' });
 
     return (
         <View style={styles.container}>

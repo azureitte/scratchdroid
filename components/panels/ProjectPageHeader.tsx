@@ -38,6 +38,7 @@ type ProjectPageHeaderProps = {
     favedByMe?: boolean;
     setLovedByMe?: (loved: boolean) => void;
     setFavedByMe?: (faved: boolean) => void;
+    setCommentsAllowed?: (commentsAllowed: boolean) => void;
     remixes: ScratchProject[];
     studios: any[],
     myUsername?: string;
@@ -54,6 +55,7 @@ const ProjectPageHeader = ({
     favedByMe = false,
     setLovedByMe,
     setFavedByMe,
+    setCommentsAllowed,
     remixes,
     studios,
     myUsername,
@@ -89,6 +91,9 @@ const ProjectPageHeader = ({
             projectTitle: project.title,
             canRemix: project.author.username !== myUsername,
             canReport: project.author.username !== myUsername,
+            canComment: project.comments_allowed ?? true,
+            canToggleCommenting: project.author.username === myUsername,
+            setCommentsAllowed,
         });
     }
 
@@ -113,14 +118,16 @@ const ProjectPageHeader = ({
 
     return (<View style={[styles.content]}>
         <View style={styles.titleSection}>
-            <Image
-                source={{ uri: $u(
-                    project.author.profile.images['60x60'],
-                    project.author.username,
-                    project.author.id,
-                ) }}
-                style={styles.authorAvatar}
-            />
+            <Link href={`/users/${project.author.username}`} style={styles.authorAvatarWrap}>
+                <Image
+                    source={{ uri: $u(
+                        project.author.profile.images['60x60'],
+                        project.author.username,
+                        project.author.id,
+                    ) }}
+                    style={styles.authorAvatar}
+                />
+            </Link>
             <View style={styles.title}>
                 <ScrollableText style={styles.titleText}>
                     { project.title ?? '...' }
@@ -278,6 +285,10 @@ const styles = StyleSheet.create({
     },
     
 
+    authorAvatarWrap: {
+        width: 48,
+        height: 48,
+    },
     authorAvatar: {
         width: 48,
         height: 48,
@@ -319,7 +330,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingHorizontal: 8,
+        paddingHorizontal: 12,
+        marginBottom: 8,
     },
 
     stats: {

@@ -132,6 +132,14 @@ export const useProject = (projectId: number) => {
             draft.project.stats.favorites += change;
         }));
     }
+
+    const setCommentsAllowedDirectly = (commentsAllowed: boolean) => {
+        queryClient.setQueryData(['project', projectId], (prev: ProjectQueryData|null) => produce(prev, (draft) => {
+            if (!draft || !prev) return;
+
+            draft.project.comments_allowed = commentsAllowed;
+        }));
+    }
     
     const project = useQuery<ProjectQueryData>({
         queryKey: ['project', projectId],
@@ -145,6 +153,7 @@ export const useProject = (projectId: number) => {
         project,
         setLovedByMeDirectly,
         setFavedByMeDirectly,
+        setCommentsAllowedDirectly,
     }
 
 }

@@ -25,6 +25,7 @@ import icReport from "../assets/icons/ic-report.svg";
 import icLink from "../assets/icons/ic-link.svg";
 import icDownload from "../assets/icons/ic-download.svg";
 import icFollow from "../assets/icons/ic-follow.svg";
+import icComments from "../assets/icons/ic-comments.svg";
 
 import icStatView from "../assets/icons/ic-stat-view.svg";
 import icStatLove from "../assets/icons/ic-stat-love.svg";
@@ -90,6 +91,7 @@ export const ICONS = {
     link: icLink,
     download: icDownload,
     follow: icFollow,
+    comments: icComments,
 
     statView: icStatView,
     statLove: icStatLove,

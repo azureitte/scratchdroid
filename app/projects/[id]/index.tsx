@@ -31,7 +31,12 @@ const ProjectPage = () => {
         commentId?: string,
     }>();
 
-    const { project, setLovedByMeDirectly, setFavedByMeDirectly } = useProject(Number(id));
+    const { 
+        project,
+        setLovedByMeDirectly, 
+        setFavedByMeDirectly,
+        setCommentsAllowedDirectly,
+    } = useProject(Number(id));
     const data = project.data;
     const comments = useProjectComments({
         project: Number(id),
@@ -169,6 +174,7 @@ const ProjectPage = () => {
                     favedByMe={data.favedByMe}
                     setLovedByMe={setLovedByMeDirectly}
                     setFavedByMe={setFavedByMeDirectly}
+                    setCommentsAllowed={setCommentsAllowedDirectly}
                     remixes={data.remixes}
                     studios={data.studios}
                     myUsername={session?.user?.username}
