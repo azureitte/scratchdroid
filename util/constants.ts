@@ -5,6 +5,8 @@ export const IS_DEV = process.env.NODE_ENV === 'development';
 
 export const WEBSITE_URL = 'https://scratch.mit.edu';
 
+export const DEFAULT_PFP_URL = 'https://cdn2.scratch.mit.edu/get_image/user/default_60x60.png';
+
 export const DEFAULT_RIPPLE_CONFIG = { 
     color: "#fff3", 
     foreground: true 

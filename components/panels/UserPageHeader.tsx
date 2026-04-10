@@ -6,7 +6,7 @@ import CountryFlag from "react-native-country-flag";
 
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
-import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
+import { DEFAULT_PFP_URL, DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
 
 import type { ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
@@ -17,6 +17,7 @@ import ProjectCard from '@/components/panels/ProjectCard';
 import UserCard from '@/components/panels/UserCard';
 import StudioCard from './StudioCard';
 import InfoCard from './InfoCard';
+import Button from '../general/Button';
 
 
 type UserPageHeaderProps = {
@@ -47,8 +48,9 @@ const UserPageHeader = memo(({
     />, [data.user]);
 
     const renderUser = useCallback((user: ProfileUser) => <UserCard
-        id={user.id}
+        id={user.id || Math.random()}
         username={user.username}
+        image={user.id ? undefined : DEFAULT_PFP_URL}
     />, []);
 
     const renderStudio = useCallback((studio: ProfileStudio) => <StudioCard
@@ -59,6 +61,8 @@ const UserPageHeader = memo(({
     const shouldRenderClassrooms = data.classrooms.length > 0;
     const shouldRenderStudiosFollowing = data.studiosFollowing.length > 0;
     const shouldRenderStudiosCurating = data.studiosCurating.length > 0;
+
+    console.log(data.following.filter(f => f.id === 0).map(f => f.username));
 
     return (<View style={[styles.content]}>
         <Pressable 
@@ -116,6 +120,13 @@ const UserPageHeader = memo(({
                     : <Text style={styles.infoSubtext}>
                         Location not given
                     </Text> }
+            </View>
+
+            <View style={styles.actionBar}>
+                { data.canFollow && <Button
+                    text={data.isFollowing ? 'Unfollow' : 'Follow'}
+                    role={data.isFollowing ? 'secondary' : 'primary'}
+                /> }
             </View>
         </View>
 
@@ -256,6 +267,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         gap: 4,
         marginTop: -64,
+        position: 'relative',
     },
     avatar: {
         width: 80,
@@ -286,6 +298,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontStyle: 'normal',
         textDecorationLine: 'underline',
+    },
+    actionBar: {
+        position: 'absolute',
+        top: 64,
+        right: 16,
     },
 
     contentCard: {

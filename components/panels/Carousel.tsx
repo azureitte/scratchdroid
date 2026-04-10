@@ -37,6 +37,7 @@ const Carousel = ({
         <FlatList 
             data={items}
             renderItem={({ item }) => render(item)}
+            keyExtractor={(item) => item?.username ?? item?.id.toString()}
             style={styles.carousel} 
             horizontal 
             contentContainerStyle={{ paddingHorizontal: 6 }}
