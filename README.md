@@ -50,7 +50,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✅ View user's featured project
    - ✅ View more user profile info (displayed on scratch.mit.edu/users)
    - ✖️ View Scratch Membership info
-   - ✖️ Follow/unfollow users
+   - ✅ Follow/unfollow users
    - ✖️ Report users
    - ✖️ Edit own profile
 
@@ -92,6 +92,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✖️ Restrict students from creating studios
 
 - ✅ Home page
+- ✖️ Home Activity / User Activity
 - ✖️ Explore/search page
 - ✖️ Custom project viewer
 - ✖️ Project editor

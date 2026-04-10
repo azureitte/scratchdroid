@@ -1,14 +1,17 @@
 import { useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { produce } from "immer";
 
 import { apiReq } from "@/util/api";
+import { getUserFromProfilePage } from "@/util/parsing/users";
 
 import type { UserQueryData } from "@/util/types/app/users.types";
 import type { ScratchUser } from "@/util/types/api/user.types";
 import type { ScratchProject } from "@/util/types/api/project.types";
-import { getUserFromProfilePage } from "@/util/parsing/users";
 
 export const useUser = (username: string) => {
+
+    const queryClient = useQueryClient();
 
     const fetchUser = useCallback(async () => {
         const userRes = await apiReq<ScratchUser>({
@@ -85,6 +88,16 @@ export const useUser = (username: string) => {
         refetchOnReconnect: false,
     });
 
-    return user;
+    const setIsFollowingDirectly = (following: boolean) => {
+        queryClient.setQueryData(['user', username], (prev: UserQueryData|null) => produce(prev, (draft) => {
+            if (!draft || !prev) return;
+            draft.isFollowing = following;
+        }));
+    }
+
+    return {
+        user,
+        setIsFollowingDirectly,
+    }
 
 }

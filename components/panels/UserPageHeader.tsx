@@ -12,6 +12,8 @@ import { countryToCode } from '@/util/countries';
 import type { ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
 import type { ScratchProject } from '@/util/types/api/project.types';
 
+import { useFollowUser } from '@/hooks/mutations/useFollowUser';
+
 import Carousel from '@/components/panels/Carousel';
 import ProjectCard from '@/components/panels/ProjectCard';
 import UserCard from '@/components/panels/UserCard';
@@ -24,6 +26,7 @@ type UserPageHeaderProps = {
     data: UserQueryData;
     username: string;
     isOwn?: boolean;
+    setIsFollowing?: (to: boolean) => void;
     rerender: number;
 }
 
@@ -31,10 +34,18 @@ const UserPageHeader = memo(({
     data,
     username: myUsername,
     isOwn = false,
+    setIsFollowing,
     rerender,
 }: UserPageHeaderProps) => {
 
     const router = useRouter();
+
+    const followAction = useFollowUser({
+        username: myUsername,
+        onSuccess: (following) => {
+            setIsFollowing?.(following);
+        },
+    })
     
     const renderProject = useCallback((project: ProfileProject) => <ProjectCard
         id={project.id}
@@ -137,6 +148,14 @@ const UserPageHeader = memo(({
                             text={data.isFollowing ? 'Unfollow' : 'Follow'}
                             role={data.isFollowing ? 'secondary' : 'primary'}
                             icon="follow"
+                            isDisabled={followAction.isPending}
+                            onPress={() => {
+                                setIsFollowing?.(!data.isFollowing);
+                                followAction.mutate({ 
+                                    from: data.isFollowing, 
+                                    to: !data.isFollowing 
+                                });
+                            }}
                         /> }
                     </>
                 }

@@ -16,7 +16,7 @@ const UserInfoPage = () => {
         username: string,
     }>();
 
-    const user = useUser(username);
+    const { user } = useUser(username);
     const data = user.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
