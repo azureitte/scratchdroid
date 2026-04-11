@@ -4,8 +4,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { off, on } from '@/util/eventBus';
-import type { FeaturedProject, FeaturedTab } from '@/util/types/api/featured.types';
-import type { ScratchProject } from '@/util/types/api/project.types';
+import type { FeaturedTab } from '@/util/types/featured.types';
+import type { Project } from '@/util/types/projects.types';
+import type { CarouselProject, CarouselStudio } from '@/util/types/users.types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
@@ -28,15 +29,12 @@ const HomePage = () => {
     const scrollViewRef = useRef<ScrollView>(null);
 
     const [ activity, setActivity ] = useState<any[]>([]);
-    const [ projectLoves, setProjectLoves ] = useState<ScratchProject[]>([]);
+    const [ projectLoves, setProjectLoves ] = useState<Project[]>([]);
     const [ featuredTab, setFeaturedTab ] = useState<FeaturedTab>({
-        community_featured_projects: [],
-        community_featured_studios: [],
-        community_most_loved_projects: [],
-        community_most_remixed_projects: [],
-        community_newest_projects: [],
-        curator_top_projects: [],
-        scratch_design_studio: [],
+        featuredProjects: [],
+        featuredStudios: [],
+        recentProjects: [],
+        designStudio: [],
     });
 
     useEffect(() => {
@@ -64,8 +62,8 @@ const HomePage = () => {
             // newest projects first
             setProjectLoves(res
                 ?.sort((a, b) => 
-                    new Date(b.history.created).getTime() 
-                  - new Date(a.history.created).getTime())
+                    b.history.created.getTime() 
+                  - a.history.created.getTime())
             );
         } catch (e) {
             console.error(e);
@@ -109,23 +107,23 @@ const HomePage = () => {
         primaryColor: 'regular',
     });
 
-    const sdsName = featuredTab.scratch_design_studio[0]?.gallery_title;
+    const sdsName = featuredTab.designStudioTitle;
 
-    const renderLovedProject = useCallback((project: ScratchProject) => <ProjectCard
+    const renderLovedProject = useCallback((project: Project) => <ProjectCard
         id={project.id}
         title={project.title}
         author={project.author.username}
         viewCount={project.stats.views}
     />, []);
 
-    const renderFeaturedProject = useCallback((project: FeaturedProject) => <ProjectCard
+    const renderFeaturedProject = useCallback((project: CarouselProject) => <ProjectCard
         id={project.id}
         title={project.title}
-        author={project.creator}
-        loveCount={project.love_count}
+        author={project.author}
+        loveCount={project.loves}
     />, []);
 
-    const renderFeaturedStudio = useCallback((project: FeaturedProject) => <StudioCard
+    const renderFeaturedStudio = useCallback((project: CarouselStudio) => <StudioCard
         id={project.id}
         title={project.title}
     />, []);
@@ -179,26 +177,26 @@ const HomePage = () => {
 
             <Carousel 
                 title="Featured Projects"
-                items={featuredTab.community_featured_projects}
+                items={featuredTab.featuredProjects}
                 render={renderFeaturedProject} 
             />
 
             <Carousel 
                 title="Featured Studios"
-                items={featuredTab.community_featured_studios}
+                items={featuredTab.featuredStudios}
                 render={renderFeaturedStudio}
             />
 
-            <Carousel 
+            { !!featuredTab.recentProjects.length && <Carousel 
                 title="Recent Projects"
-                items={featuredTab.community_newest_projects}
+                items={featuredTab.recentProjects}
                 render={renderFeaturedProject}
-            />
+            /> }
 
             <Carousel 
                 title={sdsName ?? '...'} 
                 subtitle="Scratch Design Studio"
-                items={featuredTab.scratch_design_studio}
+                items={featuredTab.designStudio}
                 render={renderFeaturedProject}
             />
         </View>

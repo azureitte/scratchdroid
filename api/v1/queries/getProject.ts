@@ -1,9 +1,9 @@
-import { Session } from "@/util/types/app/accounts.types";
-import { ProjectQueryData } from "@/util/types/app/query.types";
+import { Session } from "@/util/types/accounts.types";
+import { Project, ProjectQueryData } from "@/util/types/projects.types";
 import { apiReq } from "../request";
 import { ScratchProject, ScratchProjectFile } from "../types/project.types";
 
-const fetchProject = async (id: number, session?: Session) => {
+const fetchProject = async (id: number, session?: Session): Promise<Project> => {
     const projectRes = await apiReq<ScratchProject>({
         host: 'https://api.scratch.mit.edu',
         path: `/projects/${id}/`,
@@ -12,7 +12,7 @@ const fetchProject = async (id: number, session?: Session) => {
     });
     if (!projectRes.success) throw new Error(projectRes.error);
 
-    return projectRes.data;
+    return serializeProject(projectRes.data);
 };
 
 const fetchLovedByMe = async (id: number, session?: Session) => {
@@ -51,7 +51,7 @@ const fetchRemixes = async (id: number) => {
         responseType: 'json',
     });
     if (remixesRes.success)
-        return remixesRes.data;
+        return remixesRes.data.map(serializeProject);
     return [];
 };
 
@@ -96,7 +96,7 @@ export const getProject = async ({
     ]);
     const [ studios, file ] = await Promise.all([
         fetchStudios(id, project?.author?.username),
-        fetchProjectFile(id, project?.project_token),
+        fetchProjectFile(id, project?.token),
     ]);
     return {
         project,
@@ -107,3 +107,55 @@ export const getProject = async ({
         file,
     }
 }
+
+export const serializeProject = (data: ScratchProject): Project => ({
+    id: data.id,
+    title: data.title,
+    author: {
+        id: data.author.id,
+        username: data.author.username,
+        isAdmin: data.author.scratchteam,
+        joined: new Date(data.author.history.joined),
+        images: {
+            tiny: data.author.profile.images['32x32'],
+            small: data.author.profile.images['50x50'],
+            medium: data.author.profile.images['55x55'],
+            large: data.author.profile.images['60x60'],
+            huge: data.author.profile.images['90x90'],
+        },
+    },
+
+    instructions: data.instructions,
+    description: data.description,
+
+    image: data.image,
+    images: {
+        tiny: data.images['100x80'],
+        small: data.images['135x102'],
+        medium: data.images['144x108'],
+        square: data.images['200x200'],
+        large: data.images['216x163'],
+        huge: data.images['282x218'],
+    },
+    history: {
+        created: new Date(data.history.created),
+        modified: new Date(data.history.modified),
+        shared: new Date(data.history.shared),
+    },
+    isPublished: data.is_published,
+    
+    remix: {
+        parent: data.remix.parent,
+        root: data.remix.root,
+    },
+
+    stats: {
+        loves: data.stats.loves,
+        favorites: data.stats.favorites,
+        views: data.stats.views,
+        remixes: data.stats.remixes,
+    },
+
+    canComment: data.comments_allowed ?? true,
+    token: data.project_token,
+});

@@ -3,7 +3,7 @@ import { StyleSheet, Text, Image, View, TextStyle, StyleProp } from 'react-nativ
 import { Link } from 'expo-router';
 
 import { EMOJI_CONTAIN_CODES } from '@/util/constants';
-import type { CommentContentNode } from '@/util/types/app/comments.types';
+import type { CommentContentNode } from '@/util/types/comments.types';
 
 type CommentContentProps = {
     content: CommentContentNode[];

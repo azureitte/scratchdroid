@@ -13,7 +13,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { lightTap, scrollCommentSectionToId } from '@/util/functions';
 import { projectHasCloudVariables } from '@/util/parsing/projects';
 import { off, on } from '@/util/eventBus';
-import type { Comment } from '@/util/types/app/comments.types';
+import type { Comment } from '@/util/types/comments.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
@@ -98,7 +98,7 @@ const ProjectPage = () => {
             projectTitle: data.project.title,
             canRemix: !isOwn,
             canReport: !isOwn,
-            canComment: data.project.comments_allowed ?? true,
+            canComment: data.project.canComment,
             canToggleCommenting: isOwn,
             setCommentsAllowed: setCommentsAllowedDirectly,
         });
@@ -220,7 +220,7 @@ const ProjectPage = () => {
                 objectId={Number(id)}
                 comments={comments.data}
                 isOwn={session?.user?.username === data?.project.author.username}
-                canComment={data.project.comments_allowed ?? true}
+                canComment={data.project.canComment}
                 header={<ProjectPageHeader 
                     project={data.project}
                     projectId={Number(id)}

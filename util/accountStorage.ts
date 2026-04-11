@@ -2,7 +2,7 @@ import * as Keychain from 'react-native-keychain';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Cookies } from '@preeternal/react-native-cookie-manager';
 
-import type { StoredAccount, StoredPublicAccount } from './types/app/accounts.types';
+import type { StoredAccount, StoredPublicAccount } from './types/accounts.types';
 
 export async function addAccount (account: StoredAccount) {
     await Keychain.setGenericPassword(

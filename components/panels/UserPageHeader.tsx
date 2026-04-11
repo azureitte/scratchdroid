@@ -9,8 +9,7 @@ import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
 
-import type { ProfileClassroom, ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
-import type { ScratchProject } from '@/util/types/api/project.types';
+import type { ProfileClassroom, CarouselProject, CarouselStudio, CarouselUser, User } from '@/util/types/users.types';
 
 import Carousel from '@/components/panels/Carousel';
 import ProjectCard from '@/components/panels/ProjectCard';
@@ -21,7 +20,7 @@ import Button from '../general/Button';
 
 
 type UserPageHeaderProps = {
-    data: UserQueryData;
+    data: User;
     username: string;
     isOwn?: boolean;
     followAction: {
@@ -33,7 +32,7 @@ type UserPageHeaderProps = {
 }
 
 const UserPageHeader = memo(({
-    data,
+    data: user,
     username: myUsername,
     isOwn = false,
     followAction,
@@ -43,25 +42,25 @@ const UserPageHeader = memo(({
 
     const router = useRouter();
     
-    const renderProject = useCallback((project: ProfileProject) => <ProjectCard
+    const renderProject = useCallback((project: CarouselProject) => <ProjectCard
         id={project.id}
         title={project.title}
         author={project.author}
-    />, [data.user]);
+    />, []);
 
-    const renderMyProject = useCallback((project: ScratchProject) => <ProjectCard
+    const renderMyProject = useCallback((project: CarouselProject) => <ProjectCard
         id={project.id}
         title={project.title}
         author={myUsername}
-        viewCount={project.stats.views}
-    />, [data.user]);
+        viewCount={project.views}
+    />, [myUsername]);
 
-    const renderUser = useCallback((user: ProfileUser) => <UserCard
+    const renderUser = useCallback((user: CarouselUser) => <UserCard
         id={user.id}
         username={user.username}
     />, []);
 
-    const renderStudio = useCallback((studio: ProfileStudio) => <StudioCard
+    const renderStudio = useCallback((studio: CarouselStudio) => <StudioCard
         id={studio.id}
         title={studio.title}
     />, []);
@@ -72,29 +71,29 @@ const UserPageHeader = memo(({
         isClassroom
     />, []);
 
-    const shouldRenderClassrooms = data.classrooms.length > 0;
-    const shouldRenderStudiosFollowing = data.studiosFollowing.length > 0;
-    const shouldRenderStudiosCurating = data.studiosCurating.length > 0;
+    const shouldRenderClassrooms = user.classrooms.length > 0;
+    const shouldRenderStudiosFollowing = user.studiosFollowing.length > 0;
+    const shouldRenderStudiosCurating = user.studiosCurating.length > 0;
 
     return (<View style={[styles.content]}>
         <Pressable 
             style={styles.banner}
-            onPress={() => data.bannerProject && router.push(`/projects/${data.bannerProject.id}`)}
-            android_ripple={data.bannerProject ? DEFAULT_RIPPLE_CONFIG : undefined}
+            onPress={() => user.bannerProject && router.push(`/projects/${user.bannerProject.id}`)}
+            android_ripple={user.bannerProject ? DEFAULT_RIPPLE_CONFIG : undefined}
         >
             <LinearGradient
                 colors={['#000', '#0000']}
                 locations={[0.16, 1]}
                 style={styles.bannerGradient}
             />
-            { !!data.bannerProject?.thumbnail_url && <>
+            { !!user.bannerProject?.thumbnail_url && <>
                 <Image
-                    source={{ uri: addPrefixUrl(data.bannerProject.thumbnail_url) }}
+                    source={{ uri: addPrefixUrl(user.bannerProject.thumbnail_url) }}
                     style={styles.bannerImage}
                 />
                 <View style={styles.bannerOverlay}>
-                    <Text style={styles.bannerSubtext} numberOfLines={1}>{'  ' + data.bannerProject.label + '  '}</Text>
-                    <Text style={styles.bannerTitle} numberOfLines={1}>{'  ' + data.bannerProject.title + '  '}</Text>
+                    <Text style={styles.bannerSubtext} numberOfLines={1}>{'  ' + user.bannerProject.label + '  '}</Text>
+                    <Text style={styles.bannerTitle} numberOfLines={1}>{'  ' + user.bannerProject.title + '  '}</Text>
                 </View>
             </>}
         </Pressable>
@@ -102,8 +101,8 @@ const UserPageHeader = memo(({
         <View style={styles.info}>
             <Image 
                 source={{
-                    uri: $u(data.user.profile.images['90x90'], 
-                        myUsername, data.user.id, rerender),
+                    uri: $u(user.images.huge, 
+                        myUsername, user.id, rerender),
                 }}
                 width={480}
                 height={360}
@@ -112,21 +111,21 @@ const UserPageHeader = memo(({
             <Text style={styles.infoText}>@{myUsername}</Text>
             <Text style={styles.infoSubtext}>
                 { 
-                    data.roleLink 
-                        ? <Link href={data.roleLink} style={styles.link}>{data.role}</Link>
-                        : data.role 
-                } • Joined { relativeDate(new Date(data.user.history.joined)) }
+                    user.roleLink 
+                        ? <Link href={user.roleLink} style={styles.link}>{user.role}</Link>
+                        : user.role 
+                } • Joined { relativeDate(user.joined) }
             </Text>
             <View style={styles.infoSubtextWrap}>
-                { data.user.profile.country 
+                { user.country 
                     ? <>
                         <CountryFlag 
-                            isoCode={countryToCode(data.user.profile.country)} 
+                            isoCode={countryToCode(user.country)} 
                             size={14} 
                             style={{ opacity: 0.6, borderRadius: 4 }} 
                         />
                         <Text style={styles.infoSubtext}>
-                            { data.user.profile.country }
+                            { user.country }
                         </Text>
                     </>
                     : <Text style={styles.infoSubtext}>
@@ -144,10 +143,10 @@ const UserPageHeader = memo(({
                         text="Edit profile"
                         icon="accountSettings"
                     />
-                    : data.canFollow 
+                    : user.canFollow 
                         && <Button
-                            text={data.isFollowing ? 'Unfollow' : 'Follow'}
-                            role={data.isFollowing ? 'secondary' : 'primary'}
+                            text={user.isFollowing ? 'Unfollow' : 'Follow'}
+                            role={user.isFollowing ? 'secondary' : 'primary'}
                             icon="follow"
                             isDisabled={followAction.isPending}
                             onPress={followAction.dispatch}
@@ -158,8 +157,8 @@ const UserPageHeader = memo(({
 
         <InfoCard
             sections={[
-                { title: 'About Me', text: data.user.profile.bio },
-                { title: 'What I\'m working on', text: data.user.profile.status },
+                { title: 'About Me', text: user.bio },
+                { title: 'What I\'m working on', text: user.status },
             ]}
             href={`/users/${myUsername}/info`}
         />
@@ -169,23 +168,23 @@ const UserPageHeader = memo(({
 
             { shouldRenderClassrooms && <Carousel 
                 title="Classrooms"
-                count={data.classroomsCount}
-                items={data.classrooms}
+                count={user.classroomsCount}
+                items={user.classrooms}
                 render={renderClassroom}
                 href={`/users/${myUsername}/classes`}
             /> }
 
             <Carousel 
                 title="Shared Projects"
-                count={data.sharedProjectsCount}
-                items={data.sharedProjects}
+                count={user.sharedProjectsCount}
+                items={user.sharedProjects}
                 render={renderMyProject}
                 href={`/users/${myUsername}/projects`}
             />
 
             <Carousel 
                 title="Favorite Projects" 
-                items={data.favoriteProjects}
+                items={user.favoriteProjects}
                 render={renderProject}
                 href={`/users/${myUsername}/favorites`}
             />
@@ -198,14 +197,14 @@ const UserPageHeader = memo(({
 
             { shouldRenderStudiosFollowing && <Carousel 
                 title="Studios I'm Following" 
-                items={data.studiosFollowing}
+                items={user.studiosFollowing}
                 render={renderStudio}
                 href={`/users/${myUsername}/studios_following`}
             /> }
 
             { shouldRenderStudiosCurating && <Carousel 
                 title="Studios I Curate" 
-                items={data.studiosCurating}
+                items={user.studiosCurating}
                 render={renderStudio}
                 href={`/users/${myUsername}/studios`}
             /> }
@@ -214,14 +213,14 @@ const UserPageHeader = memo(({
 
             <Carousel 
                 title="Following" 
-                items={data.following}
+                items={user.following}
                 render={renderUser}
                 href={`/users/${myUsername}/following`}
             />
 
             <Carousel 
                 title="Followers" 
-                items={data.followers}
+                items={user.followers}
                 render={renderUser}
                 href={`/users/${myUsername}/followers`}
             />

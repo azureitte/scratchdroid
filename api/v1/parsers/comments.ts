@@ -9,7 +9,7 @@ import type {
     Comment,
     ReplyComment, 
     RootComment,
-} from "@/util/types/app/comments.types";
+} from "@/util/types/comments.types";
 
 
 type CommentR2Return<T> = T extends true 

@@ -1,4 +1,4 @@
-export enum CommentType {
+export enum ScratchCommentType {
     PROJECT = 0,
     USER = 1,
     STUDIO = 2,
@@ -11,17 +11,17 @@ export enum MembershipLabel {
 
 
 export type ScratchMessage =
-    | MessageFollowUser
-    | MessageLoveProject
-    | MessageFavoriteProject
-    | MessageAddComment
-    | MessageCuratorInvite
-    | MessageRemixProject
-    | MessageStudioActivity
-    | MessageForumPost
-    | MessageBecomeManagerStudio
-    | MessageBecomeHostStudio
-    | MessageUserJoin;
+    | ScratchMessageFollowUser
+    | ScratchMessageLoveProject
+    | ScratchMessageFavoriteProject
+    | ScratchMessageAddComment
+    | ScratchMessageCuratorInvite
+    | ScratchMessageRemixProject
+    | ScratchMessageStudioActivity
+    | ScratchMessageForumPost
+    | ScratchMessageBecomeManagerStudio
+    | ScratchMessageBecomeHostStudio
+    | ScratchMessageUserJoin;
 
 export type ScratchAdminAlert = {
     id: number;
@@ -32,68 +32,68 @@ export type ScratchAdminAlert = {
 }
 
 
-type MessageBase = {
+type ScratchMessageBase = {
     id: number;
     datetime_created: string;
     actor_username: string;
     actor_membership_label: MembershipLabel,
     actor_id: number;
 }
-type MessageFollowUser = MessageBase & {
+type ScratchMessageFollowUser = ScratchMessageBase & {
     type: "followuser";
 }
-type MessageLoveProject = MessageBase & {
+type ScratchMessageLoveProject = ScratchMessageBase & {
     type: "loveproject";
     project_id: number;
     title: string;
 }
-type MessageFavoriteProject = MessageBase & {
+type ScratchMessageFavoriteProject = ScratchMessageBase & {
     type: "favoriteproject";
     project_id: number;
     project_title: string;
 }
-type MessageAddComment = MessageBase & {
+type ScratchMessageAddComment = ScratchMessageBase & {
     type: "addcomment";
     comment_id: number;
     comment_fragment: string;
-    comment_type: CommentType;
+    comment_type: ScratchCommentType;
     commentee_username?: string;
     comment_obj_title: string;
     comment_obj_id: number;
 }
-type MessageCuratorInvite = MessageBase & {
+type ScratchMessageCuratorInvite = ScratchMessageBase & {
     type: "curatorinvite";
     gallery_id: number;
     title: string;
 }
-type MessageRemixProject = MessageBase & {
+type ScratchMessageRemixProject = ScratchMessageBase & {
     type: "remixproject";
     project_id: number;
     title: string;
     parent_id: number;
     parent_title: string;
 }
-type MessageStudioActivity = MessageBase & {
+type ScratchMessageStudioActivity = ScratchMessageBase & {
     type: "studioactivity";
     gallery_id: number;
     title: string;
 }
-type MessageForumPost = MessageBase & {
+type ScratchMessageForumPost = ScratchMessageBase & {
     type: "forumpost";
     topic_id: number;
     topic_title: string;
 }
-type MessageBecomeManagerStudio = MessageBase & {
+type ScratchMessageBecomeManagerStudio = ScratchMessageBase & {
     type: "becomeownerstudio";
     gallery_id: number;
     gallery_title: string;
 }
-type MessageBecomeHostStudio = MessageBase & {
+type ScratchMessageBecomeHostStudio = ScratchMessageBase & {
     type: "becomehoststudio";
     admin_actor?: boolean;
     gallery_id: number;
     gallery_title: string;
 }
-type MessageUserJoin = MessageBase & {
+type ScratchMessageUserJoin = ScratchMessageBase & {
     type: "userjoin";
 }

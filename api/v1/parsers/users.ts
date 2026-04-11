@@ -5,11 +5,11 @@ import { getLastPathSegment, fnull } from "@/util/functions";
 import type { 
     BannerProject, 
     ProfileClassroom, 
-    ProfileProject, 
-    ProfileStudio, 
-    ProfileUser, 
+    CarouselProject, 
+    CarouselStudio, 
+    CarouselUser, 
     UserDataR2 
-} from "@/util/types/app/users.types";
+} from "@/util/types/users.types";
 
 const PROFILE_BOX_TITLES = {
     shared: 'Shared Projects',
@@ -84,11 +84,11 @@ export function getUserFromProfilePage (root: HTMLElement): UserDataR2|null {
         }
     }
 
-    const favoriteProjects: ProfileProject[] = [];
-    const studiosFollowing: ProfileStudio[] = [];
-    const studiosCurating: ProfileStudio[] = [];
-    const followers: ProfileUser[] = [];
-    const following: ProfileUser[] = [];
+    const favoriteProjects: CarouselProject[] = [];
+    const studiosFollowing: CarouselStudio[] = [];
+    const studiosCurating: CarouselStudio[] = [];
+    const followers: CarouselUser[] = [];
+    const following: CarouselUser[] = [];
     const classrooms: ProfileClassroom[] = [];
 
     if (matchedBoxes.favorite) {
@@ -171,7 +171,7 @@ function matchBox (box: HTMLElement): BoxMatchReturn {
     return { type: undefined };
 }
 
-function parseProfileProject (project: HTMLElement): ProfileProject {
+function parseProfileProject (project: HTMLElement): CarouselProject {
     const titleElem = project.querySelector('.title');
     const titleLinkElem = titleElem?.querySelector('a');
 
@@ -185,7 +185,7 @@ function parseProfileProject (project: HTMLElement): ProfileProject {
     return { id, title, author };
 }
 
-function parseProfileStudio (studio: HTMLElement): ProfileStudio {
+function parseProfileStudio (studio: HTMLElement): CarouselStudio {
     const titleElem = studio.querySelector('.title');
     const titleLinkElem = titleElem?.querySelector('a');
 
@@ -200,7 +200,7 @@ function parseProfileClassroom (classroom: HTMLElement): ProfileClassroom {
     return parseProfileStudio(classroom) as ProfileClassroom;
 }
 
-function parseProfileUser (user: HTMLElement): ProfileUser {
+function parseProfileUser (user: HTMLElement): CarouselUser {
     const usernameElem = user.querySelector('.title');
     const username = usernameElem?.innerText.trim() ?? '';
     const imgElem = user.querySelector('img');

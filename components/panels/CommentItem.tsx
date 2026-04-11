@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 import { relativeDate } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
-import type { FlattenedComment } from '@/util/types/app/comments.types';
+import type { FlattenedComment } from '@/util/types/comments.types';
 
 import Button from '@/components/general/Button';
 import { ICONS } from '@/util/assets';

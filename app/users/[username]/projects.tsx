@@ -4,8 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ProfileProject } from '@/util/types/app/users.types';
-import type { ScratchProject } from '@/util/types/api/project.types';
+import type { CarouselProject } from '@/util/types/users.types';
 
 import { useUser } from '@/hooks/queries/useUser';
 import ListLoading from '@/components/panels/ListLoading';
@@ -24,7 +23,7 @@ const UserProjectsPage = () => {
     const data = user.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
-    const render = useCallback((project: ScratchProject, columns: number) => <ProjectCard
+    const render = useCallback((project: CarouselProject, columns: number) => <ProjectCard
         id={project.id}
         title={project.title}
         author={username}

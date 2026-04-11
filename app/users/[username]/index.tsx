@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { lightTap, scrollCommentSectionToId } from '@/util/functions';
 import { refreshCacheForUser } from '@/util/thumbnailCaching';
 import { off, on } from '@/util/eventBus';
-import type { Comment } from '@/util/types/app/comments.types';
+import type { Comment } from '@/util/types/comments.types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
@@ -180,7 +180,7 @@ const UserPage = () => {
             
         <CommentSection 
             type='user'
-            objectId={user.data.user.id}
+            objectId={user.data.id}
             objectName={username}
             comments={comments.data} 
             isOwn={isOwn}

@@ -19,7 +19,7 @@ import {
 import { longTap, sleep } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
-import type { FlattenedComment } from '@/util/types/app/comments.types';
+import type { FlattenedComment } from '@/util/types/comments.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';

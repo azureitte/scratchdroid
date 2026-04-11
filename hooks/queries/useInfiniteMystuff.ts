@@ -3,9 +3,6 @@ import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-
 import { useSession } from "../useSession";
 import { useApi } from "../useApi";
 
-const PROJECTS_PER_PAGE = 40;
-const STUDIOS_PER_PAGE = 40;
-
 type InfiniteMystuffProps = {
     enabled?: boolean;
 }&({
@@ -28,10 +25,12 @@ export const useInfiniteMystuff = ({
     enabled = true,
 }: InfiniteMystuffProps) => {
     const queryClient = useQueryClient();
-    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
-    const { q: { getMystuff } } = useApi();
+    const { session } = useSession();
+    const { q: { getMystuff, getMystuffItemsPerPage } } = useApi();
 
-    const ITEMS_PER_PAGE = type === 'projects' ? PROJECTS_PER_PAGE : STUDIOS_PER_PAGE;
+    const ITEMS_PER_PAGE = type === 'projects' 
+        ? getMystuffItemsPerPage('projects') 
+        : getMystuffItemsPerPage('studios');
 
     const queryKey = ['mystuff', type, subtype, ascsort, descsort] as const;
 
@@ -46,15 +45,24 @@ export const useInfiniteMystuff = ({
     } = useInfiniteQuery({
         queryKey,
         queryFn: async ({ pageParam }) => {
-            if (isSessionLoading || !session.user) return [];
+            if (!session?.user) return [];
 
-            return getMystuff({
-                type,
-                subtype,
-                ascsort,
-                descsort,
-                page: pageParam,
-            } as any);
+            if (type === 'projects')
+                return await getMystuff({
+                    type: 'projects',
+                    subtype,
+                    ascsort,
+                    descsort,
+                    page: pageParam,
+                });
+            else
+                return await getMystuff({
+                    type: 'studios',
+                    subtype,
+                    ascsort,
+                    descsort,
+                    page: pageParam,
+                });
         },
         getNextPageParam: (currentPage, allPages) => currentPage.length < ITEMS_PER_PAGE 
             ? undefined 
@@ -66,7 +74,7 @@ export const useInfiniteMystuff = ({
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
 
-        enabled: enabled && !isSessionLoading && isLoggedIn,
+        enabled,
     });
 
     const resetToFirstPage = () => {

@@ -6,7 +6,7 @@ import type {
     Comment, 
     FlattenedComment, 
     RootComment, 
-} from "@/util/types/app/comments.types";
+} from "@/util/types/comments.types";
 
 import { useSession } from "../useSession";
 import { useComments } from "./useComments";

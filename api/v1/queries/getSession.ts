@@ -1,4 +1,4 @@
-import { ErrorSession, Session } from "@/util/types/app/accounts.types";
+import { ErrorSession, Session } from "@/util/types/accounts.types";
 import { apiReq } from "../request";
 import { MuteStatus, ScratchSession } from "../types/account.types";
 
@@ -17,7 +17,7 @@ export const getSession = async (): Promise<Session|ErrorSession> => {
             reason: '503',
         };
     }
-    
+
     if (res.success) {
         const data = res.data;
 

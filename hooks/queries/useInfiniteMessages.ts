@@ -1,17 +1,15 @@
 import { useCallback } from "react";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { MessageQueryItem } from "@/util/types/app/query.types";
+import type { MessageQueryItem } from "@/util/types/messages.types";
 
 import { useSession } from "../useSession";
 import { useApi } from "../useApi";
 
-const MESSAGES_PER_PAGE = 40;
-
 export const useInfiniteMessages = () => {
     const queryClient = useQueryClient();
     const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
-    const { q: { getMessages, getAdminAlerts } } = useApi();
+    const { q: { getMessages, getAdminAlerts, getMessagesPerPage } } = useApi();
 
     const { 
         data, 
@@ -53,7 +51,7 @@ export const useInfiniteMessages = () => {
 
             return [...adminAlerts, ...messages];
         },
-        getNextPageParam: (currentPage, allPages) => currentPage.length < MESSAGES_PER_PAGE 
+        getNextPageParam: (currentPage, allPages) => currentPage.length < getMessagesPerPage() 
             ? undefined 
             : allPages.indexOf(currentPage) + 1,
         getPreviousPageParam: (currentPage, allPages) => allPages.indexOf(currentPage) - 1,

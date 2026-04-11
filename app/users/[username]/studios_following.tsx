@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ProfileStudio } from '@/util/types/app/users.types';
+import type { CarouselStudio } from '@/util/types/users.types';
 
 import { useUser } from '@/hooks/queries/useUser';
 import ListLoading from '@/components/panels/ListLoading';
@@ -23,7 +23,7 @@ const UserStudiosFollowingPage = () => {
     const data = user.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
-    const render = useCallback((studio: ProfileStudio, columns: number) => <StudioCard
+    const render = useCallback((studio: CarouselStudio, columns: number) => <StudioCard
         id={studio.id}
         title={studio.title}
         gridColumns={columns}

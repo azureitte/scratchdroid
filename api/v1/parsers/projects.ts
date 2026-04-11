@@ -1,4 +1,4 @@
-import type { ScratchProjectFile } from "@/util/types/api/project.types";
+import type { ScratchProjectFile } from "../types/project.types";
 
 export function projectHasCloudVariables (project?: ScratchProjectFile|null) {
     if (!project) return false;

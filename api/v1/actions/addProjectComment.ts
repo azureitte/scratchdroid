@@ -1,9 +1,9 @@
 import { apiReq } from "../request";
 import { ModernAddCommentResponse, ModernAddCommentResponseRejected, ScratchComment } from "../types/comment.types";
-import { Session } from "@/util/types/app/accounts.types";
+import { Session } from "@/util/types/accounts.types";
 import { FAIL_REASON_MESSAGES } from "../constants";
 import { getCommentFromWww3 } from "../parsers/comments";
-import { Comment } from "@/util/types/app/comments.types";
+import { Comment } from "@/util/types/comments.types";
 
 type AddCommentOptions = {
     projectId: number;

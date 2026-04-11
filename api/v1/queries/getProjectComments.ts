@@ -1,8 +1,8 @@
-import { ReplyComment, RootComment } from "@/util/types/app/comments.types";
+import { ReplyComment, RootComment } from "@/util/types/comments.types";
 import { apiReq } from "../request";
 import { getCommentFromWww3 } from "../parsers/comments";
 import { ScratchComment } from "../types/comment.types";
-import { Session } from "@/util/types/app/accounts.types";
+import { Session } from "@/util/types/accounts.types";
 import { REPLY_INCREMENT_COUNT } from "@/util/constants";
 
 type GetProjectRootCommentsOptions = {

@@ -4,12 +4,12 @@ import { Cookies } from '@preeternal/react-native-cookie-manager';
 
 import type { 
     FlattenedComment, 
-} from "@/util/types/app/comments.types";
+} from "@/util/types/comments.types";
 import type { 
     PartialSheetMenuDefinition, 
     SheetMenuDefinition 
-} from "@/util/types/app/misc.types";
-import type { Session } from '@/util/types/app/accounts.types';
+} from "@/util/types/misc.types";
+import type { Session } from '@/util/types/accounts.types';
 
 import type { CommentSectionRef } from "@/components/panels/CommentSection";
 import { PROJECT_CARD_THUMBNAIL_HEIGHT, USER_CARD_THUMBNAIL_HEIGHT } from './constants';

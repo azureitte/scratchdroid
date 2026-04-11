@@ -10,7 +10,7 @@ import WebView from 'react-native-webview';
 import {  Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
+import { ScratchExtension } from '@/util/types/projects.types';
 import { addPrefixUrl, shortDate } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
@@ -22,16 +22,17 @@ import ScrollableText from '@/components/general/ScrollableText';
 import ExtensionChip from '@/components/panels/ExtensionChip';
 import InfoCard from '@/components/panels/InfoCard';
 import LoveFavButton, { type StatProp } from '@/components/panels/LoveFavButton';
+import { Project } from '@/util/types/projects.types';
 
 type ProjectPageHeaderProps = {
-    project: ScratchProject;
+    project: Project;
     projectId: number;
     extensions?: ScratchExtension[];
     isCloud?: boolean;
 
     loves: StatProp;
     favs: StatProp;
-    remixes: ScratchProject[];
+    remixes: Project[];
     studios: any[],
     isOwn?: boolean;
     webviewActive?: boolean;
@@ -72,8 +73,8 @@ const ProjectPageHeader = ({
     const IconRemix = ICONS.remix;
     const IconView = ICONS.view;
 
-    const publishedStr = shortDate(new Date(project.history.shared));
-    const modifiedStr = shortDate(new Date(project.history.modified));
+    const publishedStr = shortDate(project.history.shared);
+    const modifiedStr = shortDate(project.history.modified);
 
     const publishedEqModified = publishedStr === modifiedStr;
 
@@ -82,7 +83,7 @@ const ProjectPageHeader = ({
             <Link href={`/users/${project.author.username}`} style={styles.authorAvatarWrap}>
                 <Image
                     source={{ uri: $u(
-                        project.author.profile.images['60x60'],
+                        project.author.images.large,
                         project.author.username,
                         project.author.id,
                     ) }}
@@ -189,7 +190,7 @@ const ProjectPageHeader = ({
                     { remixes.map((remix) => <Image
                         key={remix.id}
                         style={[styles.footerThumbnail, styles.footerThumbnailProject]}
-                        source={{ uri: addPrefixUrl(remix.images['100x80']) }}
+                        source={{ uri: addPrefixUrl(remix.images.tiny) }}
                     />) }
                 </View>
                 { footerSectionGradient }

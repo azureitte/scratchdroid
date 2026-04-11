@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { produce } from "immer";
 
-import type { UserQueryData } from "@/util/types/app/users.types";
+import type { User } from "@/util/types/users.types";
 
 import { useApi } from "../useApi";
 
@@ -10,7 +10,7 @@ export const useUser = (username: string) => {
     const queryClient = useQueryClient();
     const { q: { getUser } } = useApi();
 
-    const user = useQuery<UserQueryData>({
+    const user = useQuery<User>({
         queryKey: ['user', username],
         queryFn: () => {
             return getUser({ username });
@@ -21,14 +21,14 @@ export const useUser = (username: string) => {
     });
 
     const setIsFollowingDirectly = (following: boolean) => {
-        queryClient.setQueryData(['user', username], (prev: UserQueryData|null) => produce(prev, (draft) => {
+        queryClient.setQueryData(['user', username], (prev: User|null) => produce(prev, (draft) => {
             if (!draft || !prev) return;
             draft.isFollowing = following;
         }));
     }
 
     const setCommentsAllowedDirectly = (commentsAllowed: boolean) => {
-        queryClient.setQueryData(['user', username], (prev: UserQueryData|null) => produce(prev, (draft) => {
+        queryClient.setQueryData(['user', username], (prev: User|null) => produce(prev, (draft) => {
             if (!draft || !prev) return;
             draft.canComment = commentsAllowed;
         }));

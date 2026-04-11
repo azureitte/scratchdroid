@@ -1,7 +1,7 @@
 import { produce } from "immer";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import type { ProjectQueryData } from "@/util/types/app/query.types";
+import type { ProjectQueryData } from "@/util/types/projects.types";
 
 import { useSession } from "../useSession";
 import { useApi } from "../useApi";
@@ -49,7 +49,7 @@ export const useProject = (projectId: number) => {
         queryClient.setQueryData(['project', projectId], (prev: ProjectQueryData|null) => produce(prev, (draft) => {
             if (!draft || !prev) return;
 
-            draft.project.comments_allowed = commentsAllowed;
+            draft.project.canComment = commentsAllowed;
         }));
     }
 

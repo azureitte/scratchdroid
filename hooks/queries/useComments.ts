@@ -14,7 +14,7 @@ import type {
     FlattenedComment, 
     ReplyComment, 
     RootComment 
-} from "@/util/types/app/comments.types";
+} from "@/util/types/comments.types";
 
 type UseCommentsProps = {
     queryKey: readonly any[];

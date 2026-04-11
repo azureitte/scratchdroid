@@ -1,4 +1,4 @@
-import { RootComment } from "@/util/types/app/comments.types";
+import { RootComment } from "@/util/types/comments.types";
 import { apiReq } from "../request";
 import { getCommentsFromR2 } from "../parsers/comments";
 

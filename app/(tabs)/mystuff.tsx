@@ -8,11 +8,8 @@ import type { Route } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 
-import type { 
-    ScratchMystuffProjectItem, 
-    ScratchMystuffStudioItem 
-} from '@/util/types/api/account.types';
 import { off, on } from '@/util/eventBus';
+import type { MystuffProject, MystuffStudio } from '@/util/types/mystuff.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
@@ -74,24 +71,24 @@ const MyStuffPage = () => {
         listRef.current?.scrollToOffset({ animated: false, offset: 0 });
     };
 
-    const renderProjectItem = useCallback((item: ScratchMystuffProjectItem) => <MystuffRow 
+    const renderProjectItem = useCallback((item: MystuffProject) => <MystuffRow 
         type='project' 
         item={item} 
-        onPress={() => router.push(`/projects/${item.pk}`)}
+        onPress={() => router.push(`/projects/${item.id}`)}
     />, [router]);
 
-    const renderStudioItem = useCallback((item: ScratchMystuffStudioItem) => <MystuffRow 
+    const renderStudioItem = useCallback((item: MystuffStudio) => <MystuffRow 
         type='studio' 
         item={item} 
         myUsername={session?.user?.username}
-        onPress={() => router.push(`/studios/${item.pk}`)}
+        onPress={() => router.push(`/studios/${item.id}`)}
     />, [session, router]);
 
     const renderScene = useCallback((route: Route): TabListRenderScene => {
         switch (route.key) {
             case 'projects':
                 return {
-                    items: projects.data,
+                    items: projects.data as MystuffProject[],
                     render: renderProjectItem,
                     hasNextPage: projects.hasNextPage,
                     isLoading: projects.isLoading,
@@ -110,7 +107,7 @@ const MyStuffPage = () => {
                 }
             case 'studios':
                 return {
-                    items: studios.data,
+                    items: studios.data as MystuffStudio[],
                     render: renderStudioItem,
                     hasNextPage: studios.hasNextPage,
                     isLoading: studios.isLoading,

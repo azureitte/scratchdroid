@@ -1,7 +1,7 @@
 import { apiReq } from "../request";
-import { Session } from "@/util/types/app/accounts.types";
+import { Session } from "@/util/types/accounts.types";
 import { parseR2CommentMutationResponse } from "../parsers/comments";
-import { Comment } from "@/util/types/app/comments.types";
+import { Comment } from "@/util/types/comments.types";
 
 type AddCommentOptions = {
     username: string;

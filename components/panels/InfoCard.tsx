@@ -5,7 +5,7 @@ import { Link, useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import CommentContent from './CommentContent';
-import { CommentContentNode } from '@/util/types/app/comments.types';
+import { CommentContentNode } from '@/util/types/comments.types';
 
 type InfoSection = {
     title: string;

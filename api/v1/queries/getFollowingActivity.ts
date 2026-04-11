@@ -1,4 +1,4 @@
-import { Session } from "@/util/types/app/accounts.types";
+import { Session } from "@/util/types/accounts.types";
 import { apiReq } from "../request";
 
 export const getFollowingActivity = async (session: Session) => {

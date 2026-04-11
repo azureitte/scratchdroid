@@ -4,8 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ScratchProject } from '@/util/types/api/project.types';
-
 import { useProject } from '@/hooks/queries/useProject';
 import ListLoading from '@/components/panels/ListLoading';
 import StuffGrid from '@/components/panels/StuffGrid';

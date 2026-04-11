@@ -15,7 +15,7 @@ import type {
     CommentContentNode,
     FlattenedComment, 
     RootComment,
-} from "@/util/types/app/comments.types";
+} from "@/util/types/comments.types";
 
 
 /**

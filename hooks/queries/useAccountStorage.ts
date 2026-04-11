@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { addAccount, clearAccounts, getAccountCredentials, getAccounts, getActiveAccount } from "@/util/accountStorage";
-import type { RemoteAccount } from "@/util/types/app/accounts.types";
+import type { RemoteAccount } from "@/util/types/accounts.types";
 import { useApi } from "@/hooks/useApi";
 
 

@@ -1,6 +1,3 @@
-import type { ScratchUser } from "@/util/types/api/user.types";
-import type { ScratchProject } from "@/util/types/api/project.types";
-
 export type BannerProject = {
     id: number;
     title: string;
@@ -8,12 +5,14 @@ export type BannerProject = {
     label: string;
 }
 
-export type ProfileProject = {
+export type CarouselProject = {
     id: number;
     title: string;
     author: string;
+    views?: number;
+    loves?: number;
 }
-export type ProfileStudio = {
+export type CarouselStudio = {
     id: number;
     title: string;
 }
@@ -21,7 +20,7 @@ export type ProfileClassroom = {
     id: number;
     title: string;
 }
-export type ProfileUser = {
+export type CarouselUser = {
     id: number;
     username: string;
 }
@@ -35,29 +34,42 @@ export type UserDataR2 = {
     canFollow: boolean;
     isFollowing: boolean;
     
-    favoriteProjects: ProfileProject[];
-    studiosFollowing: ProfileStudio[];
-    studiosCurating: ProfileStudio[];
-    followers: ProfileUser[];
-    following: ProfileUser[];
+    favoriteProjects: CarouselProject[];
+    studiosFollowing: CarouselStudio[];
+    studiosCurating: CarouselStudio[];
+    followers: CarouselUser[];
+    following: CarouselUser[];
     classrooms: ProfileClassroom[];
 
     sharedProjectsCount?: number;
     classroomsCount?: number;
 }
 
-export type UserQueryData = {
-    user: ScratchUser;
-    sharedProjects: ScratchProject[];
+export type User = {
+    id: number;
+    username: string;
+    joined: Date;
+    images: {
+        tiny: string;
+        small: string;
+        medium: string;
+        large: string;
+        huge: string;
+    };
 
+    country: string;
+    bio: string;
+    status: string;
     role: string;
     roleLink: string|null;
     bannerProject: BannerProject|null;
-    favoriteProjects: ProfileProject[];
-    studiosFollowing: ProfileStudio[];
-    studiosCurating: ProfileStudio[];
-    followers: ProfileUser[];
-    following: ProfileUser[];
+    
+    sharedProjects: CarouselProject[];
+    favoriteProjects: CarouselProject[];
+    studiosFollowing: CarouselStudio[];
+    studiosCurating: CarouselStudio[];
+    followers: CarouselUser[];
+    following: CarouselUser[];
     classrooms: ProfileClassroom[];
 
     sharedProjectsCount?: number;

@@ -6,31 +6,31 @@ import { SVGS } from "@/util/assets";
 import { shortRelativeDate } from "@/util/functions";
 import { $u } from "@/util/thumbnailCaching";
 import { stringToCommentContent } from "@/util/parsing/comments";
-import { CommentType, type ScratchMessage } from "@/util/types/api/message.types";
+import { MessageType, type Message } from "@/util/types/messages.types";
 
 import CommentContent from "./CommentContent";
 
 
-const getIcon = (message: ScratchMessage) => {
+const getIcon = (message: Message) => {
     switch (message.type) {
-        case 'followuser': return SVGS.messages.follow;
-        case 'loveproject': return SVGS.messages.love;
-        case 'favoriteproject': return SVGS.messages.favorite;
-        case 'addcomment': return SVGS.messages.comment;
-        case 'curatorinvite': return SVGS.messages.curatorInvite;
-        case 'remixproject': return SVGS.messages.remix;
-        case 'studioactivity': return SVGS.messages.studioActivity;
-        case 'forumpost': return SVGS.messages.forumActivity;
-        case 'becomehoststudio': return SVGS.messages.hostTransfer;
-        case 'becomeownerstudio': return SVGS.messages.ownerInvite;
-        case 'userjoin': return SVGS.messages.follow;
+        case MessageType.FOLLOW_USER: return SVGS.messages.follow;
+        case MessageType.LOVE_PROJECT: return SVGS.messages.love;
+        case MessageType.FAVORITE_PROJECT: return SVGS.messages.favorite;
+        case MessageType.ADD_COMMENT: return SVGS.messages.comment;
+        case MessageType.CURATOR_INVITE: return SVGS.messages.curatorInvite;
+        case MessageType.REMIX_PROJECT: return SVGS.messages.remix;
+        case MessageType.STUDIO_ACTIVITY: return SVGS.messages.studioActivity;
+        case MessageType.FORUM_POST: return SVGS.messages.forumActivity;
+        case MessageType.BECOME_HOST_STUDIO: return SVGS.messages.hostTransfer;
+        case MessageType.BECOME_MANAGER_STUDIO: return SVGS.messages.ownerInvite;
+        case MessageType.USER_JOIN: return SVGS.messages.follow;
         default: return SVGS.messages.comment;
     }
 };
 
 
 type MessageRowProps = {
-    message: ScratchMessage;
+    message: Message;
     myUsername?: string;
     isUnread: boolean;
 };
@@ -45,7 +45,7 @@ const MessageRow = memo(({
 
     const messageContent = useMemo(() => {
         if (message.type !== 'addcomment') return [];
-        return stringToCommentContent(message.comment_fragment);
+        return stringToCommentContent(message.comment.content);
     }, [(message as any).comment_fragment]);
 
     return (
@@ -54,130 +54,130 @@ const MessageRow = memo(({
             <View style={styles.contentWrapper}>
                 <View style={styles.content}>
 
-                    { message.type === 'followuser' && 
+                    { message.type === MessageType.FOLLOW_USER && 
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
                             </Link> is now following you
                         </Text> 
                     }
 
-                    { message.type === 'loveproject' && 
+                    { message.type === MessageType.LOVE_PROJECT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
-                            </Link> loved your project <Link style={styles.linkText} href={`/projects/${message.project_id}`}>
-                                {message.title}
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
+                            </Link> loved your project <Link style={styles.linkText} href={`/projects/${message.project.id}`}>
+                                {message.project.title}
                             </Link>
                         </Text> 
                     }
 
-                    { message.type === 'favoriteproject' &&
+                    { message.type === MessageType.FAVORITE_PROJECT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
-                            </Link> favorited your project <Link style={styles.linkText} href={`/projects/${message.project_id}`}>
-                                {message.project_title}
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
+                            </Link> favorited your project <Link style={styles.linkText} href={`/projects/${message.project.id}`}>
+                                {message.project.title}
                             </Link>
                         </Text>
                     }
 
-                    { message.type === 'addcomment' &&
+                    { message.type === MessageType.ADD_COMMENT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
                             </Link>
 
-                            { message.comment_type === CommentType.PROJECT && <>
-                                    { !!message.commentee_username 
+                            { message.comment.type === 'project' && <>
+                                    { !!message.commentee 
                                         ? ' replied to your comment on ' 
                                         : ' commented on your project ' }
-                                    <Link style={styles.linkText} href={`/projects/${message.comment_obj_id}?commentId=${message.comment_id}`}>
-                                         {message.comment_obj_title }
+                                    <Link style={styles.linkText} href={`/projects/${message.object.id}?commentId=${message.comment.id}`}>
+                                         {message.object.title }
                                     </Link>
                                 </>
                             }
-                            { message.comment_type === CommentType.USER && <>
-                                    { !!message.commentee_username 
+                            { message.comment.type === 'user' && <>
+                                    { !!message.commentee 
                                         ? ' replied to your comment on ' 
                                         : ' commented on ' }
-                                    <Link style={styles.linkText} href={`/users/${message.comment_obj_title}?commentId=${message.comment_id}`}>
-                                        { message.comment_obj_title === myUsername
+                                    <Link style={styles.linkText} href={`/users/${message.object.title}?commentId=${message.comment.id}`}>
+                                        { message.object.title === myUsername
                                             ? 'your profile'
-                                            : `${message.comment_obj_title}'s profile`
+                                            : `${message.object.title}'s profile`
                                         }
                                     </Link>
                                 </>
                             }
-                            { message.comment_type === CommentType.STUDIO && <>
-                                    { !!message.commentee_username 
+                            { message.comment.type === 'studio' && <>
+                                    { !!message.commentee 
                                         ? ' replied to your comment in ' 
                                         : ' commented in studio ' }
-                                    <Link style={styles.linkText} href={`/studios/${message.comment_obj_id}?commentId=${message.comment_id}`}>
-                                        {message.comment_obj_title}
+                                    <Link style={styles.linkText} href={`/studios/${message.object.id}?commentId=${message.comment.id}`}>
+                                        {message.object.title}
                                     </Link>
                                 </>
                             }
                         </Text>
                     }
 
-                    { message.type === 'curatorinvite' &&
+                    { message.type === MessageType.CURATOR_INVITE &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
-                            </Link> invited you to curate the studio <Link style={styles.linkText} href={`/studios/${message.gallery_id}`}>
-                                {message.title}
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
+                            </Link> invited you to curate the studio <Link style={styles.linkText} href={`/studios/${message.studio.id}`}>
+                                {message.studio.title}
                             </Link>
                         </Text>
                     }
 
-                    { message.type === 'remixproject' &&
+                    { message.type === MessageType.REMIX_PROJECT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
-                            </Link> remixed your project <Link style={styles.linkText} href={`/projects/${message.parent_id}`}>
-                                {message.parent_title}
-                            </Link>. Check out <Link style={styles.linkText} href={`/projects/${message.project_id}`}>the remix</Link>!
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
+                            </Link> remixed your project <Link style={styles.linkText} href={`/projects/${message.parent.id}`}>
+                                {message.parent.title}
+                            </Link>. Check out <Link style={styles.linkText} href={`/projects/${message.project.id}`}>the remix</Link>!
                         </Text>
                     }
 
-                    { message.type === 'studioactivity' &&
+                    { message.type === MessageType.STUDIO_ACTIVITY &&
                         <Text style={styles.text}>
-                            There was new activivty in <Link style={styles.linkText} href={`/studios/${message.gallery_id}`}>
-                                {message.title}
+                            There was new activivty in <Link style={styles.linkText} href={`/studios/${message.studio.id}`}>
+                                {message.studio.title}
                             </Link> today
                         </Text>
                     }
 
-                    { message.type === 'forumpost' && 
+                    { message.type === MessageType.FORUM_POST &&
                         <Text style={styles.text}>
-                            There are new posts in the forum thread: <Link style={styles.linkText} href={`https://scratch.mit.edu/discuss/topic/${message.topic_id}`}>
-                                {message.topic_title}
+                            There are new posts in the forum thread: <Link style={styles.linkText} href={`https://scratch.mit.edu/discuss/topic/${message.topic.id}`}>
+                                {message.topic.title}
                             </Link>
                         </Text>
                     }
 
-                    { message.type === 'becomeownerstudio' &&
+                    { message.type === MessageType.BECOME_MANAGER_STUDIO &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
-                            </Link> promoted you to manager for the studio <Link style={styles.linkText} href={`/studios/${message.gallery_id}`}>
-                                {message.gallery_title}
+                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
+                            </Link> promoted you to manager for the studio <Link style={styles.linkText} href={`/studios/${message.studio.id}`}>
+                                {message.studio.title}
                             </Link>
                         </Text>
                     }
 
-                    { message.type === 'becomehoststudio' &&
+                    { message.type === MessageType.BECOME_HOST_STUDIO &&
                         <Text style={styles.text}>
-                            { message.admin_actor ? 'A Scratch Team member' : <Link style={styles.linkText} href={`/users/${message.actor_username}`}>
-                                {message.actor_username}
-                            </Link> } made you the host of the studio <Link style={styles.linkText} href={`/studios/${message.gallery_id}`}>
-                                {message.gallery_title}
+                            { message.actorIsAdmin ? 'A Scratch Team member' : <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                {message.actor.username}
+                            </Link> } made you the host of the studio <Link style={styles.linkText} href={`/studios/${message.studio.id}`}>
+                                {message.studio.title}
                             </Link>. As host, you now have the ability to edit the studio title, thumbnail, and description. Go say hello in the studio!
                         </Text>
                     }
 
-                    { message.type === 'userjoin' &&
+                    { message.type === MessageType.USER_JOIN &&
                         <Text style={styles.text}>
                             Welcome to Scratch! After you make projects and comments, you'll get messages about them here. Go explore or create.
                         </Text>
@@ -188,8 +188,8 @@ const MessageRow = memo(({
                 { message.type === 'addcomment' && 
                     <View style={styles.commentWrapper}>
                         <Image source={{ uri: $u(
-                            `https://uploads.scratch.mit.edu/get_image/user/${message.actor_id}_32x32.png`,
-                            message.actor_username, message.actor_id) }} style={styles.commentAvatar} />
+                            `https://uploads.scratch.mit.edu/get_image/user/${message.actor.id}_32x32.png`,
+                            message.actor.username, message.actor.id) }} style={styles.commentAvatar} />
                         <View style={styles.commentBubbleDeco} />
                         <View style={styles.commentBubble}>
                             <CommentContent 
@@ -202,7 +202,7 @@ const MessageRow = memo(({
             </View>
 
             <Text style={styles.dateText}>
-                { shortRelativeDate(new Date(message.datetime_created)) }
+                { shortRelativeDate(message.date) }
             </Text>
         </View>
     );

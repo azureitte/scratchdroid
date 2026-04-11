@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ProfileClassroom } from '@/util/types/app/users.types';
+import type { ProfileClassroom } from '@/util/types/users.types';
 
 import { useUser } from '@/hooks/queries/useUser';
 import ListLoading from '@/components/panels/ListLoading';

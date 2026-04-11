@@ -1,7 +1,7 @@
 import { apiReq } from "../request";
 import { parseR2CommentMutationResponse } from "../parsers/comments";
-import { Comment } from "@/util/types/app/comments.types";
-import { Session } from "@/util/types/app/accounts.types";
+import { Comment } from "@/util/types/comments.types";
+import { Session } from "@/util/types/accounts.types";
 
 type DeleteCommentOptions = {
     username: string;

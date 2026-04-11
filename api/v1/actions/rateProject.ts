@@ -1,5 +1,5 @@
 import { apiReq } from "../request";
-import { Session } from "@/util/types/app/accounts.types";
+import { Session } from "@/util/types/accounts.types";
 
 type RateProjectOptions = {
     projectId: number;

@@ -10,7 +10,7 @@ import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native
 import { useIsFocused } from 'expo-router';
 
 import { off, on } from '@/util/eventBus';
-import type { MessageQueryItem } from '@/util/types/app/query.types';
+import type { MessageQueryItem } from '@/util/types/projects.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';

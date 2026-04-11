@@ -14,7 +14,7 @@ import {
     setActiveAccount, 
     updateAccountCookies 
 } from '@/util/accountStorage';
-import type { ErrorSession, Session } from '@/util/types/app/accounts.types';
+import type { ErrorSession, Session } from '@/util/types/accounts.types';
 
 import { useAccountStorage } from '@/hooks/queries/useAccountStorage';
 import { useApi } from '@/hooks/useApi';

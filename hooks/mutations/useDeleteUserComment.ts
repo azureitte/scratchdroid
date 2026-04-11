@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 
-import type { Comment } from "@/util/types/app/comments.types";
+import type { Comment } from "@/util/types/comments.types";
 
 import { useSession } from "../useSession";
 import { useApi } from "../useApi";

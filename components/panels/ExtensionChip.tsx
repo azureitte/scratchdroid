@@ -6,7 +6,7 @@ import {
 } from 'react-native';
 
 import { PNGS, SVGS } from '@/util/assets';
-import type { ScratchExtension } from '@/util/types/api/project.types';
+import type { ScratchExtension } from '@/util/types/projects.types';
 
 type ExtensionChipProps = {
     extension: ScratchExtension|'cloud';

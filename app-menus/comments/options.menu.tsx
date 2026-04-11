@@ -5,7 +5,7 @@ import { buildMenu } from '@/util/functions';
 import { commentContentToString, unflattenComment } from '@/util/parsing/comments';
 import { WEBSITE_URL } from '@/util/constants';
 import { emit } from '@/util/eventBus';
-import type { FlattenedComment } from '@/util/types/app/comments.types';
+import type { FlattenedComment } from '@/util/types/comments.types';
 
 import { useSheet } from '@/hooks/useSheet';
 import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';

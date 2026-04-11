@@ -1,6 +1,7 @@
-import { Session } from "@/util/types/app/accounts.types";
+import { Session } from "@/util/types/accounts.types";
 import { apiReq } from "../request";
 import { ScratchProject } from "../types/project.types";
+import { serializeProject } from "./getProject";
 
 export const getFollowingLoves = async (session: Session) => {
     if (!session.user) return [];
@@ -12,5 +13,5 @@ export const getFollowingLoves = async (session: Session) => {
         responseType: 'json',
     });
     if (!res.success) throw new Error(res.error);
-    return res.data;
+    return res.data.map(serializeProject);
 }
