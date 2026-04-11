@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { scrollCommentSectionToId } from '@/util/functions';
+import { lightTap, scrollCommentSectionToId } from '@/util/functions';
 import { projectHasCloudVariables } from '@/util/parsing/projects';
 import { off, on } from '@/util/eventBus';
 import type { Comment } from '@/util/types/app/comments.types';
@@ -61,6 +61,7 @@ const ProjectPage = () => {
         projectId,
         onSuccess: (loved) => {
             setLovedByMeDirectly(loved);
+            lightTap();
         },
         onError: () => {
             if (!data) return;
@@ -71,6 +72,7 @@ const ProjectPage = () => {
         projectId: projectId,
         onSuccess: (faved) => {
             setFavedByMeDirectly(faved);
+            lightTap();
         },
         onError: () => {
             if (!data) return;

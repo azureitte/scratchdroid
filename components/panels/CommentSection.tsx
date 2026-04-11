@@ -15,9 +15,8 @@ import {
     RefreshControl, 
     Pressable,
 } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
-import { sleep } from '@/util/functions';
+import { longTap, sleep } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
 import type { FlattenedComment } from '@/util/types/app/comments.types';
@@ -119,7 +118,7 @@ const CommentSection = forwardRef(({
     }
 
     const handleCommentOptions = (comment: FlattenedComment) => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+        longTap();
         sheet.push<CommentOptionsMenuProps>('commentOptions', { 
             comment,
             type,

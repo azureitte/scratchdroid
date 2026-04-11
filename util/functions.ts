@@ -1,4 +1,5 @@
 import { formatDistanceToNow, format } from 'date-fns';
+import * as Haptics from 'expo-haptics';
 
 import type { 
     FlattenedComment, 
@@ -203,4 +204,12 @@ export function getUsersPerRow (screenWidth: number, horizontalPadding = 16) {
     const userCardWidth = USER_CARD_THUMBNAIL_HEIGHT + 24;
     const containerWidth = screenWidth - horizontalPadding * 2;
     return Math.floor(containerWidth / userCardWidth);
+}
+
+
+export function lightTap () {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+}
+export function longTap () {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 }

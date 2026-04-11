@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { scrollCommentSectionToId } from '@/util/functions';
+import { lightTap, scrollCommentSectionToId } from '@/util/functions';
 import { refreshCacheForUser } from '@/util/thumbnailCaching';
 import { off, on } from '@/util/eventBus';
 import type { Comment } from '@/util/types/app/comments.types';
@@ -50,6 +50,7 @@ const UserPage = () => {
         username,
         onSuccess: (following) => {
             setIsFollowingDirectly(following);
+            lightTap();
         },
     });
 
