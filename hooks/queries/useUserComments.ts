@@ -1,6 +1,5 @@
-import { apiReq } from "@/util/api";
-import { getCommentsFromR2 } from "@/util/parsing/comments";
 import { useComments } from "./useComments";
+import { useApi } from "../useApi";
 
 type InfiniteUserCommentsProps = {
     user: string;
@@ -12,6 +11,8 @@ export const useUserComments = ({
 }: InfiniteUserCommentsProps) => {
 
     const queryKey = ['comments', 'user', user] as const;
+    
+    const { q: { getUserRootComments } } = useApi();
 
     const {
         flatData,
@@ -28,25 +29,11 @@ export const useUserComments = ({
         replaceCommentDirectly,
     } = useComments({
         queryKey,
-        firstPage: 1,
+        firstPage: 0,
         enabled,
-        fetchRootComments: async (page) => {
-            const path = '/site-api/comments/user/'
-                + user + '/'
-
-            const commentsRes = await apiReq({
-                path: path,
-                params: { page },
-                useCrsf: true,
-                responseType: 'html',
-            });
-
-            if (!commentsRes.success) throw new Error(commentsRes.error);
-            if (commentsRes.status === 404) return [];
-
-            return getCommentsFromR2(commentsRes.data);
-        },
-    })
+        fetchRootComments: async (page) =>
+            getUserRootComments({ username: user, page }),
+    });
 
     return { 
         data: flatData, 

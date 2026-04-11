@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { produce } from "immer";
 
-import { apiReq } from "@/util/api";
-import { flattenComments, getCommentFromWww3 } from "@/util/parsing/comments";
-import { REPLY_INCREMENT_COUNT } from "@/util/constants";
+import { flattenComments } from "@/util/parsing/comments";
 import type { 
     Comment, 
     FlattenedComment, 
-    ReplyComment, 
     RootComment, 
 } from "@/util/types/app/comments.types";
-import { ScratchComment } from "@/util/types/api/comment.types";
 
 import { useSession } from "../useSession";
 import { useComments } from "./useComments";
-import { produce } from "immer";
+import { useApi } from "../useApi";
 
 const COMMENTS_PER_PAGE = 20;
 
@@ -34,6 +31,12 @@ export const useProjectComments = ({
 
     const queryKey = ['comments', 'project', project] as const;
 
+    const { q: { 
+        getProjectRootComments,
+        getProjectReplies,
+        getProjectCommentHighlight,
+    } } = useApi();
+
 
     const [ highlight, setHighlight ] = useState<RootComment|null>(null);
     const [ highlightLoaded, setHighlightLoaded ] = useState(!highlightedComment);
@@ -45,61 +48,6 @@ export const useProjectComments = ({
         if (!session?.user) return;
         userMap.current.set(session.user.id, session.user.username);
     }, [session]);
-
-
-    const fetchRootComments = useCallback(async (
-        from: number = 0, 
-        limit: number = COMMENTS_PER_PAGE
-    ): Promise<RootComment[]> => {
-        const commentsRes = await apiReq<ScratchComment[]>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${author}/projects/${project}/comments`,
-            params: { 
-                limit,
-                offset: from,
-            },
-            auth: session?.user?.token,
-            responseType: 'json',
-        });
-
-        if (!commentsRes.success) throw new Error(commentsRes.error);
-        if (commentsRes.status === 404) return [];
-
-        return commentsRes.data.map(comment => {
-            userMap.current.set(comment.author.id, comment.author.username);
-            return getCommentFromWww3(comment, {
-                replies: [],
-                userMap: userMap.current,
-            }) as RootComment;
-        });
-    }, [author, project, session]);
-
-    const fetchReplies = useCallback(async (
-        parentId: number, 
-        from: number = 0, 
-        limit: number = REPLY_INCREMENT_COUNT,
-    ): Promise<ReplyComment[]> => {
-        const repliesRes = await apiReq<ScratchComment[]>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${author}/projects/${project}/comments/${parentId}/replies`,
-            params: { 
-                limit,
-                offset: from,
-            },
-            auth: session?.user?.token,
-            responseType: 'json',
-        });
-
-        if (!repliesRes.success) throw new Error(repliesRes.error);
-        if (repliesRes.status === 404) return [];
-        
-        return repliesRes.data.map(comment => {
-            userMap.current.set(comment.author.id, comment.author.username);
-            return getCommentFromWww3(comment, {
-                userMap: userMap.current,
-            }) as ReplyComment;
-        });
-    }, [author, project, session]);
 
     const {
         flatData,
@@ -120,63 +68,40 @@ export const useProjectComments = ({
         firstPage: 0,
         minItemsOnPage: COMMENTS_PER_PAGE,
         optimistic: false,
-        fetchRootComments: page => fetchRootComments(page * COMMENTS_PER_PAGE),
-        fetchRepliesFor: fetchReplies,
+        fetchRootComments: page => getProjectRootComments({
+            id: project,
+            author: author,
+            page: page,
+            session,
+            userMap: userMap.current,
+            updateUserMap: (id, username) => userMap.current.set(id, username),
+        }),
+        fetchRepliesFor: (parentId, from, limit) => getProjectReplies({
+            id: project,
+            author: author,
+            parentId,
+            from,
+            limit,
+            session,
+            userMap: userMap.current,
+            updateUserMap: (id, username) => userMap.current.set(id, username),
+        }),
         enabled: isLoggedIn && !!author && enabled,
     });
 
     const fetchHighlight = useCallback(async (commentId: number) => {
         setHighlightLoaded(false);
 
-        // fetch the highlighted comment individually
-        const targetCommentRes = await apiReq<ScratchComment>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${author}/projects/${project}/comments/${commentId}`,
-            auth: session?.user?.token,
-            responseType: 'json',
+        const newHighlight = await getProjectCommentHighlight({
+            id: project,
+            author: author,
+            commentId,
+            session,
+            userMap: userMap.current,
+            updateUserMap: (id, username) => userMap.current.set(id, username),
         });
-        if (!targetCommentRes.success) throw new Error(targetCommentRes.error);
-        if (targetCommentRes.status === 404 || !targetCommentRes.data) {
-            setHighlight(null);
-            setHighlightLoaded(true);
-            return;
-        }
-    
-        // if it's a root comment, set the highlight to be just this comment
-        const targetComment = targetCommentRes.data;
-        if (targetComment.parent_id === null) {
-            setHighlight(getCommentFromWww3(targetComment) as RootComment);
-            setHighlightLoaded(true);
-            return;
-        }
 
-        // otherwise, also fetch the parent comment
-        const parentCommentRes = await apiReq<ScratchComment>({
-            host: 'https://api.scratch.mit.edu',
-            path: `/users/${author}/projects/${project}/comments/${targetComment.parent_id}`,
-            auth: session?.user?.token,
-            responseType: 'json',
-        });
-        if (!parentCommentRes.success) throw new Error(parentCommentRes.error);
-        if (parentCommentRes.status === 404) {
-            // this should never happen, but just in case
-            setHighlight(getCommentFromWww3(targetComment) as RootComment);
-            setHighlightLoaded(true);
-            return;
-        };
-
-        const parentComment = parentCommentRes.data;
-        userMap.current.set(parentComment.author.id, parentComment.author.username);
-
-        // set the highlight's root comment to be the parent,
-        // followed by the highlighted reply
-        setHighlight(
-            getCommentFromWww3(parentComment, { replies: [
-                getCommentFromWww3(targetComment, { 
-                    userMap: userMap.current 
-                }) as ReplyComment,
-            ] }) as RootComment
-        );
+        setHighlight(newHighlight);
         setHighlightLoaded(true);
     }, [author, project, session]);
 

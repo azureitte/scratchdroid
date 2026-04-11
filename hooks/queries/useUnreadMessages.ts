@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { apiReq } from "../../util/api";
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 export const useUnreadMessages = (persist: boolean = false) => {
     const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
+    const { q: { getUnreadCount } } = useApi();
 
     const { data } = useQuery<
         number, 
@@ -15,14 +16,7 @@ export const useUnreadMessages = (persist: boolean = false) => {
         queryKey: ['unread', { persist }],
         queryFn: async () => {
             if (isSessionLoading || !session.user) return 0;
-
-            const messageCountRes = await apiReq<{ count: number }>({
-                host: 'https://api.scratch.mit.edu',
-                path: `/users/${session.user.username}/messages/count?a=${Math.random()}`,
-            });
-            if (!messageCountRes.success) throw new Error(messageCountRes.error);
-
-            return messageCountRes.data.count;
+            return getUnreadCount(session.user.username);
         },
         refetchOnWindowFocus: true,
         refetchOnReconnect: true,

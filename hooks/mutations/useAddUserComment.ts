@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { parseR2CommentMutationResponse } from "@/util/parsing/comments";
-import { apiReq } from "@/util/api";
 import type { Comment } from "@/util/types/app/comments.types";
 
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 type AddUserCommentOptions = {
     username: string;
@@ -23,7 +22,9 @@ export const useAddUserComment = ({
     onSuccess,
     onError,
 }: AddUserCommentOptions) => {
-    const { isLoggedIn, session } = useSession();
+
+    const { session } = useSession();
+    const { a: { addUserComment } } = useApi();
     
     const action = useMutation({
         mutationKey: ['add-comment', 'user', username],
@@ -34,41 +35,13 @@ export const useAddUserComment = ({
             success: false;
             error: string;
         })> => {
-            if (!isLoggedIn || !session.user) return { 
-                success: false, 
-                error: 'Please log in to comment.' 
-            };
-
-            if (!payload.content) return { 
-                success: false, 
-                error: 'You can\'t post an empty comment!'
-            };
-
-            const res = await apiReq({
-                path: `/site-api/comments/user/${username}/add/`,
-                method: 'POST',
-                body: {
-                    content: payload.content,
-                    parent_id: payload.parentId ?? null,
-                    commentee_id: payload.replyToId ?? null,
-                },
-                useCrsf: true,
-                responseType: 'html',
-            });
-            if (!res.success) return {
-                success: false,
-                error: res.error
-            }
-            if (res.status >= 500) return {
-                success: false,
-                error: 'A server-side error occurred. Please try again later.'
-            }
-
-            const parsedRes = parseR2CommentMutationResponse(res.data, {
-                isReply: !!payload.parentId,
+            return addUserComment({
+                username,
+                content: payload.content,
                 parentId: payload.parentId,
+                replyToId: payload.replyToId,
+                session,
             });
-            return parsedRes;
         },
         onSettled: (data) => {
             if (data?.success) {

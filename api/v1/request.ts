@@ -3,7 +3,7 @@ import { HTMLElement, parse } from 'node-html-parser';
 
 import { WEBSITE_URL } from './constants';
 
-type ScratchApiBaseOptions = {
+type ApiBaseOptions = {
     host: string;
     path: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
@@ -14,21 +14,21 @@ type ScratchApiBaseOptions = {
     body?: Record<string, string|number|boolean|null>;
     auth?: string;
 };
-export type ScratchApiJsonOptions = ScratchApiBaseOptions & {
+export type ApiJsonOptions = ApiBaseOptions & {
     responseType: 'json';
 };
-export type ScratchApiHtmlOptions = ScratchApiBaseOptions & {
+export type ApiHtmlOptions = ApiBaseOptions & {
     responseType: 'html';
 };
-export type ScratchApiTextOptions = ScratchApiBaseOptions & {
+export type ApiTextOptions = ApiBaseOptions & {
     responseType: 'text';
 };
-export type ScratchApiOptions = 
-    | ScratchApiJsonOptions 
-    | ScratchApiHtmlOptions 
-    | ScratchApiTextOptions;
+export type ApiOptions = 
+    | ApiJsonOptions 
+    | ApiHtmlOptions 
+    | ApiTextOptions;
 
-export type ScratchApiResponse<T = any> = {
+export type ApiResponse<T = any> = {
     success: true;
     status: number;
     data: T;
@@ -39,7 +39,7 @@ export type ScratchApiResponse<T = any> = {
 }
 
 const DEFAULT_HOST = WEBSITE_URL;
-const DEFAULT_OPTIONS: ScratchApiOptions = {
+const DEFAULT_OPTIONS: ApiOptions = {
     host: DEFAULT_HOST,
     method: 'GET',
     path: '/',
@@ -48,11 +48,11 @@ const DEFAULT_OPTIONS: ScratchApiOptions = {
     useCrsf: false,
 };
 
-export async function apiReq <T = any>(opts: Partial<ScratchApiJsonOptions>): Promise<ScratchApiResponse<T>>
-export async function apiReq (opts: Partial<ScratchApiHtmlOptions>): Promise<ScratchApiResponse<HTMLElement>>
-export async function apiReq (opts: Partial<ScratchApiTextOptions>): Promise<ScratchApiResponse<string>>
+export async function apiReq <T = any>(opts: Partial<ApiJsonOptions>): Promise<ApiResponse<T>>
+export async function apiReq (opts: Partial<ApiHtmlOptions>): Promise<ApiResponse<HTMLElement>>
+export async function apiReq (opts: Partial<ApiTextOptions>): Promise<ApiResponse<string>>
 
-export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<any> {
+export async function apiReq (opts: Partial<ApiOptions>): Promise<any> {
     const options = { ...DEFAULT_OPTIONS, ...opts };
 
     if (options.host === DEFAULT_HOST) {
@@ -88,6 +88,8 @@ export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<any> {
 
     if (options.useCrsf) {
         try {
+            // get crsf token from cookies
+            // if not present, fetch it
             let cookies = await CookieManager.get(options.host);
             if (!cookies['scratchcsrftoken']) {
                 await fetch('https://scratch.mit.edu/csrf_token/');
@@ -144,4 +146,5 @@ export async function apiReq (opts: Partial<ScratchApiOptions>): Promise<any> {
     }
 }
 
+// for debug
 (globalThis as any).CookieManager = CookieManager;

@@ -1,29 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { apiReq } from "../../util/api";
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 export const useDeleteMessage = () => {
-    const { isLoading: isSessionLoading, session } = useSession();
     const queryClient = useQueryClient();
+    const { isLoading: isSessionLoading, session } = useSession();
+    const { a: { deleteMessage } } = useApi();
 
     const { mutate } = useMutation({
         mutationKey: ['messages', 'delete'],
         mutationFn: async (id: number) => {
             if (isSessionLoading || !session.user) return;
 
-            const deleteRes = await apiReq<{ success: boolean }>({
-                path: `/site-api/messages/messages-delete/`,
-                method: 'POST',
-                body: {
-                    alertId: id,
-                    alertType: "notification",
-                },
-                useCrsf: true,
-                responseType: 'json',
-            });
-            if (!deleteRes.success) throw new Error(deleteRes.error);
-            if (!deleteRes.data.success) throw new Error('Something went wrong');
+            await deleteMessage(id);
 
             queryClient.setQueriesData({
                 queryKey: ['unread'],

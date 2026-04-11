@@ -1,9 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { apiReq } from "@/util/api";
-import type { ScratchProject } from "@/util/types/api/project.types";
-
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 type ToggleUserCommentsOptions = {
     username: string;
@@ -21,25 +19,19 @@ export const useToggleUserComments = ({
     onSuccess,
     onError,
 }: ToggleUserCommentsOptions) => {
+    
     const { session } = useSession();
+    const { a: { toggleUserComments } } = useApi();
 
     const action = useMutation({
         mutationKey: ['toggle-comments', 'user', username],
         mutationFn: async ({ from, to }: ToggleUserCommentsPayload): Promise<boolean> => {
-            if (!session?.user) return false;
-
-            const res = await apiReq<ScratchProject>({
-                path: `/site-api/comments/user/${username}/toggle-comments/`,
-                method: 'POST',
-                responseType: 'json',
-                auth: session.user.token,
-                useCrsf: true,
+            return toggleUserComments({
+                username,
+                from,
+                to,
+                session,
             });
-
-            if (!res.success || res.status > 299) 
-                return from; // used to rollback optimistic update
-
-            return to; // confirm new state
         },
         onSuccess: (data) => {
             onSuccess?.(data);

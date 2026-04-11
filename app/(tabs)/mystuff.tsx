@@ -49,7 +49,7 @@ const MyStuffPage = () => {
 
     const projects = useInfiniteMystuff({ type: 'projects', subtype: projectsFilters[0] as any, enabled: tabIndex === 0 });
     const studios = useInfiniteMystuff({ type: 'studios', subtype: studiosFilters[0] as any, enabled: tabIndex === 1 });
-    const trash = useInfiniteMystuff({ type: 'projects', subtype: 'trashed', enabled: tabIndex === 2 });
+    const trash = useInfiniteMystuff({ type: 'projects', subtype: 'trash', enabled: tabIndex === 2 });
 
     const { scroll: globalScroll, handleScrollChange } = useGlobalScroll({ scrollStick: HEADER_STICK });
 
@@ -100,8 +100,8 @@ const MyStuffPage = () => {
                     onRefresh: projects.refresh,
                     header: <FiltersPanel
                         filters={[
-                            { key: 'shared', title: 'Public' },
-                            { key: 'notshared', title: 'Private' },
+                            { key: 'public', title: 'Public' },
+                            { key: 'private', title: 'Private' },
                         ]}
                         value={projectsFilters}
                         onChange={setProjectsFilters}

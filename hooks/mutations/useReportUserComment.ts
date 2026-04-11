@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { parseR2CommentMutationResponse } from "@/util/parsing/comments";
-import { apiReq } from "@/util/api";
 import type { Comment } from "@/util/types/app/comments.types";
 
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 type ReportUserCommentOptions = {
     username: string;
@@ -22,7 +21,9 @@ export const useReportUserComment = ({
     onSuccess,
     onError,
 }: ReportUserCommentOptions) => {
-    const { isLoggedIn, session } = useSession();
+
+    const { session } = useSession();
+    const { a: { reportUserComment } } = useApi();
     
     const action = useMutation({
         mutationKey: ['report-comment', 'user', username],
@@ -33,37 +34,12 @@ export const useReportUserComment = ({
             success: false;
             error: string;
         })> => {
-            if (!isLoggedIn || !session.user) return { 
-                success: false, 
-                error: 'Please log in.' 
-            };
-
-            const res = await apiReq({
-                path: `/site-api/comments/user/${username}/rep/`,
-                method: 'POST',
-                body: {
-                    id: payload.id,
-                },
-                useCrsf: true,
-                responseType: 'html',
+            return reportUserComment({
+                username,
+                id: payload.id,
+                parentId: payload.parentId,
+                session,
             });
-            if (!res.success) return {
-                success: false,
-                error: res.error
-            }
-            if (res.status >= 500) return {
-                success: false,
-                error: 'A server-side error occurred. Please try again later.'
-            }
-
-            const parsedRes = parseR2CommentMutationResponse(res.data, {
-                isReply: !!payload.parentId,
-                parentId: payload.parentId ?? undefined,
-            });
-            if (parsedRes.success && parsedRes.comment) 
-                parsedRes.comment.isReported = true;
-
-            return parsedRes;
         },
         onSettled: (data) => {
             if (data?.success) {

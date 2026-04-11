@@ -5,7 +5,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
 import { WEBSITE_URL } from '@/util/constants';
-import { apiReq } from '@/util/api';
 import { emit } from '@/util/eventBus';
 import { 
     addAccount, 
@@ -15,17 +14,18 @@ import {
     setActiveAccount, 
     updateAccountCookies 
 } from '@/util/accountStorage';
-import type { ScratchSession } from '@/util/types/api/account.types';
+import type { ErrorSession, Session } from '@/util/types/app/accounts.types';
 
 import { useAccountStorage } from '@/hooks/queries/useAccountStorage';
+import { useApi } from '@/hooks/useApi';
 
 type SessionContextType = 
 ({
-    session: null;
+    session: undefined;
     isLoggedIn: false;
     isLoading: true;
 }|{
-    session: ScratchSession;
+    session: Session;
     isLoggedIn: boolean;
     isLoading: false;
 })
@@ -38,7 +38,7 @@ type SessionContextType =
 };
 
 export const SessionContext = createContext<SessionContextType>({
-    session: null,
+    session: undefined,
     isLoggedIn: false,
     isLoading: true,
 
@@ -62,9 +62,10 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     const pathname = usePathname();
     const queryClient = useQueryClient();
 
+    const api = useApi();
     const { refresh } = useAccountStorage();
 
-    const [ session, setSession ] = useState<ScratchSession|null>(null);
+    const [ session, setSession ] = useState<Session|undefined>(undefined);
     const [ transitionState, setTransitionState ] = useState<TransitionState>('logging-in');
 
     const isFirstLoad = useRef(true);
@@ -90,22 +91,22 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
                 }
             }
 
-            const [session, status] = await getSession();
+            const newSession = await api.q.getSession();
             
-            if (status == '503') {
+            if (!newSession.success && newSession.reason === '503') {
                 setTransitionState('503');
                 return;
             }
 
-            if (session) {
-                setSession(session);
-                setTransitionState(session.user 
+            if (newSession.success) {
+                setSession(newSession);
+                setTransitionState(newSession.user 
                     ? 'logged-in' 
                     : 'logged-out');
                 return;
             }
 
-            console.log('error!', session, status);
+            console.log('error!', newSession.reason);
             setTransitionState('logged-out');
         })();
     }, [transitionState]);
@@ -139,78 +140,40 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         }
     }, [transitionState]);
 
-    const getSession = useCallback(async (): Promise<[ScratchSession, null]|[null, string]> => {
-        const res = await apiReq<ScratchSession>({
-            path: '/session',
-        });
-
-        if (res.status >= 500) {
-            return [null, '503'];
-        }
-        if (res.success) {
-            return [res.data, null];
-        }
-        return [null, res.error];
-    }, []);
-
     const handleLoginSuccess = () => {
         setTransitionState('logged-in');
         queryClient.invalidateQueries({ queryKey: ['unread'] });
         queryClient.invalidateQueries({ queryKey: ['accounts'] });
     }
 
-    const login = async (username: string, password: string, silent = false) => {
+    const handleLogin = async (username: string, password: string, silent = false) => {
         if (!silent)
             setTransitionState('logging-in');
 
-        const response = await apiReq({
-            path: '/accounts/login/',
-            method: 'POST',
-            body: {
-                username: username,
-                password: password,
-                useMessages: true,
-            },
-            responseType: 'json',
-            useCrsf: true,
-        });
-
-        const err = (message: string, shouldClearActiveAccount = true) => {
-            if (shouldClearActiveAccount) 
+        const err = (message: string) => {
+            if (message !== '503')
                 setActiveAccount(null);
 
             setTransitionState('logged-out')
             throw new Error(message);
         }
 
-        if (response.success) {
-            const message = response.data?.[0];
-            
-            if (response.status >= 500) {
-                return err(
-                    'Scratch is currently down for maintenance or unavailable. Please try again later.',
-                    false,
-                );
-            } else if (message?.success === 1) {
-                const newUsername = message.username ?? username;
-                await setActiveAccount(newUsername);
+        try {
+            const message = await api.a.login({ username, password });
+            const newUsername = message.username ?? username;
+            await setActiveAccount(newUsername);
 
-                const cookies = await getCookies();
-                addAccount({
-                    username: newUsername,
-                    password: password,
-                    id: message.id,
-                    cookies,
-                }).then(() => refresh());
+            const cookies = await getCookies();
+            addAccount({
+                username: newUsername,
+                password: password,
+                id: message.id,
+                cookies,
+            }).then(() => refresh());
 
-                handleLoginSuccess();
-            } else if (message?.redirect) {  
-                err('Too many login attempts. Please try again later.');
-            } else {
-                err(message?.msg);
-            }
-        } else {
-            err('An unknown error occurred.');
+            handleLoginSuccess();
+        } catch (e: any) {
+            err(e.message);
         }
     };
 
@@ -256,7 +219,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         // and fetch the session
 
         let directLoginSuccess = false;
-        let newSession: ScratchSession|null = null;
+        let newSession: Session|ErrorSession|undefined;
 
         if (account.cookies) {
             console.log('Trying replacing cookies directly first...');
@@ -282,12 +245,12 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
                 }
             }
 
-            [newSession] = await getSession();
-            if (!!newSession?.user && newSession.user.username === username) 
+            newSession = await api.q.getSession();
+            if (newSession.success && newSession.user?.username === username) 
                 directLoginSuccess = true;
         }
 
-        if (directLoginSuccess && newSession) {
+        if (directLoginSuccess && newSession?.success) {
             console.log('Success!', newSession.user?.username, username);
             await setActiveAccount(newSession.user?.username ?? null);
             setSession(newSession);
@@ -297,12 +260,12 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
         
         console.log('Failed. Logging in manually instead...');
-        setSession(null);
+        setSession(undefined);
 
 
         // if failed, login manually with username and password
         await CookieManager.clearAll();
-        await login(account.username, account.password, true);
+        await handleLogin(account.username, account.password, true);
     }
 
     const fixFaultyLogin = async () => {
@@ -322,7 +285,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         }
 
         console.log("Logging in manually...");
-        await login(account.username, account.password, true);
+        await handleLogin(account.username, account.password, true);
     }
 
     return (
@@ -334,7 +297,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
                 transitionState === 'logging-out' || 
                 transitionState === 'switching',
 
-            login,
+            login: handleLogin,
             switchAccount,
             logout,
             logoutAll,

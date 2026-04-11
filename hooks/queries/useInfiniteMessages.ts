@@ -1,17 +1,17 @@
 import { useCallback } from "react";
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiReq } from "@/util/api";
 import type { MessageQueryItem } from "@/util/types/app/query.types";
-import type { ScratchAdminAlert, ScratchMessage } from "@/util/types/api/message.types";
 
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 const MESSAGES_PER_PAGE = 40;
 
 export const useInfiniteMessages = () => {
-    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
     const queryClient = useQueryClient();
+    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
+    const { q: { getMessages, getAdminAlerts } } = useApi();
 
     const { 
         data, 
@@ -37,29 +37,13 @@ export const useInfiniteMessages = () => {
 
             const fetchMessages = async (): Promise<MessageQueryItem[]> => {
                 if (!session.user) return [];
-                const messagesRes = await apiReq<ScratchMessage[]>({
-                    host: 'https://api.scratch.mit.edu',
-                    path: `/users/${session.user.username}/messages`,
-                    params: { limit: MESSAGES_PER_PAGE, offset: pageParam * MESSAGES_PER_PAGE },
-                    auth: session.user.token,
-                    responseType: 'json',
-                });
-                if (!messagesRes.success) throw new Error(messagesRes.error);
-                return messagesRes.data.map(m => ({ type: 'message', message: m }));
+                return getMessages(session, pageParam);
             }
 
             const fetchAdminAlerts = async (): Promise<MessageQueryItem[]> => {
                 if (!session.user) return [];
                 if (pageParam !== 0) return [];
-                
-                const adminAlertsRes = await apiReq<ScratchAdminAlert[]>({
-                    host: 'https://api.scratch.mit.edu',
-                    path: `/users/${session.user.username}/messages/admin`,
-                    auth: session.user.token,
-                    responseType: 'json',
-                });
-                if (!adminAlertsRes.success) throw new Error(adminAlertsRes.error);
-                return adminAlertsRes.data.map(m => ({ type: 'adminAlert', message: m }));
+                return getAdminAlerts(session);
             }
 
             const [ messages, adminAlerts ] = await Promise.all([

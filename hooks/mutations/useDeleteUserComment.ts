@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { parseR2CommentMutationResponse } from "@/util/parsing/comments";
-import { apiReq } from "@/util/api";
 import type { Comment } from "@/util/types/app/comments.types";
 
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 type DeleteUserCommentOptions = {
     username: string;
@@ -22,7 +21,9 @@ export const useDeleteUserComment = ({
     onSuccess,
     onError,
 }: DeleteUserCommentOptions) => {
-    const { isLoggedIn, session } = useSession();
+
+    const { session } = useSession();
+    const { a: { deleteUserComment } } = useApi();
     
     const action = useMutation({
         mutationKey: ['delete-comment', 'user', username],
@@ -33,34 +34,12 @@ export const useDeleteUserComment = ({
             success: false;
             error: string;
         })> => {
-            if (!isLoggedIn || !session.user) return { 
-                success: false, 
-                error: 'Please log in.' 
-            };
-
-            const res = await apiReq({
-                path: `/site-api/comments/user/${username}/del/`,
-                method: 'POST',
-                body: {
-                    id: payload.id,
-                },
-                useCrsf: true,
-                responseType: 'html',
+            return deleteUserComment({
+                username,
+                parentId: payload.parentId,
+                id: payload.id,
+                session,
             });
-            if (!res.success) return {
-                success: false,
-                error: res.error
-            }
-            if (res.status >= 500) return {
-                success: false,
-                error: 'A server-side error occurred. Please try again later.'
-            }
-
-            const parsedRes = parseR2CommentMutationResponse(res.data, {
-                isReply: !!payload.parentId,
-                parentId: payload.parentId ?? undefined,
-            });
-            return parsedRes;
         },
         onSettled: (data) => {
             if (data?.success) {

@@ -3,13 +3,13 @@ import { StyleSheet, Text, View, ScrollView, RefreshControl } from 'react-native
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { apiReq } from '@/util/api';
 import { off, on } from '@/util/eventBus';
 import type { FeaturedProject, FeaturedTab } from '@/util/types/api/featured.types';
 import type { ScratchProject } from '@/util/types/api/project.types';
 
-import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
+import { useSession } from '@/hooks/useSession';
+import { useApi } from '@/hooks/useApi';
 
 import ProjectCard from '@/components/panels/ProjectCard';
 import Carousel from '@/components/panels/Carousel';
@@ -21,6 +21,7 @@ const HomePage = () => {
 
     const insets = useSafeAreaInsets();
     const { isLoading, session } = useSession();
+    const { q: { getFeatured, getFollowingActivity, getFollowingLoves } } = useApi();
 
     const [ isRefreshing, setIsRefreshing ] = useState(false);
     const [ isFirstFetch, setIsFirstFetch ] = useState(true);
@@ -47,42 +48,51 @@ const HomePage = () => {
         return () => off('tab-re-pressed', handleScrollToTop);
     }, []);
 
+    const fetchFeatured = useCallback(async () => {
+        try {
+            const res = await getFeatured();
+            setFeaturedTab(res);
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
+
+    const fetchLoves = useCallback(async () => {
+        if (!session) return;
+        try {
+            const res = await getFollowingLoves(session);
+            // newest projects first
+            setProjectLoves(res
+                ?.sort((a, b) => 
+                    new Date(b.history.created).getTime() 
+                  - new Date(a.history.created).getTime())
+            );
+        } catch (e) {
+            console.error(e);
+        }
+    }, [session]);
+
+    const fetchActivity = useCallback(async () => {
+        if (!session) return;
+        try {
+            const res = await getFollowingActivity(session);
+            setActivity(res);
+        } catch (e) {
+            console.error(e);
+        }
+    }, [session]);
+
     const handleRefresh = async () => {
         if (isLoading || !session) return;
 
         const { user } = session;
         if (!user) return;
 
-        const [lovesRes, featuredRes, activityRes] = await Promise.all([
-            apiReq<ScratchProject[]>({
-                host: 'https://api.scratch.mit.edu',
-                path: '/users/' + user.username + '/following/users/loves',
-                auth: user.token,
-                responseType: 'json',
-            }),
-            apiReq<FeaturedTab>({
-                host: 'https://api.scratch.mit.edu',
-                path: '/proxy/featured/',
-                responseType: 'json',
-            }),
-            await apiReq({
-                host: 'https://api.scratch.mit.edu',
-                path: '/users/' + user.username + '/following/users/activity',
-                params: { limit: 3 },
-                auth: user.token,
-                responseType: 'json',
-            })
+        await Promise.all([
+            fetchLoves(),
+            fetchFeatured(),
+            fetchActivity(),
         ]);
-
-        // newest projects first
-        if (lovesRes.success) setProjectLoves(
-            lovesRes.data
-                ?.sort((a, b) => 
-                    new Date(b.history.created).getTime() 
-                  - new Date(a.history.created).getTime())
-        );
-        if (featuredRes.success) setFeaturedTab(featuredRes.data);
-        if (activityRes.success) setActivity(activityRes.data);
 
         setIsRefreshing(false);
         setIsFirstFetch(false);
