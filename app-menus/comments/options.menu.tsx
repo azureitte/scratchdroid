@@ -13,7 +13,7 @@ import { useDeleteModernComment } from '@/hooks/mutations/useDeleteModernComment
 import { useReportUserComment } from '@/hooks/mutations/useReportUserComment';
 import { useReportModernComment } from '@/hooks/mutations/useReportModernComment';
 
-import type { AddCommentMenuProps } from './addComment.menu';
+import type { AddCommentMenuProps } from './add.menu';
 
 import ContextMenu, { type ContextMenuItem } from '@/components/general/ContextMenu';
 import CommentItem from '@/components/panels/CommentItem';

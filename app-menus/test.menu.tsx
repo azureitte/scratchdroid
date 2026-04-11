@@ -11,7 +11,7 @@ const TestMenu = () => {
     return (
         <View style={{ height: 500 }}>
             <FormInput label="Comment" placeholder="Comment" type="text" />
-            <Button text="Test 2" onPress={() => sheet.push('test2')} />
+            <Button text="Test" onPress={() => sheet.pop()} />
         </View>
     );
 };

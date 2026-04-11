@@ -20,7 +20,7 @@ import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSe
 import ListLoading from '@/components/panels/ListLoading';
 import UserPageHeader from '@/components/panels/UserPageHeader';
 
-import type { UserOptionsMenuProps } from '@/app-menus/userOptions.menu';
+import type { UserOptionsMenuProps } from '@/app-menus/user/options.menu';
 
 
 const UserPage = () => {

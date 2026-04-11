@@ -27,7 +27,7 @@ import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSe
 import ProjectPageHeader from '@/components/panels/ProjectPageHeader';
 import ListLoading from '@/components/panels/ListLoading';
 
-import type { ProjectOptionsMenuProps } from '@/app-menus/projectOptions.menu';
+import type { ProjectOptionsMenuProps } from '@/app-menus/project/options.menu';
 
 const ProjectPage = () => {
 

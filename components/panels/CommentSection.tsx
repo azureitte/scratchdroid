@@ -30,8 +30,8 @@ import ListLoadMore from '@/components/panels/ListLoadMore';
 import ListLoading from '@/components/panels/ListLoading';
 import CommentItem from '@/components/panels/CommentItem';
 
-import type { AddCommentMenuProps } from '@/app-menus/addComment.menu';
-import type { CommentOptionsMenuProps } from '@/app-menus/commentOptions.menu';
+import type { AddCommentMenuProps } from '@/app-menus/comments/add.menu';
+import type { CommentOptionsMenuProps } from '@/app-menus/comments/options.menu';
 
 
 export type CommentSectionRef = {
