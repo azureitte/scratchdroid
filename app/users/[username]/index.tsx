@@ -10,13 +10,17 @@ import { off, on } from '@/util/eventBus';
 import type { Comment } from '@/util/types/app/comments.types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
+import { useSession } from '@/hooks/useSession';
+import { useSheet } from '@/hooks/useSheet';
 import { useUserComments } from '@/hooks/queries/useUserComments';
 import { useUser } from '@/hooks/queries/useUser';
-import { useSession } from '@/hooks/useSession';
+import { useFollowUser } from '@/hooks/mutations/useFollowUser';
 
 import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
 import ListLoading from '@/components/panels/ListLoading';
 import UserPageHeader from '@/components/panels/UserPageHeader';
+
+import type { UserOptionsMenuProps } from '@/app-menus/userOptions.menu';
 
 
 const UserPage = () => {
@@ -27,16 +31,47 @@ const UserPage = () => {
     }>();
 
     const { session } = useSession();
+    const sheet = useSheet();
 
     const { 
         user, 
         setIsFollowingDirectly,
         setCommentsAllowedDirectly,
     } = useUser(username);
+
+    const isOwn = session?.user?.username === username;
+
     const comments = useUserComments({
         user: username,
         enabled: !!username,
     });
+
+    const followAction = useFollowUser({
+        username,
+        onSuccess: (following) => {
+            setIsFollowingDirectly(following);
+        },
+    });
+
+    const handleFollow = () => {
+        if (!user.data) return;
+        setIsFollowingDirectly(!user.data.isFollowing);
+        followAction.mutate({ 
+            from: user.data.isFollowing, 
+            to: !user.data.isFollowing 
+        });
+    }
+
+    const handleUserOptions = () => {
+        if (!user.data) return;
+        sheet.push<UserOptionsMenuProps>('userOptions', { 
+            username,
+            canComment: user.data.canComment,
+            canToggleCommenting: isOwn,
+            canReport: !isOwn,
+            setCanComment: setCommentsAllowedDirectly,
+        });
+    }
 
     const [ isRefreshing, setIsRefreshing ] = useState(false);
     const [ headerRerender, setHeaderRerender ] = useState(0);
@@ -147,15 +182,18 @@ const UserPage = () => {
             objectId={user.data.user.id}
             objectName={username}
             comments={comments.data} 
-            isOwn={session?.user?.username === username}
+            isOwn={isOwn}
             canComment={user.data.canComment}
             header={<UserPageHeader 
                 data={user.data} 
                 username={username}
                 rerender={headerRerender}
-                isOwn={session?.user?.username === username}
-                setIsFollowing={setIsFollowingDirectly}
-                setCanComment={setCommentsAllowedDirectly}
+                isOwn={isOwn}
+                followAction={{
+                    isPending: followAction.isPending,
+                    dispatch: handleFollow,
+                }}
+                handleUserOptions={handleUserOptions}
             />}
             hasNextPage={comments.hasNextPage}
             isLoading={comments.isLoading}

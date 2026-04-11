@@ -12,9 +12,6 @@ import { countryToCode } from '@/util/countries';
 import type { ProfileClassroom, ProfileProject, ProfileStudio, ProfileUser, UserQueryData } from '@/util/types/app/users.types';
 import type { ScratchProject } from '@/util/types/api/project.types';
 
-import { useSheet } from '@/hooks/useSheet';
-import { useFollowUser } from '@/hooks/mutations/useFollowUser';
-
 import Carousel from '@/components/panels/Carousel';
 import ProjectCard from '@/components/panels/ProjectCard';
 import UserCard from '@/components/panels/UserCard';
@@ -22,15 +19,16 @@ import StudioCard from './StudioCard';
 import InfoCard from './InfoCard';
 import Button from '../general/Button';
 
-import type { UserOptionsMenuProps } from '@/app-menus/userOptions.menu';
-
 
 type UserPageHeaderProps = {
     data: UserQueryData;
     username: string;
     isOwn?: boolean;
-    setIsFollowing?: (to: boolean) => void;
-    setCanComment?: (commentsAllowed: boolean) => void;
+    followAction: {
+        isPending: boolean;
+        dispatch: () => void;
+    },
+    handleUserOptions?: () => void;
     rerender: number;
 }
 
@@ -38,30 +36,12 @@ const UserPageHeader = memo(({
     data,
     username: myUsername,
     isOwn = false,
-    setIsFollowing,
-    setCanComment,
+    followAction,
+    handleUserOptions,
     rerender,
 }: UserPageHeaderProps) => {
 
     const router = useRouter();
-    const sheet = useSheet();
-
-    const followAction = useFollowUser({
-        username: myUsername,
-        onSuccess: (following) => {
-            setIsFollowing?.(following);
-        },
-    })
-
-    const handleProjectOptions = () => {
-        sheet.push<UserOptionsMenuProps>('userOptions', { 
-            username: myUsername,
-            canComment: data.canComment,
-            canToggleCommenting: isOwn,
-            canReport: !isOwn,
-            setCanComment,
-        });
-    }
     
     const renderProject = useCallback((project: ProfileProject) => <ProjectCard
         id={project.id}
@@ -156,7 +136,7 @@ const UserPageHeader = memo(({
 
             <View style={styles.actionBar}>
                 <Button
-                    onPress={handleProjectOptions}
+                    onPress={handleUserOptions}
                     icon="more" square
                 />
                 { isOwn 
@@ -170,13 +150,7 @@ const UserPageHeader = memo(({
                             role={data.isFollowing ? 'secondary' : 'primary'}
                             icon="follow"
                             isDisabled={followAction.isPending}
-                            onPress={() => {
-                                setIsFollowing?.(!data.isFollowing);
-                                followAction.mutate({ 
-                                    from: data.isFollowing, 
-                                    to: !data.isFollowing 
-                                });
-                            }}
+                            onPress={followAction.dispatch}
                         />
                 }
             </View>

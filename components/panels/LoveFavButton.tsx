@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
 
-type StatProp = {
+export type StatProp = {
     count: number;
     active: boolean;
     loading: boolean;

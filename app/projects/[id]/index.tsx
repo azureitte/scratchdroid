@@ -15,14 +15,19 @@ import { projectHasCloudVariables } from '@/util/parsing/projects';
 import { off, on } from '@/util/eventBus';
 import type { Comment } from '@/util/types/app/comments.types';
 
+import { useSession } from '@/hooks/useSession';
+import { useSheet } from '@/hooks/useSheet';
+import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useProject } from '@/hooks/queries/useProject';
 import { useProjectComments } from '@/hooks/queries/useProjectComments';
-import { useSession } from '@/hooks/useSession';
-import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
+import { useLoveProject } from '@/hooks/mutations/useLoveProject';
+import { useFavProject } from '@/hooks/mutations/useFavProject';
 
 import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
 import ProjectPageHeader from '@/components/panels/ProjectPageHeader';
 import ListLoading from '@/components/panels/ListLoading';
+
+import type { ProjectOptionsMenuProps } from '@/app-menus/projectOptions.menu';
 
 const ProjectPage = () => {
 
@@ -30,6 +35,11 @@ const ProjectPage = () => {
         id: string,
         commentId?: string,
     }>();
+    const projectId = Number(id);
+
+    const { session } = useSession();
+    const sheet = useSheet();
+    const insets = useSafeAreaInsets();
 
     const { 
         project,
@@ -38,6 +48,8 @@ const ProjectPage = () => {
         setCommentsAllowedDirectly,
     } = useProject(Number(id));
     const data = project.data;
+    const isOwn = !!data && data.project.author.username !== session?.user?.username;
+
     const comments = useProjectComments({
         project: Number(id),
         author: data?.project.author.username ?? '',
@@ -45,11 +57,53 @@ const ProjectPage = () => {
         enabled: !!id && !!data?.project,
     });
 
+    const loveAction = useLoveProject({
+        projectId,
+        onSuccess: (loved) => {
+            setLovedByMeDirectly(loved);
+        },
+        onError: () => {
+            if (!data) return;
+            setLovedByMeDirectly(!data.lovedByMe);
+        },
+    });
+    const favAction = useFavProject({
+        projectId: projectId,
+        onSuccess: (faved) => {
+            setFavedByMeDirectly(faved);
+        },
+        onError: () => {
+            if (!data) return;
+            setFavedByMeDirectly(!data.favedByMe);
+        },
+    });
+
+    const handleLove = () => {
+        if (!data) return;
+        setLovedByMeDirectly(!data.lovedByMe); // optimistic update
+        loveAction.mutate({ from: data.lovedByMe, to: !data.lovedByMe });
+    }
+    const handleFav = () => {
+        if (!data) return;
+        setFavedByMeDirectly(!data.favedByMe); // optimistic update
+        favAction.mutate({ from: data.favedByMe, to: !data.favedByMe });
+    }
+
+    const handleProjectOptions = () => {
+        if (!data) return;
+        sheet.push<ProjectOptionsMenuProps>('projectOptions', { 
+            projectId: projectId,
+            projectTitle: data.project.title,
+            canRemix: !isOwn,
+            canReport: !isOwn,
+            canComment: data.project.comments_allowed ?? true,
+            canToggleCommenting: isOwn,
+            setCommentsAllowed: setCommentsAllowedDirectly,
+        });
+    }
+
     const [ isRefreshing, setIsRefreshing ] = useState(false);
     const [ webviewActive, setWebviewActive ] = useState(false);
-
-    const { session } = useSession();
-    const insets = useSafeAreaInsets();
 
     const ignoreProjectUnload = useRef(false);
     const listRef = useRef<CommentSectionRef>(null);
@@ -170,18 +224,24 @@ const ProjectPage = () => {
                     projectId={Number(id)}
                     extensions={data.file?.extensions ?? []}
                     isCloud={hasCloudData}
-                    lovedByMe={data.lovedByMe}
-                    favedByMe={data.favedByMe}
-                    setLovedByMe={setLovedByMeDirectly}
-                    setFavedByMe={setFavedByMeDirectly}
-                    setCommentsAllowed={setCommentsAllowedDirectly}
+                    loves={{
+                        count: data.project.stats.loves ?? 0,
+                        active: data.lovedByMe,
+                        loading: loveAction.isPending,
+                        onPress: handleLove,
+                    }}
+                    favs={{
+                        count: data.project.stats.favorites ?? 0,
+                        active: data.favedByMe,
+                        loading: favAction.isPending,
+                        onPress: handleFav,
+                    }}
                     remixes={data.remixes}
                     studios={data.studios}
-                    myUsername={session?.user?.username}
+                    isOwn={isOwn}
                     webviewActive={webviewActive}
+                    handleProjectOptions={handleProjectOptions}
                     onInfoPress={() => ignoreProjectUnload.current = true}
-                    onRemixesPress={() => ignoreProjectUnload.current = true}
-                    onStudiosPress={() => ignoreProjectUnload.current = true}
                 />}
                 hasNextPage={comments.hasNextPage}
                 isLoading={comments.isLoading}

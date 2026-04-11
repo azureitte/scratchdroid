@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -8,7 +7,7 @@ import {
     Pressable,
 } from 'react-native';
 import WebView from 'react-native-webview';
-import { Icon, Link, useRouter } from 'expo-router';
+import {  Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
@@ -17,36 +16,28 @@ import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
 
-import { useSheet } from '@/hooks/useSheet';
-import { useLoveProject } from '@/hooks/mutations/useLoveProject';
-import { useFavProject } from '@/hooks/mutations/useFavProject';
-
 import Heading from '@/components/general/Heading';
 import Button from '@/components/general/Button';
 import ScrollableText from '@/components/general/ScrollableText';
 import ExtensionChip from '@/components/panels/ExtensionChip';
 import InfoCard from '@/components/panels/InfoCard';
-import LoveFavButton from '@/components/panels/LoveFavButton';
-
-import type { ProjectOptionsMenuProps } from '@/app-menus/projectOptions.menu';
+import LoveFavButton, { type StatProp } from '@/components/panels/LoveFavButton';
 
 type ProjectPageHeaderProps = {
     project: ScratchProject;
     projectId: number;
     extensions?: ScratchExtension[];
     isCloud?: boolean;
-    lovedByMe?: boolean;
-    favedByMe?: boolean;
-    setLovedByMe?: (loved: boolean) => void;
-    setFavedByMe?: (faved: boolean) => void;
-    setCommentsAllowed?: (commentsAllowed: boolean) => void;
+
+    loves: StatProp;
+    favs: StatProp;
     remixes: ScratchProject[];
     studios: any[],
-    myUsername?: string;
+    isOwn?: boolean;
     webviewActive?: boolean;
+
+    handleProjectOptions?: () => void;
     onInfoPress?: () => void;
-    onRemixesPress?: () => void;
-    onStudiosPress?: () => void;
 }
 
 const ProjectPageHeader = ({
@@ -54,54 +45,18 @@ const ProjectPageHeader = ({
     projectId,
     extensions = [],
     isCloud = false,
-    lovedByMe = false,
-    favedByMe = false,
-    setLovedByMe,
-    setFavedByMe,
-    setCommentsAllowed,
+    loves,
+    favs,
     remixes,
     studios,
-    myUsername,
+    isOwn = false,
     webviewActive = true,
+    handleProjectOptions,
     onInfoPress,
-    onRemixesPress,
-    onStudiosPress,
 }: ProjectPageHeaderProps) => {
 
     const screen = useWindowDimensions();
-    const sheet = useSheet();
     const router = useRouter();
-
-    const loveAction = useLoveProject({
-        projectId: project.id,
-        onSuccess: (loved) => {
-            setLovedByMe?.(loved);
-        },
-        onError: () => {
-            setLovedByMe?.(!lovedByMe);
-        },
-    });
-    const favAction = useFavProject({
-        projectId: project.id,
-        onSuccess: (faved) => {
-            setFavedByMe?.(faved);
-        },
-        onError: () => {
-            setFavedByMe?.(!favedByMe);
-        },
-    });
-
-    const handleProjectOptions = () => {
-        sheet.push<ProjectOptionsMenuProps>('projectOptions', { 
-            projectId: project.id,
-            projectTitle: project.title,
-            canRemix: project.author.username !== myUsername,
-            canReport: project.author.username !== myUsername,
-            canComment: project.comments_allowed ?? true,
-            canToggleCommenting: project.author.username === myUsername,
-            setCommentsAllowed,
-        });
-    }
 
     const projectWidth = Math.min(480, screen.width - 16);
     const projectHeight = (projectWidth / 4) * 3 + 45;
@@ -166,24 +121,8 @@ const ProjectPageHeader = ({
         <View style={styles.actionBar}>
             <View style={styles.stats}>
                 <LoveFavButton
-                    loves={{
-                        count: project.stats.loves,
-                        active: lovedByMe,
-                        loading: loveAction.isPending,
-                        onPress: () => {
-                            setLovedByMe?.(!lovedByMe); // optimistic update
-                            loveAction.mutate({ from: lovedByMe, to: !lovedByMe });
-                        }
-                    }}
-                    favs={{
-                        count: project.stats.favorites,
-                        active: favedByMe,
-                        loading: favAction.isPending,
-                        onPress: () => {
-                            setFavedByMe?.(!favedByMe); // optimistic update
-                            favAction.mutate({ from: favedByMe, to: !favedByMe });
-                        }
-                    }}
+                    loves={loves}
+                    favs={favs}
                 />
 
                 <View style={styles.stat}>
@@ -242,7 +181,6 @@ const ProjectPageHeader = ({
                 style={styles.footerSection}
                 android_ripple={DEFAULT_RIPPLE_CONFIG}
                 onPress={() => {
-                    onRemixesPress?.();
                     router.push(`/projects/${projectId}/remixes`);
                 }}
             >
@@ -261,7 +199,6 @@ const ProjectPageHeader = ({
                 style={styles.footerSection}
                 android_ripple={DEFAULT_RIPPLE_CONFIG}
                 onPress={() => {
-                    onRemixesPress?.();
                     router.push(`/projects/${projectId}/studios`);
                 }}
             >
