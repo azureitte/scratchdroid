@@ -9,13 +9,13 @@ import { useStack } from '@/hooks/useStack';
 import Heading from '@/components/general/Heading';
 
 
-import Test from '../menus/Test';
-import Test2 from '../menus/Test2';
-import CreateMenu from '../menus/CreateMenu';
-import AddCommentMenu from '../menus/AddCommentMenu';
-import CommentOptionsMenu from '../menus/CommentOptionsMenu';
-import ProjectOptionsMenu from '../menus/ProjectOptionsMenu';
-import UserOptionsMenu from '../menus/UserOptionsMenu';
+import Test from '@/app-menus/Test';
+import Test2 from '@/app-menus/Test2';
+import CreateMenu from '@/app-menus/create.menu';
+import AddCommentMenu from '@/app-menus/addComment.menu';
+import CommentOptionsMenu from '@/app-menus/commentOptions.menu';
+import ProjectOptionsMenu from '@/app-menus/projectOptions.menu';
+import UserOptionsMenu from '@/app-menus/userOptions.menu';
 
 const MENUS = {
     test1: Test,

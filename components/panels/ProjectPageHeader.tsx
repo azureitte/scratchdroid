@@ -27,7 +27,8 @@ import ScrollableText from '@/components/general/ScrollableText';
 import ExtensionChip from '@/components/panels/ExtensionChip';
 import InfoCard from '@/components/panels/InfoCard';
 import LoveFavButton from '@/components/panels/LoveFavButton';
-import { ProjectOptionsMenuProps } from '@/components/menus/ProjectOptionsMenu';
+
+import type { ProjectOptionsMenuProps } from '@/app-menus/projectOptions.menu';
 
 type ProjectPageHeaderProps = {
     project: ScratchProject;

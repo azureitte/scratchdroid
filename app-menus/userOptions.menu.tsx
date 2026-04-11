@@ -7,7 +7,7 @@ import { WEBSITE_URL } from '@/util/constants';
 import { useSheet } from '@/hooks/useSheet';
 import { useToggleUserComments } from '@/hooks/mutations/useToggleUserComments';
 
-import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
+import ContextMenu, { ContextMenuItem } from '@/components/general/ContextMenu';
 
 export type UserOptionsMenuProps = {
     username: string;

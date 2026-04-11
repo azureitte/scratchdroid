@@ -7,8 +7,8 @@ import { WEBSITE_URL } from '@/util/constants';
 import { useSheet } from '@/hooks/useSheet';
 import { useToggleProjectComments } from '@/hooks/mutations/useToggleProjectComments';
 
-import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
-import ScrollableText from '../general/ScrollableText';
+import ContextMenu, { ContextMenuItem } from '@/components/general/ContextMenu';
+import ScrollableText from '@/components/general/ScrollableText';
 
 export type ProjectOptionsMenuProps = {
     projectId: number;

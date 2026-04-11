@@ -11,12 +11,12 @@ import { useSheet } from '@/hooks/useSheet';
 import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';
 import { useDeleteModernComment } from '@/hooks/mutations/useDeleteModernComment';
 import { useReportUserComment } from '@/hooks/mutations/useReportUserComment';
-
-import Button from '@/components/general/Button';
-import CommentItem from '@/components/panels/CommentItem';
-import type { AddCommentMenuProps } from './AddCommentMenu';
 import { useReportModernComment } from '@/hooks/mutations/useReportModernComment';
-import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
+
+import type { AddCommentMenuProps } from './addComment.menu';
+
+import ContextMenu, { type ContextMenuItem } from '@/components/general/ContextMenu';
+import CommentItem from '@/components/panels/CommentItem';
 
 export type CommentOptionsMenuProps = {
     type: 

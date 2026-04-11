@@ -21,7 +21,8 @@ import UserCard from '@/components/panels/UserCard';
 import StudioCard from './StudioCard';
 import InfoCard from './InfoCard';
 import Button from '../general/Button';
-import type { UserOptionsMenuProps } from '../menus/UserOptionsMenu';
+
+import type { UserOptionsMenuProps } from '@/app-menus/userOptions.menu';
 
 
 type UserPageHeaderProps = {
