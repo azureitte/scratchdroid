@@ -152,5 +152,10 @@ export const getProjectCommentHighlight = async ({
     ] }) as RootComment;
 }
 
-export const doProjectsFetchReplies = () => true;
-export const doProjectsHighlightComments = () => true;
+export const getProjectCommentFlags = () => ({
+    highlightsComments: true,
+    fetchesReplies: true,
+    usesUserMap: true,
+    isOptimistic: false,
+    minItemsOnPage: 20,
+});

@@ -20,11 +20,11 @@ import { getFollowingLoves } from "./queries/getFollowingLoves";
 import { getMessages, getMessagesPerPage } from "./queries/getMessages";
 import { getMystuff, getMystuffItemsPerPage } from "./queries/getMystuff";
 import { getProject } from "./queries/getProject";
-import { doProjectsFetchReplies, doProjectsHighlightComments, getProjectCommentHighlight, getProjectReplies, getProjectRootComments } from "./queries/getProjectComments";
+import { getProjectCommentFlags, getProjectCommentHighlight, getProjectReplies, getProjectRootComments } from "./queries/getProjectComments";
 import { getSession } from "./queries/getSession";
 import { getUnreadCount } from "./queries/getUnreadCount";
 import { getUser } from "./queries/getUser";
-import { doUsersFetchReplies, doUsersHighlightComments, getUserCommentHighlight, getUserReplies, getUserRootComments } from "./queries/getUserComments";
+import { getUserCommentFlags, getUserCommentHighlight, getUserReplies, getUserRootComments } from "./queries/getUserComments";
 
 export default {
     info: {
@@ -60,20 +60,18 @@ export default {
         getUserRootComments,
         getUserReplies,
         getUserCommentHighlight,
-        doUsersFetchReplies,
-        doUsersHighlightComments,
+        getUserCommentFlags,
 
         getProject,
         getProjectRootComments,
         getProjectReplies,
         getProjectCommentHighlight,
-        doProjectsFetchReplies,
-        doProjectsHighlightComments,
+        getProjectCommentFlags,
     },
 
     a: {
         login,
-        
+
         markMessagesRead,
         deleteMessage,
 

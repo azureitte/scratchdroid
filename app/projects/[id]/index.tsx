@@ -19,7 +19,7 @@ import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useProject } from '@/hooks/queries/useProject';
-import { useProjectComments } from '@/hooks/queries/useProjectComments';
+import { useComments } from '@/hooks/queries/useComments';
 import { useLoveProject } from '@/hooks/mutations/useLoveProject';
 import { useFavProject } from '@/hooks/mutations/useFavProject';
 
@@ -46,12 +46,13 @@ const ProjectPage = () => {
         setLovedByMeDirectly, 
         setFavedByMeDirectly,
         setCommentsAllowedDirectly,
-    } = useProject(Number(id));
+    } = useProject(projectId);
     const data = project.data;
     const isOwn = !!data && data.project.author.username !== session?.user?.username;
 
-    const comments = useProjectComments({
-        project: Number(id),
+    const comments = useComments({
+        type: 'project',
+        objectId: projectId,
         author: data?.project.author.username ?? '',
         highlightedComment: commentId ? Number(commentId) : undefined,
         enabled: !!id && !!data?.project,

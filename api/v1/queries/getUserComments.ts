@@ -1,15 +1,23 @@
 import { RootComment } from "@/util/types/comments.types";
 import { apiReq } from "../request";
 import { getCommentsFromR2 } from "../parsers/comments";
+import { Session } from "@/util/types/accounts.types";
 
 type GetUserCommentsOptions = {
     username: string;
     page?: number;
+
+    session?: Session;
+    userMap?: Map<number, string>;
+    updateUserMap?: (id: number, username: string) => void;
 }
 
 export const getUserRootComments = async ({
     username,
     page = 0,
+    session,
+    userMap,
+    updateUserMap,
 }: GetUserCommentsOptions): Promise<RootComment[]> => {
     const commentsRes = await apiReq({
         path: `/site-api/comments/user/${username}/`,
@@ -30,3 +38,11 @@ export const getUserCommentHighlight = async (_: any): Promise<any> => null;
 
 export const doUsersFetchReplies = () => false;
 export const doUsersHighlightComments = () => false;
+
+export const getUserCommentFlags = () => ({
+    highlightsComments: false,
+    fetchesReplies: false,
+    usesUserMap: false,
+    isOptimistic: true,
+    minItemsOnPage: 1,
+});

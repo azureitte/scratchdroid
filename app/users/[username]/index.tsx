@@ -12,7 +12,7 @@ import type { Comment } from '@/util/types/comments.types';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
-import { useUserComments } from '@/hooks/queries/useUserComments';
+import { useComments } from '@/hooks/queries/useComments';
 import { useUser } from '@/hooks/queries/useUser';
 import { useFollowUser } from '@/hooks/mutations/useFollowUser';
 
@@ -41,8 +41,9 @@ const UserPage = () => {
 
     const isOwn = session?.user?.username === username;
 
-    const comments = useUserComments({
-        user: username,
+    const comments = useComments({
+        type: 'user',
+        objectName: username,
         enabled: !!username,
     });
 
