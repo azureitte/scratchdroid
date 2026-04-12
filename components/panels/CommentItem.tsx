@@ -65,7 +65,7 @@ const CommentItem = memo(({
     return (<Animated.View style={[
         styles.commentWrapper,
         comment.isReply && styles.reply,
-        comment.isLastInBlock && styles.commentLast,
+        (comment.isLastInBlock || isShowMore) && styles.commentLast,
         isIsolated && styles.commentIsolated,
         wrapperStyle,
     ]}>
