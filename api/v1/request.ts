@@ -2,9 +2,10 @@ import CookieManager from '@preeternal/react-native-cookie-manager';
 import { HTMLElement, parse } from 'node-html-parser';
 
 import { WEBSITE_URL } from './constants';
+import { ApiEndpoint } from './types/api.types';
 
 type ApiBaseOptions = {
-    host: string;
+    endpoint?: ApiEndpoint;
     path: string;
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
     headers: Record<string, string>;
@@ -40,7 +41,6 @@ export type ApiResponse<T = any> = {
 
 const DEFAULT_HOST = WEBSITE_URL;
 const DEFAULT_OPTIONS: ApiOptions = {
-    host: DEFAULT_HOST,
     method: 'GET',
     path: '/',
     headers: {},
@@ -55,17 +55,27 @@ export async function apiReq (opts: Partial<ApiTextOptions>): Promise<ApiRespons
 export async function apiReq (opts: Partial<ApiOptions>): Promise<any> {
     const options = { ...DEFAULT_OPTIONS, ...opts };
 
-    if (options.host === DEFAULT_HOST) {
+    let host: string, path: string;
+
+    if (options.endpoint) {
+        host = options.endpoint.host;
+        path = `${options.endpoint.path}${options.path}`;
+    } else {
+        host = DEFAULT_HOST;
+        path = options.path;
+    }
+
+    if (host === DEFAULT_HOST) {
         options.headers['X-Requested-With'] = 'XMLHttpRequest';
     }
 
-    options.headers['Origin'] = options.host;
-    options.headers['Referer'] = options.host;
+    options.headers['Origin'] = host;
+    options.headers['Referer'] = host;
     options.headers['Cache-Control'] = 'no-cache';
     options.headers['Pragma'] = 'no-cache';
     options.headers['Expires'] = '0';
 
-    let uri = options.host + options.path;
+    let uri = host + path;
     let body = null;
 
     if (options.params) {
@@ -90,10 +100,10 @@ export async function apiReq (opts: Partial<ApiOptions>): Promise<any> {
         try {
             // get crsf token from cookies
             // if not present, fetch it
-            let cookies = await CookieManager.get(options.host);
+            let cookies = await CookieManager.get(host);
             if (!cookies['scratchcsrftoken']) {
                 await fetch('https://scratch.mit.edu/csrf_token/');
-                cookies = await CookieManager.get(options.host);
+                cookies = await CookieManager.get(host);
             }
 
             options.headers['X-CSRFToken'] = cookies['scratchcsrftoken']?.value;

@@ -4,13 +4,14 @@ import { stringToCommentContent } from "../parsers/comments";
 import { MessageQueryItem } from "@/util/types/messages.types";
 import { Session } from "@/util/types/accounts.types";
 import { Message, MessageBase, MessageType } from "@/util/types/messages.types";
+import { API_MODERN_ENDPOINT } from "../constants";
 
 const MESSAGES_PER_PAGE = 40;
 
 export const getMessages = async (session: Session, page: number = 0): Promise<MessageQueryItem[]> => {
     if (!session.user) return [];
     const messagesRes = await apiReq<ScratchMessage[]>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${session.user.username}/messages`,
         params: { 
             limit: MESSAGES_PER_PAGE, 

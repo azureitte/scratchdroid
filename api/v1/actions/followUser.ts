@@ -1,3 +1,4 @@
+import { API_LEGACY_ENDPOINT } from "../constants";
 import { apiReq } from "../request";
 import { Session } from "@/util/types/accounts.types";
 
@@ -18,7 +19,8 @@ export const followUser = async ({
 
     const actionType = to ? 'add' : 'remove';
     const res = await apiReq({
-        path: `/site-api/users/followers/${username}/${actionType}/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/users/followers/${username}/${actionType}/`,
         params: { usernames: session.user.username },
         method: 'PUT',
         responseType: 'json',

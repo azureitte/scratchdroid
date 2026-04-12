@@ -2,11 +2,12 @@ import { apiReq } from "../request";
 import { ScratchAdminAlert } from "../types/message.types";
 import { AdminAlert, MessageQueryItem } from "@/util/types/messages.types";
 import { Session } from "@/util/types/accounts.types";
+import { API_MODERN_ENDPOINT } from "../constants";
 
 export const getAdminAlerts = async (session: Session): Promise<MessageQueryItem[]> => {
     if (!session.user) return [];
     const messagesRes = await apiReq<ScratchAdminAlert[]>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${session.user.username}/messages/admin`,
         auth: session.user.token,
         responseType: 'json',

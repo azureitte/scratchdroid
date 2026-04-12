@@ -1,3 +1,4 @@
+import { API_MODERN_ENDPOINT } from "../constants";
 import { apiReq } from "../request";
 import { Session } from "@/util/types/accounts.types";
 
@@ -24,7 +25,7 @@ export const reportProjectComment = async ({
     };
 
     const res = await apiReq({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/proxy/project/${projectId}/comment/${id}/report`,
         method: 'POST',
         useCrsf: true,

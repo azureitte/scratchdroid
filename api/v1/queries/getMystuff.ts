@@ -1,6 +1,7 @@
 import { MystuffProject, MystuffStudio } from "@/util/types/mystuff.types";
 import { apiReq } from "../request";
 import { ScratchMystuffItem, ScratchMystuffProjectItem, ScratchMystuffStudioItem } from "../types/account.types";
+import { API_LEGACY_ENDPOINT } from "../constants";
 
 const PROJECTS_PER_PAGE = 40;
 const STUDIOS_PER_PAGE = 40;
@@ -49,11 +50,12 @@ export async function getMystuff ({
     descsort,
     page = 0,
 }:(GetMystuffProjectOptions|GetMyStuffStudioOptions)): Promise<MystuffProject[]|MystuffStudio[]> {
-    const path = '/site-api/'
+    const path = '/'
         + (type === 'projects' ? 'projects' : 'galleries') + '/'
         + toR2(subtype) + '/';
 
     const mystuffRes = await apiReq<ScratchMystuffItem[]>({
+        endpoint: API_LEGACY_ENDPOINT,
         path: path,
         params: { 
             page: page + 1,

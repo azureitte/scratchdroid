@@ -1,8 +1,10 @@
+import { API_LEGACY_ENDPOINT } from "../constants";
 import { apiReq } from "../request";
 
 export const deleteMessage = async (id: number) => {
     const deleteRes = await apiReq<{ success: boolean }>({
-        path: `/site-api/messages/messages-delete/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/messages/messages-delete/`,
         method: 'POST',
         body: {
             alertId: id,

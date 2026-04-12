@@ -4,6 +4,7 @@ import { getCommentFromWww3 } from "../parsers/comments";
 import { ScratchComment } from "../types/comment.types";
 import { Session } from "@/util/types/accounts.types";
 import { REPLY_INCREMENT_COUNT } from "@/util/constants";
+import { API_MODERN_ENDPOINT } from "../constants";
 
 type GetProjectRootCommentsOptions = {
     id: number;
@@ -47,7 +48,7 @@ export const getProjectRootComments = async ({
     updateUserMap,
 }: GetProjectRootCommentsOptions): Promise<RootComment[]> => {
     const commentsRes = await apiReq<ScratchComment[]>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${author}/projects/${id}/comments`,
         params: { 
             limit: COMMENTS_PER_PAGE,
@@ -81,7 +82,7 @@ export const getProjectReplies = async ({
 }: GetProjectRepliesOptions): Promise<ReplyComment[]> => {
 
     const repliesRes = await apiReq<ScratchComment[]>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${author}/projects/${id}/comments/${parentId}/replies`,
         params: { 
             limit,
@@ -113,7 +114,7 @@ export const getProjectCommentHighlight = async ({
 }: GetProjectCommentHighlightOptions): Promise<RootComment|null> => {
     // fetch the highlighted comment individually
     const targetCommentRes = await apiReq<ScratchComment>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${author}/projects/${id}/comments/${commentId}`,
         auth: session?.user?.token,
         responseType: 'json',
@@ -131,7 +132,7 @@ export const getProjectCommentHighlight = async ({
 
     // otherwise, also fetch the parent comment
     const parentCommentRes = await apiReq<ScratchComment>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${author}/projects/${id}/comments/${targetComment.parent_id}`,
         auth: session?.user?.token,
         responseType: 'json',

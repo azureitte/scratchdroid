@@ -1,3 +1,4 @@
+import { API_MODERN_ENDPOINT } from "../constants";
 import { apiReq } from "../request";
 import { Session } from "@/util/types/accounts.types";
 
@@ -22,7 +23,7 @@ export const rateProject = async ({
     const method = to ? 'POST' : 'DELETE';
 
     const res = await apiReq({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/proxy/projects/${projectId}/${ratingPath}/user/${session.user.username}`,
         method,
         responseType: 'json',

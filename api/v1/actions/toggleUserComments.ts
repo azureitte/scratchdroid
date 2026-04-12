@@ -1,3 +1,4 @@
+import { API_LEGACY_ENDPOINT } from "../constants";
 import { apiReq } from "../request";
 import { Session } from "@/util/types/accounts.types";
 
@@ -17,7 +18,8 @@ export const toggleUserComments = async ({
     if (!session?.user) return false;
 
     const res = await apiReq({
-        path: `/site-api/comments/user/${username}/toggle-comments/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/comments/user/${username}/toggle-comments/`,
         method: 'POST',
         useCrsf: true,
         auth: session.user.token,

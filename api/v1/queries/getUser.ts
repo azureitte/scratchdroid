@@ -4,10 +4,11 @@ import { ScratchUser } from "../types/user.types";
 import { ScratchProject } from "../types/project.types";
 import { getUserFromProfilePage } from "../parsers/users";
 import { Session } from "@/util/types/accounts.types";
+import { API_MODERN_ENDPOINT } from "../constants";
 
 const fetchUser = async (username: string) => {
     const userRes = await apiReq<ScratchUser>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${username}/`,
         responseType: 'json',
     });
@@ -18,7 +19,7 @@ const fetchUser = async (username: string) => {
 
 const fetchSharedProjects = async (username: string) => {
     const sharedProjectsRes = await apiReq<ScratchProject[]>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${username}/projects/`,
         params: { limit: 20 },
         responseType: 'json',

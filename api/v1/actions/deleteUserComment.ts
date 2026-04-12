@@ -2,6 +2,7 @@ import { apiReq } from "../request";
 import { parseR2CommentMutationResponse } from "../parsers/comments";
 import { Comment } from "@/util/types/comments.types";
 import { Session } from "@/util/types/accounts.types";
+import { API_LEGACY_ENDPOINT } from "../constants";
 
 type DeleteCommentOptions = {
     username: string;
@@ -28,7 +29,8 @@ export const deleteUserComment = async ({
     };
 
     const res = await apiReq({
-        path: `/site-api/comments/user/${username}/del/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/comments/user/${username}/del/`,
         method: 'POST',
         body: { id },
         useCrsf: true,

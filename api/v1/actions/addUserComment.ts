@@ -2,6 +2,7 @@ import { apiReq } from "../request";
 import { Session } from "@/util/types/accounts.types";
 import { parseR2CommentMutationResponse } from "../parsers/comments";
 import { Comment } from "@/util/types/comments.types";
+import { API_LEGACY_ENDPOINT } from "../constants";
 
 type AddCommentOptions = {
     username: string;
@@ -35,7 +36,8 @@ export const addUserComment = async ({
     };
 
     const res = await apiReq({
-        path: `/site-api/comments/user/${username}/add/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/comments/user/${username}/add/`,
         method: 'POST',
         body: {
             content: content,

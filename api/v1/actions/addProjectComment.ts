@@ -1,7 +1,7 @@
 import { apiReq } from "../request";
 import { ModernAddCommentResponse, ModernAddCommentResponseRejected, ScratchComment } from "../types/comment.types";
 import { Session } from "@/util/types/accounts.types";
-import { FAIL_REASON_MESSAGES } from "../constants";
+import { API_MODERN_ENDPOINT, FAIL_REASON_MESSAGES } from "../constants";
 import { getCommentFromWww3 } from "../parsers/comments";
 import { Comment } from "@/util/types/comments.types";
 
@@ -37,7 +37,7 @@ export const addProjectComment = async ({
     };
 
     const res = await apiReq<ModernAddCommentResponse>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/proxy/comments/project/${projectId}`,
         method: 'POST',
         body: {

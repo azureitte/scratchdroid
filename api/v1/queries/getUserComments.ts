@@ -2,6 +2,7 @@ import { RootComment } from "@/util/types/comments.types";
 import { apiReq } from "../request";
 import { getCommentsFromR2 } from "../parsers/comments";
 import { Session } from "@/util/types/accounts.types";
+import { API_LEGACY_ENDPOINT } from "../constants";
 
 type GetUserCommentsOptions = {
     username: string;
@@ -20,7 +21,8 @@ export const getUserRootComments = async ({
     updateUserMap,
 }: GetUserCommentsOptions): Promise<RootComment[]> => {
     const commentsRes = await apiReq({
-        path: `/site-api/comments/user/${username}/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/comments/user/${username}/`,
         params: { page: page + 1 },
         useCrsf: true,
         responseType: 'html',

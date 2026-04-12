@@ -1,19 +1,26 @@
 import { formatDistanceToNow } from "date-fns";
 import { MuteStatus } from "./types/account.types";
+import { ApiEndpoint } from "./types/api.types";
 
 export const WEBSITE_URL = 'https://scratch.mit.edu';
 export const DEFAULT_PFP_URL = 'https://cdn2.scratch.mit.edu/get_image/user/default_60x60.png';
 
-export const API_MODERN_ENDPOINT = {
+export const API_MODERN_ENDPOINT: ApiEndpoint = {
     name: 'modern',
     host: 'https://api.scratch.mit.edu',
     path: '',
 }
 
-export const API_LEGACY_ENDPOINT = {
+export const API_LEGACY_ENDPOINT: ApiEndpoint = {
     name: 'legacy',
     host: WEBSITE_URL,
     path: '/site-api',
+}
+
+export const API_PROJECTS_ENDPOINT: ApiEndpoint = {
+    name: 'projects',
+    host: 'https://projects.scratch.mit.edu',
+    path: '',
 }
 
 export const SCRATCH_EMOJI_CODES: Record<string, string> = {

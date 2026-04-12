@@ -2,6 +2,7 @@ import { FeaturedTab } from "@/util/types/featured.types";
 import { ScratchFeaturedProject, ScratchFeaturedStudio, ScratchFeaturedTab } from "../types/featured.types";
 import { apiReq } from "../request";
 import { CarouselProject, CarouselStudio } from "@/util/types/users.types";
+import { API_MODERN_ENDPOINT } from "../constants";
 
 const serializeFeaturedProject = (project: ScratchFeaturedProject): CarouselProject => ({
     id: project.id,
@@ -17,7 +18,7 @@ const serializeFeaturedStudio = (studio: ScratchFeaturedStudio): CarouselStudio 
 
 export const getFeatured = async (): Promise<FeaturedTab> => {
     const res = await apiReq<ScratchFeaturedTab>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: '/proxy/featured/',
         responseType: 'json',
     });

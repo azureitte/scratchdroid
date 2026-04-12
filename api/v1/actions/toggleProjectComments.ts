@@ -1,3 +1,4 @@
+import { API_MODERN_ENDPOINT } from "../constants";
 import { apiReq } from "../request";
 import { Session } from "@/util/types/accounts.types";
 
@@ -17,7 +18,7 @@ export const toggleProjectComments = async ({
     if (!session?.user) return false;
 
     const res = await apiReq({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/projects/${projectId}`,
         method: 'PUT',
         body: {

@@ -3,10 +3,11 @@ import { Project, ProjectQueryData } from "@/util/types/projects.types";
 import { apiReq } from "../request";
 import { ScratchProject, ScratchProjectFile } from "../types/project.types";
 import { projectHasCloudVariables } from "../parsers/projects";
+import { API_MODERN_ENDPOINT, API_PROJECTS_ENDPOINT } from "../constants";
 
 const fetchProject = async (id: number, session?: Session): Promise<ScratchProject> => {
     const projectRes = await apiReq<ScratchProject>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/projects/${id}/`,
         auth: session?.user?.token,
         responseType: 'json',
@@ -20,7 +21,7 @@ const fetchLovedByMe = async (id: number, session?: Session) => {
     if (!session?.user?.username) return false;
 
     const lovedByMeRes = await apiReq<{ userLove: boolean }>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/projects/${id}/loves/user/${session.user.username}`,
         responseType: 'json',
     });
@@ -34,7 +35,7 @@ const fetchFavedByMe = async (id: number, session?: Session) => {
     if (!session?.user?.username) return false;
 
     const favedByMeRes = await apiReq<{ userFavorite: boolean }>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/projects/${id}/favorites/user/${session.user.username}`,
         responseType: 'json',
     });
@@ -46,7 +47,7 @@ const fetchFavedByMe = async (id: number, session?: Session) => {
 
 const fetchRemixes = async (id: number) => {
     const remixesRes = await apiReq<ScratchProject[]>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/projects/${id}/remixes`,
         params: { limit: 6 },
         responseType: 'json',
@@ -58,7 +59,7 @@ const fetchRemixes = async (id: number) => {
 
 const fetchStudios = async (id: number, author: string) => {
     const studiosRes = await apiReq<any>({
-        host: 'https://api.scratch.mit.edu',
+        endpoint: API_MODERN_ENDPOINT,
         path: `/users/${author}/projects/${id}/studios`,
         params: { limit: 6 },
         responseType: 'json',
@@ -70,7 +71,7 @@ const fetchStudios = async (id: number, author: string) => {
 
 const fetchProjectFile = async (id: number, token: string) => {
     const projectFileRes = await apiReq<ScratchProjectFile>({
-        host: 'https://projects.scratch.mit.edu',
+        endpoint: API_PROJECTS_ENDPOINT,
         path: `/${id}`,
         params: { token },
         responseType: 'json',

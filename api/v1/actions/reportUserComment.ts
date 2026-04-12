@@ -2,6 +2,7 @@ import { apiReq } from "../request";
 import { parseR2CommentMutationResponse } from "../parsers/comments";
 import { Comment } from "@/util/types/comments.types";
 import { Session } from "@/util/types/accounts.types";
+import { API_LEGACY_ENDPOINT } from "../constants";
 
 type ReportCommentOptions = {
     username: string;
@@ -28,7 +29,8 @@ export const reportUserComment = async ({
     };
 
     const res = await apiReq({
-        path: `/site-api/comments/user/${username}/rep/`,
+        endpoint: API_LEGACY_ENDPOINT,
+        path: `/comments/user/${username}/rep/`,
         method: 'POST',
         body: { id },
         useCrsf: true,

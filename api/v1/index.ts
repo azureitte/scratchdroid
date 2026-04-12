@@ -11,7 +11,7 @@ import { reportProjectComment } from "./actions/reportProjectComment";
 import { reportUserComment } from "./actions/reportUserComment";
 import { toggleProjectComments } from "./actions/toggleProjectComments";
 import { toggleUserComments } from "./actions/toggleUserComments";
-import { API_LEGACY_ENDPOINT, API_MODERN_ENDPOINT, DEFAULT_PFP_URL, WEBSITE_URL } from "./constants";
+import { API_LEGACY_ENDPOINT, API_MODERN_ENDPOINT, API_PROJECTS_ENDPOINT, DEFAULT_PFP_URL, WEBSITE_URL } from "./constants";
 
 import { getAdminAlerts } from "./queries/getAdminAlerts";
 import { getFeatured } from "./queries/getFeatured";
@@ -38,6 +38,7 @@ export default {
         apiEndpoints: [
             API_MODERN_ENDPOINT,
             API_LEGACY_ENDPOINT,
+            API_PROJECTS_ENDPOINT,
         ],
         defaultPfpUrl: DEFAULT_PFP_URL,
     },
