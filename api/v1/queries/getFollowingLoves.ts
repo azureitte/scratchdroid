@@ -13,5 +13,5 @@ export const getFollowingLoves = async (session: Session) => {
         responseType: 'json',
     });
     if (!res.success) throw new Error(res.error);
-    return res.data.map(serializeProject);
+    return res.data.map(project => serializeProject(project));
 }

@@ -2,6 +2,7 @@ import { formatDistanceToNow } from "date-fns";
 import { MuteStatus } from "./types/account.types";
 
 export const WEBSITE_URL = 'https://scratch.mit.edu';
+export const DEFAULT_PFP_URL = 'https://cdn2.scratch.mit.edu/get_image/user/default_60x60.png';
 
 export const API_MODERN_ENDPOINT = {
     name: 'modern',
@@ -13,6 +14,23 @@ export const API_LEGACY_ENDPOINT = {
     name: 'legacy',
     host: WEBSITE_URL,
     path: '/site-api',
+}
+
+export const SCRATCH_EMOJI_CODES: Record<string, string> = {
+    'meow': '_meow_',
+    'camera': '_camera_',
+    'map': '_map_',
+    'pizza': '_pizza_',
+    'cat': '_:)_',
+    'aww-cat': '_:D_',
+    'wink-cat': '_;P_',
+    'lol-cat': '_:\'P_',
+    'love-it-cat': '_<3_',
+    'fav-it-cat': '_**_',
+    'cool-cat': '_B)_',
+    'tongue-out-cat': '_:P_',
+    'pizza-cat': '_:D<_',
+    'rainbow-cat': '_:))_',
 }
 
 export const FAIL_REASON_MESSAGES: Record<string, (muteStatus?: MuteStatus) => string> = {

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -11,7 +11,6 @@ import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { lightTap } from '@/util/functions';
-import { projectHasCloudVariables } from '@/util/parsing/projects';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
@@ -139,8 +138,6 @@ const ProjectPage = () => {
         ]);
     };
 
-    const hasCloudData = useMemo(() => projectHasCloudVariables(data?.file), [data]);
-
     if (project.isError) return <Text>{project.error.message}</Text>;
     if (project.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
 
@@ -164,8 +161,6 @@ const ProjectPage = () => {
                 header={<ProjectPageHeader 
                     project={data.project}
                     projectId={Number(id)}
-                    extensions={data.file?.extensions ?? []}
-                    isCloud={hasCloudData}
                     loves={{
                         count: data.project.stats.loves ?? 0,
                         active: data.lovedByMe,

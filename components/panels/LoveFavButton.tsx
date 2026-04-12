@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { shortNumber } from '@/util/functions';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
 
@@ -41,7 +42,7 @@ const LoveFavButton = ({
             >
                 <LoveIcon style={styles.statButtonIcon} />
                 <Text style={styles.statButtonText}>
-                    { loves.count }
+                    { shortNumber(loves.count) }
                 </Text>
             </Pressable>
 
@@ -58,7 +59,7 @@ const LoveFavButton = ({
             >
                 <FavIcon style={styles.statButtonIcon} />
                 <Text style={styles.statButtonText}>
-                    { favs.count }
+                    { shortNumber(favs.count) }
                 </Text>
             </Pressable>
         </View>

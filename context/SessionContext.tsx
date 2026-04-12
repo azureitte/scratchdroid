@@ -4,7 +4,6 @@ import { reloadAsync } from 'expo-updates';
 import { useQueryClient } from '@tanstack/react-query';
 import CookieManager from '@preeternal/react-native-cookie-manager';
 
-import { WEBSITE_URL } from '@/util/constants';
 import { emit } from '@/util/eventBus';
 import { 
     addAccount, 
@@ -71,7 +70,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
     const isFirstLoad = useRef(true);
 
     const getCookies = useCallback(async () => {
-        return CookieManager.get(WEBSITE_URL);
+        return CookieManager.get(api.config.websiteUrl);
     }, []);
 
     useEffect(() => {
@@ -229,7 +228,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
                     await CookieManager.clearAll();
                     
                     for (const [name, cookie] of Object.entries(account.cookies)) {
-                        await CookieManager.set(WEBSITE_URL, {
+                        await CookieManager.set(api.config.websiteUrl, {
                             name,
                             value: cookie.value,
                             domain: cookie.domain,

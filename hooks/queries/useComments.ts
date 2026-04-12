@@ -8,7 +8,7 @@ import {
 
 import { DEFAULT_REPLY_COUNT } from "@/util/constants";
 import { addOrReplace } from "@/util/functions";
-import { flattenComments } from "@/util/parsing/comments";
+import { flattenComments } from "@/util/parsing";
 import type { 
     Comment, 
     FlattenedComment, 

@@ -46,6 +46,8 @@ export type Project = {
         remixes: number;
     };
 
+    extensions: ScratchExtension[];
+    hasCloudData: boolean;
     canComment: boolean;
     token: string;
 }

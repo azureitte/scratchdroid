@@ -1,12 +1,13 @@
-import type { HTMLElement } from "node-html-parser";
+import parse, { NodeType, type HTMLElement } from "node-html-parser";
 
-import { addPrefixUrl } from "@/util/functions";
-import { htmlToCommentContent, stringToCommentContent } from "@/util/parsing/comments";
-import { FAIL_REASON_MESSAGES } from "../constants";
+import { addPrefixUrl, randstr } from "@/util/functions";
+import { parseRichText } from "@/util/parsing";
+import { FAIL_REASON_MESSAGES, WEBSITE_URL, SCRATCH_EMOJI_CODES } from "../constants";
 
 import type { ScratchComment } from "../types/comment.types";
 import type { 
     Comment,
+    CommentContentNode,
     ReplyComment, 
     RootComment,
 } from "@/util/types/comments.types";
@@ -213,3 +214,113 @@ export const getCommentFromWww3 = (comment: ScratchComment, opts?: {
     }
 }
 
+/**
+ * Converts comment's content from parsed HTML to an array of comment content nodes
+ * @param root - The HTML to convert
+ * @param skipFirst - If true, skips the first node and returns it separately
+ * @returns - A tuple, where the first element is the comment content nodes array, and the second is the skip node, if present
+ */
+export function htmlToCommentContent (root: HTMLElement|null, skipFirst = false): [CommentContentNode[], CommentContentNode|undefined] {
+    if (!root) return [[], undefined];
+
+    let skip: CommentContentNode|undefined;
+
+    let nodes = root.childNodes;
+    if (nodes[0].nodeType === NodeType.TEXT_NODE && nodes[0].textContent.trim() === '') {
+        nodes = nodes.slice(1);
+    }
+
+    const content = nodes.reduce((acc, node, idx) => {
+        const key = randstr(8);
+        let contentNode: CommentContentNode|undefined;
+        const shouldSkip = skipFirst && idx === 0;
+        const shouldPush = !shouldSkip;
+
+        // text nodes
+        if (node.nodeType === NodeType.TEXT_NODE) {
+            let text = (node.textContent ?? '')
+                .replaceAll('\n', ' ') // turn newlines into spaces
+                .replace(/\s+/g, ' ') // remove multiple spaces
+
+            if (idx === 0 || (skipFirst && idx === 1)) 
+                text = text.trimStart();
+            if (idx === nodes.length - 1) 
+                text = text.trimEnd();
+
+            const splitNodes = parseRichText(text);
+
+            contentNode = splitNodes[0];
+            acc.push(...splitNodes);
+
+        // link and mention nodes
+        } else if (node.nodeType === NodeType.ELEMENT_NODE) {
+            const elem = node as HTMLElement;
+            if (elem.tagName === 'A') {
+                let href = elem.getAttribute('href') ?? '';
+                const text = elem.innerText;
+
+                // mention nodes
+                if (text.startsWith('@') && href.startsWith('/users/')) {
+                    contentNode = {
+                        type: 'mention',
+                        text,
+                        username: text.slice(1),
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+
+                // link nodes
+                } else {
+                    const isExternal = href.startsWith(WEBSITE_URL);
+                    if (isExternal) href = href.slice(WEBSITE_URL.length);
+                    contentNode = {
+                        type: 'link',
+                        text,
+                        url: href,
+                        isExternal,
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+                }
+
+            // emoji nodes
+            } else if (elem.tagName === 'IMG') {
+                if (elem.classList.contains('easter-egg')) {
+                    const src = elem.getAttribute('src') ?? '';
+                    const emojiName = src.slice(src.lastIndexOf('/') + 1).split('.')[0];
+                    contentNode = {
+                        type: 'emoji',
+                        text: SCRATCH_EMOJI_CODES[emojiName] ?? emojiName,
+                        imageUrl: addPrefixUrl(src),
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+                } else if (elem.classList.contains('emoji')) {
+                    const src = WEBSITE_URL + (elem.getAttribute('src') ?? '');
+                    const emojiName = src.slice(src.lastIndexOf('/') + 1).split('.')[0];
+                    contentNode = {
+                        type: 'emoji',
+                        text: SCRATCH_EMOJI_CODES[emojiName] ?? emojiName,
+                        imageUrl: addPrefixUrl(src),
+                        key,
+                    };
+                    shouldPush && acc.push(contentNode);
+                }
+            }
+        }
+
+        if (shouldSkip) skip = contentNode;
+        return acc;
+    }, [] as CommentContentNode[]);
+
+    return [content, skip];
+}
+
+/**
+ * Converts comment's content from raw HTML string to an array of comment content nodes
+ * @param content - The string to convert
+ * @returns - The comment content nodes array
+ */
+export function stringToCommentContent (content: string): CommentContentNode[] {
+    return htmlToCommentContent(parse(content))[0];
+}

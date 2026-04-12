@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,7 +6,6 @@ import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { shortDate } from '@/util/functions';
-import { projectHasCloudVariables } from '@/util/parsing/projects';
 
 import { useProject } from '@/hooks/queries/useProject';
 import ListLoading from '@/components/panels/ListLoading';
@@ -32,16 +31,14 @@ const ProjectInfoPage = () => {
         setIsRefreshing(false);
     };
 
-    const extensions = data?.file?.extensions ?? [];
-    const hasCloudData = useMemo(() => projectHasCloudVariables(data?.file), [data]);
-
-
     if (project.isError) return <Text>{project.error.message}</Text>;
     if (project.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
 
     const publishedStr = shortDate(new Date(data.project.history.shared));
     const modifiedStr = shortDate(new Date(data.project.history.modified));
     const publishedEqModified = publishedStr === modifiedStr;
+
+    const hasExtensionsOrCloud = data.project.extensions.length > 0 || data.project.hasCloudData;
 
     return (<>
         <LinearGradient 
@@ -64,7 +61,7 @@ const ProjectInfoPage = () => {
                     { title: 'Instructions', text: data.project.instructions },
                     { title: 'Notes & Credits', text: data.project.description },
                 ]}
-                childTitle={extensions.length > 0 && 'Extensions'}
+                childTitle={hasExtensionsOrCloud && 'Extensions'}
                 subtext={
                     `Published on ${publishedStr}` 
                     + (!publishedEqModified ? ` • Modified on ${modifiedStr}` : '')
@@ -72,19 +69,19 @@ const ProjectInfoPage = () => {
                 maxLength={Infinity}
                 variation='full'
             >
-                { extensions.length > 0 && <View style={styles.extensionsBar}>
-                    { extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
-                    { extensions.includes('videoSensing') && <ExtensionChip extension="videoSensing" /> }
-                    { extensions.includes('faceSensing') && <ExtensionChip extension="faceSensing" /> }
-                    { extensions.includes('pen') && <ExtensionChip extension="pen" /> }
-                    { extensions.includes('music') && <ExtensionChip extension="music" /> }
-                    { extensions.includes('translate') && <ExtensionChip extension="translate" /> }
-                    { extensions.includes('makeymakey') && <ExtensionChip extension="makeymakey" /> }
-                    { extensions.includes('microbit') && <ExtensionChip extension="microbit" /> }
-                    { extensions.includes('gdxfor') && <ExtensionChip extension="gdxfor" /> }
-                    { extensions.includes('ev3') && <ExtensionChip extension="ev3" /> }
-                    { extensions.includes('wedo2') && <ExtensionChip extension="wedo2" /> }
-                    { hasCloudData && <ExtensionChip extension="cloud" /> }
+                { hasExtensionsOrCloud && <View style={styles.extensionsBar}>
+                    { data.project.extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
+                    { data.project.extensions.includes('videoSensing') && <ExtensionChip extension="videoSensing" /> }
+                    { data.project.extensions.includes('faceSensing') && <ExtensionChip extension="faceSensing" /> }
+                    { data.project.extensions.includes('pen') && <ExtensionChip extension="pen" /> }
+                    { data.project.extensions.includes('music') && <ExtensionChip extension="music" /> }
+                    { data.project.extensions.includes('translate') && <ExtensionChip extension="translate" /> }
+                    { data.project.extensions.includes('makeymakey') && <ExtensionChip extension="makeymakey" /> }
+                    { data.project.extensions.includes('microbit') && <ExtensionChip extension="microbit" /> }
+                    { data.project.extensions.includes('gdxfor') && <ExtensionChip extension="gdxfor" /> }
+                    { data.project.extensions.includes('ev3') && <ExtensionChip extension="ev3" /> }
+                    { data.project.extensions.includes('wedo2') && <ExtensionChip extension="wedo2" /> }
+                    { data.project.hasCloudData && <ExtensionChip extension="cloud" /> }
                 </View> }
             </InfoCard>
         </ScrollView>

@@ -1,7 +1,7 @@
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { truncateText } from '@/util/functions';
-import { formatMultilineText, splitTextContentNode } from '@/util/parsing/comments';
-import { Link, useRouter } from 'expo-router';
+import { parseMultilineRichText } from '@/util/parsing';
+import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 import CommentContent from './CommentContent';
@@ -53,7 +53,7 @@ const InfoCard = ({
     const formattedContents = useMemo(() => {
         return nonEmptySections.map((section): [CommentContentNode[], boolean] => {
             const [text, isTruncated] = truncateText(section.text!, lengthPerSection);
-            return [formatMultilineText(text), isTruncated];
+            return [parseMultilineRichText(text), isTruncated];
         });
     }, [memoKey, lengthPerSection]);
 

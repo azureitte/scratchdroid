@@ -2,12 +2,12 @@ import { Share, StyleSheet, View, Alert, AlertButton } from 'react-native';
 import * as Clipboard from "expo-clipboard";
 
 import { buildMenu } from '@/util/functions';
-import { commentContentToString, unflattenComment } from '@/util/parsing/comments';
-import { WEBSITE_URL } from '@/util/constants';
+import { commentContentToString, unflattenComment } from '@/util/parsing';
 import { emit } from '@/util/eventBus';
 import type { FlattenedComment } from '@/util/types/comments.types';
 
 import { useSheet } from '@/hooks/useSheet';
+import { useApi } from '@/hooks/useApi';
 import { useDeleteComment } from '@/hooks/mutations/useDeleteComment';
 import { useReportComment } from '@/hooks/mutations/useReportComment';
 
@@ -41,6 +41,7 @@ const CommentOptionsMenu = ({
     getUrl,
 }: CommentOptionsMenuProps) => {
     const sheet = useSheet();
+    const api = useApi();
 
     const displayDeleteError = (error: string) => {
         sheet.pop();
@@ -119,8 +120,8 @@ const CommentOptionsMenu = ({
     const handleShare = async () => {
         sheet.pop();
         await Share.share({
-            message: WEBSITE_URL + (getUrl?.() ?? comment.id.toString()),
-            url: WEBSITE_URL + (getUrl?.() ?? comment.id.toString()),
+            message: api.config.websiteUrl + (getUrl?.() ?? comment.id.toString()),
+            url: api.config.websiteUrl + (getUrl?.() ?? comment.id.toString()),
         });
     }
     

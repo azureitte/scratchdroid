@@ -1,5 +1,6 @@
 import { apiReq } from "../request";
 import { MembershipLabel, ScratchCommentType, ScratchMessage } from "../types/message.types";
+import { stringToCommentContent } from "../parsers/comments";
 import { MessageQueryItem } from "@/util/types/messages.types";
 import { Session } from "@/util/types/accounts.types";
 import { Message, MessageBase, MessageType } from "@/util/types/messages.types";
@@ -56,7 +57,7 @@ export const getMessages = async (session: Session, page: number = 0): Promise<M
                 type: MessageType.ADD_COMMENT,
                 comment: {
                     id: m.comment_id,
-                    content: m.comment_fragment,
+                    content: stringToCommentContent(m.comment_fragment),
                     type: 
                         m.comment_type === ScratchCommentType.PROJECT ? 'project' :
                         m.comment_type === ScratchCommentType.USER ? 'user' :

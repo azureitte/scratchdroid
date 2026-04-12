@@ -2,8 +2,9 @@ import { Session } from "@/util/types/accounts.types";
 import { Project, ProjectQueryData } from "@/util/types/projects.types";
 import { apiReq } from "../request";
 import { ScratchProject, ScratchProjectFile } from "../types/project.types";
+import { projectHasCloudVariables } from "../parsers/projects";
 
-const fetchProject = async (id: number, session?: Session): Promise<Project> => {
+const fetchProject = async (id: number, session?: Session): Promise<ScratchProject> => {
     const projectRes = await apiReq<ScratchProject>({
         host: 'https://api.scratch.mit.edu',
         path: `/projects/${id}/`,
@@ -12,7 +13,7 @@ const fetchProject = async (id: number, session?: Session): Promise<Project> => 
     });
     if (!projectRes.success) throw new Error(projectRes.error);
 
-    return serializeProject(projectRes.data);
+    return projectRes.data;
 };
 
 const fetchLovedByMe = async (id: number, session?: Session) => {
@@ -51,7 +52,7 @@ const fetchRemixes = async (id: number) => {
         responseType: 'json',
     });
     if (remixesRes.success)
-        return remixesRes.data.map(serializeProject);
+        return remixesRes.data.map(remix => serializeProject(remix));
     return [];
 };
 
@@ -96,10 +97,10 @@ export const getProject = async ({
     ]);
     const [ studios, file ] = await Promise.all([
         fetchStudios(id, project?.author?.username),
-        fetchProjectFile(id, project?.token),
+        fetchProjectFile(id, project?.project_token),
     ]);
     return {
-        project,
+        project: serializeProject(project, file ?? undefined),
         lovedByMe,
         favedByMe,
         remixes,
@@ -108,7 +109,7 @@ export const getProject = async ({
     }
 }
 
-export const serializeProject = (data: ScratchProject): Project => ({
+export const serializeProject = (data: ScratchProject, file?: ScratchProjectFile): Project => ({
     id: data.id,
     title: data.title,
     author: {
@@ -156,6 +157,8 @@ export const serializeProject = (data: ScratchProject): Project => ({
         remixes: data.stats.remixes,
     },
 
+    extensions: file?.extensions ?? [],
+    hasCloudData: projectHasCloudVariables(file),
     canComment: data.comments_allowed ?? true,
     token: data.project_token,
 });

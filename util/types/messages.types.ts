@@ -1,3 +1,5 @@
+import type { CommentContentNode } from "./comments.types";
+
 export enum MessageType {
     FOLLOW_USER = 'followuser',
     LOVE_PROJECT = 'loveproject',
@@ -70,7 +72,7 @@ type MessageAddComment = MessageBase & {
     type: MessageType.ADD_COMMENT;
     comment: {
         id: number;
-        content: string;
+        content: CommentContentNode[];
         type: 'project'|'user'|'studio';
     };
     commentee?: {

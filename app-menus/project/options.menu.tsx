@@ -2,9 +2,9 @@ import { Share, StyleSheet, View, Alert, AlertButton } from 'react-native';
 import * as Clipboard from "expo-clipboard";
 
 import { buildMenu } from '@/util/functions';
-import { WEBSITE_URL } from '@/util/constants';
 
 import { useSheet } from '@/hooks/useSheet';
+import { useApi } from '@/hooks/useApi';
 import { useToggleComments } from '@/hooks/mutations/useToggleComments';
 
 import ContextMenu, { ContextMenuItem } from '@/components/general/ContextMenu';
@@ -31,6 +31,7 @@ const ProjectOptionsMenu = ({
 }: ProjectOptionsMenuProps) => {
 
     const sheet = useSheet();
+    const api = useApi();
 
     const toggleCommentsAction = useToggleComments({
         type: 'project',
@@ -43,7 +44,7 @@ const ProjectOptionsMenu = ({
         },
     });
 
-    const getUrl = () => `${WEBSITE_URL}/projects/${projectId}`;
+    const getUrl = () => `${api.config.websiteUrl}/projects/${projectId}`;
 
     const handleCopy = async () => {
         await Clipboard.setStringAsync(getUrl());

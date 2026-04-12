@@ -1,11 +1,4 @@
-import { HTMLElement, NodeType, parse } from "node-html-parser";
-
 import {
-    SCRATCH_EMOJI_CODES, 
-    WEBSITE_URL 
-} from "@/util/constants";
-import { 
-    addPrefixUrl, 
     randstr, 
     uniqueById 
 } from "@/util/functions";
@@ -98,122 +91,11 @@ export function unflattenComment (comment: FlattenedComment): Comment {
 }
 
 /**
- * Converts comment's content from parsed HTML to an array of comment content nodes
- * @param root - The HTML to convert
- * @param skipFirst - If true, skips the first node and returns it separately
- * @returns - A tuple, where the first element is the comment content nodes array, and the second is the skip node, if present
- */
-export function htmlToCommentContent (root: HTMLElement|null, skipFirst = false): [CommentContentNode[], CommentContentNode|undefined] {
-    if (!root) return [[], undefined];
-
-    let skip: CommentContentNode|undefined;
-
-    let nodes = root.childNodes;
-    if (nodes[0].nodeType === NodeType.TEXT_NODE && nodes[0].textContent.trim() === '') {
-        nodes = nodes.slice(1);
-    }
-
-    const content = nodes.reduce((acc, node, idx) => {
-        const key = randstr(8);
-        let contentNode: CommentContentNode|undefined;
-        const shouldSkip = skipFirst && idx === 0;
-        const shouldPush = !shouldSkip;
-
-        // text nodes
-        if (node.nodeType === NodeType.TEXT_NODE) {
-            let text = (node.textContent ?? '')
-                .replaceAll('\n', ' ') // turn newlines into spaces
-                .replace(/\s+/g, ' ') // remove multiple spaces
-
-            if (idx === 0 || (skipFirst && idx === 1)) 
-                text = text.trimStart();
-            if (idx === nodes.length - 1) 
-                text = text.trimEnd();
-
-            const splitNodes = splitTextContentNode(text);
-
-            contentNode = splitNodes[0];
-            acc.push(...splitNodes);
-
-        // link and mention nodes
-        } else if (node.nodeType === NodeType.ELEMENT_NODE) {
-            const elem = node as HTMLElement;
-            if (elem.tagName === 'A') {
-                let href = elem.getAttribute('href') ?? '';
-                const text = elem.innerText;
-
-                // mention nodes
-                if (text.startsWith('@') && href.startsWith('/users/')) {
-                    contentNode = {
-                        type: 'mention',
-                        text,
-                        username: text.slice(1),
-                        key,
-                    };
-                    shouldPush && acc.push(contentNode);
-
-                // link nodes
-                } else {
-                    const isExternal = href.startsWith(WEBSITE_URL);
-                    if (isExternal) href = href.slice(WEBSITE_URL.length);
-                    contentNode = {
-                        type: 'link',
-                        text,
-                        url: href,
-                        isExternal,
-                        key,
-                    };
-                    shouldPush && acc.push(contentNode);
-                }
-
-            // emoji nodes
-            } else if (elem.tagName === 'IMG') {
-                if (elem.classList.contains('easter-egg')) {
-                    const src = elem.getAttribute('src') ?? '';
-                    const emojiName = src.slice(src.lastIndexOf('/') + 1).split('.')[0];
-                    contentNode = {
-                        type: 'emoji',
-                        text: SCRATCH_EMOJI_CODES[emojiName] ?? emojiName,
-                        imageUrl: addPrefixUrl(src),
-                        key,
-                    };
-                    shouldPush && acc.push(contentNode);
-                } else if (elem.classList.contains('emoji')) {
-                    const src = WEBSITE_URL + (elem.getAttribute('src') ?? '');
-                    const emojiName = src.slice(src.lastIndexOf('/') + 1).split('.')[0];
-                    contentNode = {
-                        type: 'emoji',
-                        text: SCRATCH_EMOJI_CODES[emojiName] ?? emojiName,
-                        imageUrl: addPrefixUrl(src),
-                        key,
-                    };
-                    shouldPush && acc.push(contentNode);
-                }
-            }
-        }
-
-        if (shouldSkip) skip = contentNode;
-        return acc;
-    }, [] as CommentContentNode[]);
-
-    return [content, skip];
-}
-
-/**
- * Converts comment's content from raw HTML string to an array of comment content nodes
- * @param content - The string to convert
- * @returns - The comment content nodes array
- */
-export function stringToCommentContent (content: string): CommentContentNode[] {
-    return htmlToCommentContent(parse(content))[0];
-}
-
-/**
  * Converts a comment content node array into a readable string
  * @param content 
  * @returns 
  */
-export function commentContentToString (content: CommentContentNode[]) {
+export function commentContentToString (content: CommentContentNode[]): string {
     return content.reduce((acc, node) => {
         return acc + (node?.text ?? '');
     }, '');
@@ -238,7 +120,7 @@ function parseMention (text: string): [false, null, null]|[true, string, string]
  * @param text - The text of the node
  * @returns - The split nodes array
  */
-export function splitTextContentNode (text: string) {
+export function parseRichText (text: string) {
     const nodes: CommentContentNode[] = [];
     const textSpl = text.split(' ');
 
@@ -297,9 +179,9 @@ export function splitTextContentNode (text: string) {
     return nodes;
 }
 
-export function formatMultilineText (text: string) {
+export function parseMultilineRichText (text: string) {
     console.log('formatting multiline text');
-    const lineNodes = text.split('\n').map(splitTextContentNode);
+    const lineNodes = text.split('\n').map(parseRichText);
     return lineNodes.reduce((acc, lineNodes) => {
         return [...acc, ...lineNodes, { 
             type: 'text', 

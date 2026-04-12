@@ -11,7 +11,7 @@ import {  Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import { ScratchExtension } from '@/util/types/projects.types';
-import { addPrefixUrl, shortDate } from '@/util/functions';
+import { addPrefixUrl, shortDate, shortNumber } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
@@ -27,8 +27,6 @@ import { Project } from '@/util/types/projects.types';
 type ProjectPageHeaderProps = {
     project: Project;
     projectId: number;
-    extensions?: ScratchExtension[];
-    isCloud?: boolean;
 
     loves: StatProp;
     favs: StatProp;
@@ -44,8 +42,6 @@ type ProjectPageHeaderProps = {
 const ProjectPageHeader = ({
     project,
     projectId,
-    extensions = [],
-    isCloud = false,
     loves,
     favs,
     remixes,
@@ -77,6 +73,8 @@ const ProjectPageHeader = ({
     const modifiedStr = shortDate(project.history.modified);
 
     const publishedEqModified = publishedStr === modifiedStr;
+
+    const hasExtensionsOrCloud = project.extensions.length > 0 || project.hasCloudData;
 
     return (<View style={[styles.content]}>
         <View style={styles.titleSection}>
@@ -129,13 +127,13 @@ const ProjectPageHeader = ({
                 <View style={styles.stat}>
                     <IconRemix style={styles.statIcon} />
                     <Text style={styles.statText}>
-                        { project.stats.remixes }
+                        { shortNumber(project.stats.remixes) }
                     </Text>
                 </View>
                 <View style={styles.stat}>
                     <IconView style={styles.statIcon} />
                     <Text style={styles.statText}>
-                        { project.stats.views }
+                        { shortNumber(project.stats.views) }
                     </Text>
                 </View>
             </View>
@@ -151,7 +149,7 @@ const ProjectPageHeader = ({
                 { title: 'Instructions', text: project.instructions },
                 { title: 'Notes & Credits', text: project.description },
             ]}
-            childTitle={extensions.length > 0 && 'Extensions'}
+            childTitle={hasExtensionsOrCloud && 'Extensions'}
             subtext={
                 `Published on ${publishedStr}` 
                 + (!publishedEqModified ? ` • Modified on ${modifiedStr}` : '')
@@ -159,19 +157,19 @@ const ProjectPageHeader = ({
             href={`/projects/${projectId}/info`}
             onPress={onInfoPress}
         >
-            { extensions.length > 0 && <View style={styles.extensionsBar}>
-                { extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
-                { extensions.includes('videoSensing') && <ExtensionChip extension="videoSensing" /> }
-                { extensions.includes('faceSensing') && <ExtensionChip extension="faceSensing" /> }
-                { extensions.includes('pen') && <ExtensionChip extension="pen" /> }
-                { extensions.includes('music') && <ExtensionChip extension="music" /> }
-                { extensions.includes('translate') && <ExtensionChip extension="translate" /> }
-                { extensions.includes('makeymakey') && <ExtensionChip extension="makeymakey" /> }
-                { extensions.includes('microbit') && <ExtensionChip extension="microbit" /> }
-                { extensions.includes('gdxfor') && <ExtensionChip extension="gdxfor" /> }
-                { extensions.includes('ev3') && <ExtensionChip extension="ev3" /> }
-                { extensions.includes('wedo2') && <ExtensionChip extension="wedo2" /> }
-                { isCloud && <ExtensionChip extension="cloud" /> }
+            { hasExtensionsOrCloud && <View style={styles.extensionsBar}>
+                { project.extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
+                { project.extensions.includes('videoSensing') && <ExtensionChip extension="videoSensing" /> }
+                { project.extensions.includes('faceSensing') && <ExtensionChip extension="faceSensing" /> }
+                { project.extensions.includes('pen') && <ExtensionChip extension="pen" /> }
+                { project.extensions.includes('music') && <ExtensionChip extension="music" /> }
+                { project.extensions.includes('translate') && <ExtensionChip extension="translate" /> }
+                { project.extensions.includes('makeymakey') && <ExtensionChip extension="makeymakey" /> }
+                { project.extensions.includes('microbit') && <ExtensionChip extension="microbit" /> }
+                { project.extensions.includes('gdxfor') && <ExtensionChip extension="gdxfor" /> }
+                { project.extensions.includes('ev3') && <ExtensionChip extension="ev3" /> }
+                { project.extensions.includes('wedo2') && <ExtensionChip extension="wedo2" /> }
+                { project.hasCloudData && <ExtensionChip extension="cloud" /> }
             </View> }
         </InfoCard>
 

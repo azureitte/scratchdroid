@@ -5,7 +5,6 @@ import { Link } from "expo-router";
 import { SVGS } from "@/util/assets";
 import { shortRelativeDate } from "@/util/functions";
 import { $u } from "@/util/thumbnailCaching";
-import { stringToCommentContent } from "@/util/parsing/comments";
 import { MessageType, type Message } from "@/util/types/messages.types";
 
 import CommentContent from "./CommentContent";
@@ -42,11 +41,6 @@ const MessageRow = memo(({
 }: MessageRowProps) => {
 
     const Icon = getIcon(message);
-
-    const messageContent = useMemo(() => {
-        if (message.type !== 'addcomment') return [];
-        return stringToCommentContent(message.comment.content);
-    }, [(message as any).comment_fragment]);
 
     return (
         <View style={[styles.container, isUnread && styles.unread]}>
@@ -193,7 +187,7 @@ const MessageRow = memo(({
                         <View style={styles.commentBubbleDeco} />
                         <View style={styles.commentBubble}>
                             <CommentContent 
-                                content={messageContent}
+                                content={message.comment.content}
                                 numberOfLines={16}
                             />
                         </View>
