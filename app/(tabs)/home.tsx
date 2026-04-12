@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, RefreshControl } from 'react-native';
+import { StyleSheet, View, ScrollView, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -7,6 +7,7 @@ import { off, on } from '@/util/eventBus';
 import type { FeaturedTab } from '@/util/types/featured.types';
 import type { Project } from '@/util/types/projects.types';
 import type { CarouselProject, CarouselStudio } from '@/util/types/users.types';
+import type { ActivityUnit } from '@/util/types/activity.types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
@@ -17,6 +18,7 @@ import Carousel from '@/components/panels/Carousel';
 import Heading from '@/components/general/Heading';
 import ListLoading from '@/components/panels/ListLoading';
 import StudioCard from '@/components/panels/StudioCard';
+import ActivityCard from '@/components/panels/ActivityCard';
 
 const HomePage = () => {
 
@@ -28,7 +30,7 @@ const HomePage = () => {
     const [ isFirstFetch, setIsFirstFetch ] = useState(true);
     const scrollViewRef = useRef<ScrollView>(null);
 
-    const [ activity, setActivity ] = useState<any[]>([]);
+    const [ activity, setActivity ] = useState<ActivityUnit[]>([]);
     const [ projectLoves, setProjectLoves ] = useState<Project[]>([]);
     const [ featuredTab, setFeaturedTab ] = useState<FeaturedTab>({
         featuredProjects: [],
@@ -160,13 +162,13 @@ const HomePage = () => {
         <View style={[styles.content, {
             opacity: isFirstFetch ? 0 : 1,
         }]}>
-            <View style={{ padding: 16, gap: 20 }}>
-                <Heading style={{ fontSize: 24 }}>What's Happening</Heading>
-                <ScrollView style={styles.codeBlock} nestedScrollEnabled>
-                    <Text style={styles.codeBlockText}>
-                        {JSON.stringify(activity, null, 2)}
-                    </Text>
-                </ScrollView>
+            <View style={styles.card}>
+                <Heading style={styles.cardTitle}>What's Happening</Heading>
+                <ActivityCard
+                    activity={activity}
+                    href="/activity"
+                    showAvatars
+                />
             </View>
 
             <Carousel 
@@ -209,6 +211,15 @@ export default HomePage;
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#121212',
+    },
+
+    card: {
+        paddingTop: 20,
+        gap: 12,
+    },
+    cardTitle: {
+        fontSize: 24,
+        paddingHorizontal: 16,
     },
 
     topHide: {

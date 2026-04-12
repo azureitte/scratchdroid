@@ -40,12 +40,14 @@ import svgMessageComment from "../assets/svgs/messages/comment.svg";
 import svgMessageLove from "../assets/svgs/messages/love.svg";
 import svgMessageFavorite from "../assets/svgs/messages/favorite.svg";
 import svgMessageFollow from "../assets/svgs/messages/follow.svg";
+import svgMessageFollowStudio from "../assets/svgs/messages/follow-studio.svg";
 import svgMessageCuratorInvite from "../assets/svgs/messages/curator-invite.svg";
 import svgMessageRemix from "../assets/svgs/messages/remix.svg";
 import svgMessageStudioActivity from "../assets/svgs/messages/studio-activity.svg";
 import svgMessageForumActivity from "../assets/svgs/messages/forum-activity.svg";
 import svgMessageHostTransfer from "../assets/svgs/messages/host-transfer.svg";
 import svgMessageOwnerInvite from "../assets/svgs/messages/owner-invite.svg";
+import svgMessageProject from "../assets/svgs/messages/project.svg";
 
 import svgProjectExtTts from "../assets/svgs/project/extension-text2speech.svg";
 import svgProjectExtVideo from "../assets/svgs/project/extension-videosensing.svg";
@@ -116,12 +118,14 @@ export const SVGS = {
         love: svgMessageLove,
         favorite: svgMessageFavorite,
         follow: svgMessageFollow,
+        followStudio: svgMessageFollowStudio,
         curatorInvite: svgMessageCuratorInvite,
         remix: svgMessageRemix,
         studioActivity: svgMessageStudioActivity,
         forumActivity: svgMessageForumActivity,
         hostTransfer: svgMessageHostTransfer,
         ownerInvite: svgMessageOwnerInvite,
+        project: svgMessageProject,
     },
     project: {
         extTts: svgProjectExtTts,

@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { Image, StyleSheet, Text, View, Dimensions } from "react-native";
 import { Link } from "expo-router";
 
@@ -243,7 +243,6 @@ const styles = StyleSheet.create({
     },
     linkText: {
         color: "#93C0FF",
-        textDecorationLine: "underline",
         fontWeight: 600,
     },
 
