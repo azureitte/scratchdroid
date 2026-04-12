@@ -92,7 +92,7 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✖️ Restrict students from creating studios
 
 - ✅ Home page
-- ✖️ Home Activity / User Activity
+- ✅ Home Activity / User Activity
 - ✖️ Explore/search page
 - ✖️ Custom project viewer
 - ✖️ Project editor
