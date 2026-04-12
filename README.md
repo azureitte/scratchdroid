@@ -1,6 +1,8 @@
 # Scratchdroid
 An unofficial mobile client for the Scratch website and (in the future) editor.
 
+<img src="https://github.com/azureitte/scratchdroid/blob/main/banner-01_horizontal.webp?raw=true">
+
 ## Developing
 After cloning the repo, run:
 ```bash
