@@ -8,10 +8,8 @@ import { emit } from '@/util/eventBus';
 import type { FlattenedComment } from '@/util/types/comments.types';
 
 import { useSheet } from '@/hooks/useSheet';
-import { useDeleteUserComment } from '@/hooks/mutations/useDeleteUserComment';
-import { useDeleteModernComment } from '@/hooks/mutations/useDeleteModernComment';
-import { useReportUserComment } from '@/hooks/mutations/useReportUserComment';
-import { useReportModernComment } from '@/hooks/mutations/useReportModernComment';
+import { useDeleteComment } from '@/hooks/mutations/useDeleteComment';
+import { useReportComment } from '@/hooks/mutations/useReportComment';
 
 import type { AddCommentMenuProps } from './add.menu';
 
@@ -74,69 +72,42 @@ const CommentOptionsMenu = ({
         );
     }
 
-    const deleteUserAction = useDeleteUserComment({
-        username: objectName!,
-        onSuccess: (comment) => {
-            emit('delete-comment', comment);
+    const deleteAction = useDeleteComment({
+        type,
+        objectId,
+        objectName,
+        onSuccess: (newComment) => {
+            emit('delete-comment', newComment ?? comment);
             sheet.pop();
         },
         onError: displayDeleteError,
     });
-    const deleteProjectAction = useDeleteModernComment({
-        type: 'project',
-        objectId: Number(objectId),
-        onSuccess: () => {
-            emit('delete-comment', comment);
+
+    const reportAction = useReportComment({
+        type,
+        objectId,
+        objectName,
+        onSuccess: (newComment) => {
+            if (!newComment) newComment = unflattenComment({ ...comment, isReported: true })
+            emit('replace-comment', newComment);
+            displayReportSuccess();
             sheet.pop();
         },
-        onError: displayDeleteError,
+        onError: displayReportError,
     });
 
     const deleteComment = () => {
-        if (type === 'user') 
-            deleteUserAction.mutate({ 
-                id: comment.id,
-                parentId: comment.parent,
-            });
-        else if (type === 'project')
-            deleteProjectAction.mutate({ 
-                id: comment.id,
-                parentId: comment.parent,
-            });
+        deleteAction.mutate({ 
+            id: comment.id,
+            parentId: comment.parent,
+        });
     }
 
-
-    const reportUserAction = useReportUserComment({
-        username: objectName!,
-        onSuccess: (comment) => {
-            emit('replace-comment', comment);
-            displayReportSuccess();
-            sheet.pop();
-        },
-        onError: displayReportError,
-    });
-    const reportProjectAction = useReportModernComment({
-        type: 'project',
-        objectId: Number(objectId),
-        onSuccess: () => {
-            emit('replace-comment', unflattenComment({ ...comment, isReported: true }));
-            displayReportSuccess();
-            sheet.pop();
-        },
-        onError: displayReportError,
-    });
-
     const reportComment = () => {
-        if (type === 'user') 
-            reportUserAction.mutate({ 
-                id: comment.id,
-                parentId: comment.parent,
-            });
-        else if (type === 'project')
-            reportProjectAction.mutate({ 
-                id: comment.id,
-                parentId: comment.parent,
-            });
+        reportAction.mutate({ 
+            id: comment.id,
+            parentId: comment.parent,
+        });
     }
 
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -10,16 +10,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { lightTap, scrollCommentSectionToId } from '@/util/functions';
+import { lightTap } from '@/util/functions';
 import { projectHasCloudVariables } from '@/util/parsing/projects';
-import { off, on } from '@/util/eventBus';
-import type { Comment } from '@/util/types/comments.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useProject } from '@/hooks/queries/useProject';
-import { useComments } from '@/hooks/queries/useComments';
 import { useLoveProject } from '@/hooks/mutations/useLoveProject';
 import { useFavProject } from '@/hooks/mutations/useFavProject';
 
@@ -49,14 +46,6 @@ const ProjectPage = () => {
     } = useProject(projectId);
     const data = project.data;
     const isOwn = !!data && data.project.author.username !== session?.user?.username;
-
-    const comments = useComments({
-        type: 'project',
-        objectId: projectId,
-        author: data?.project.author.username ?? '',
-        highlightedComment: commentId ? Number(commentId) : undefined,
-        enabled: !!id && !!data?.project,
-    });
 
     const loveAction = useLoveProject({
         projectId,
@@ -109,7 +98,7 @@ const ProjectPage = () => {
     const [ webviewActive, setWebviewActive ] = useState(false);
 
     const ignoreProjectUnload = useRef(false);
-    const listRef = useRef<CommentSectionRef>(null);
+    const commentSectionRef = useRef<CommentSectionRef>(null);
 
     useChangeAppStateOnFocus({
         footerVisible: false,
@@ -137,58 +126,6 @@ const ProjectPage = () => {
     }, []);
     useFocusEffect(handleFocusEffect);
 
-    // initial fetch
-    useEffect(() => {
-        comments.refresh();
-    }, []);
-
-    // scroll to target comment, if commentId param was provided
-    useEffect(() => {
-        if (commentId && comments.highlightLoaded)
-            scrollCommentSectionToId(
-                listRef.current, 
-                comments.data, 
-                commentId
-            );
-    }, [comments.highlightLoaded, commentId]);
-
-    // insert comments directly when recieved event
-    
-    const handleAddComment = useCallback((comment?: Comment) => {
-        if (!comment) return;
-        let newData = comments.addCommentDirectly(comment);
-        
-        setTimeout(() => {
-            if (comment.isReply)
-                scrollCommentSectionToId(
-                    listRef.current, 
-                    newData, 
-                    comment.id,
-                );
-            else
-                listRef.current?.scrollToIndex(0);
-        }, 100);
-    }, [comments.data]);
-
-    const handleDeleteComment = useCallback((comment: Comment) => {
-        comments.deleteCommentDirectly(comment);
-    }, [comments]);
-
-    const handleReplaceComment = useCallback((comment: Comment) => {
-        comments.replaceCommentDirectly(comment);
-    }, [comments]);
-
-    useFocusEffect(() => {
-        on('add-comment', handleAddComment);
-        on('delete-comment', handleDeleteComment);
-        on('replace-comment', handleReplaceComment);
-        return () => {
-            off('add-comment', handleAddComment);
-            off('delete-comment', handleDeleteComment);
-            off('replace-comment', handleReplaceComment);
-        };
-    });
-
     const handleRefresh = async () => {
         setIsRefreshing(true);
         await fetchAll();
@@ -198,7 +135,7 @@ const ProjectPage = () => {
     const fetchAll = async () => {
         await Promise.all([
             project.refetch(),
-            comments.refresh(),
+            commentSectionRef.current?.refresh(),
         ]);
     };
 
@@ -219,9 +156,11 @@ const ProjectPage = () => {
             <CommentSection 
                 type='project'
                 objectId={Number(id)}
-                comments={comments.data}
+                author={data?.project.author.username}
+                highlightedComment={commentId ? Number(commentId) : undefined}
                 isOwn={session?.user?.username === data?.project.author.username}
                 canComment={data.project.canComment}
+
                 header={<ProjectPageHeader 
                     project={data.project}
                     projectId={Number(id)}
@@ -246,14 +185,9 @@ const ProjectPage = () => {
                     handleProjectOptions={handleProjectOptions}
                     onInfoPress={() => ignoreProjectUnload.current = true}
                 />}
-                hasNextPage={comments.hasNextPage}
-                isLoading={comments.isLoading}
-                isFirstLoading={comments.isFirstLoading}
-                fetchNextPage={comments.fetchNextPage}
-                fetchReplies={comments.fetchRepliesFor}
                 isRefreshing={isRefreshing}
                 handleRefresh={handleRefresh}
-                ref={listRef}
+                ref={commentSectionRef}
             />
         </View>
     </>);

@@ -1,6 +1,8 @@
 import React, { 
     forwardRef, 
     ReactElement,
+    useCallback,
+    useEffect,
     useImperativeHandle, 
     useRef, 
     useState 
@@ -19,7 +21,7 @@ import {
 import { longTap, sleep } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
-import type { FlattenedComment } from '@/util/types/comments.types';
+import type { Comment, FlattenedComment } from '@/util/types/comments.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
@@ -31,11 +33,13 @@ import CommentItem from '@/components/panels/CommentItem';
 
 import type { AddCommentMenuProps } from '@/app-menus/comments/add.menu';
 import type { CommentOptionsMenuProps } from '@/app-menus/comments/options.menu';
+import { useComments } from '@/hooks/queries/useComments';
+import { useFocusEffect } from 'expo-router';
+import { off, on } from '@/util/eventBus';
 
 
 export type CommentSectionRef = {
-    scrollToIndex: (index: number) => void;
-    revealRepliesUntil: (parentId: number, index: number) => void;
+    refresh: () => void;
 };
 
 type CommentSectionProps = {
@@ -45,18 +49,14 @@ type CommentSectionProps = {
         | 'studio';
     objectId: number;
     objectName?: string;
-
-    comments: FlattenedComment[];
-    listStyle?: ViewStyle;
-    header?: ReactElement;
+    author?: string;
+    highlightedComment?: number;
     isOwn?: boolean;
     canComment?: boolean;
 
-    hasNextPage?: boolean;
-    isLoading?: boolean;
-    isFirstLoading?: boolean;
-    fetchNextPage?: () => void;
-    fetchReplies?: (parentId: number, from: number, limit: number) => void;
+    listStyle?: ViewStyle;
+    header?: ReactElement;
+
     isRefreshing?: boolean;
     handleRefresh?: () => void;
 }
@@ -65,18 +65,14 @@ const CommentSection = forwardRef(({
     type = 'user',
     objectId,
     objectName,
+    author,
+    highlightedComment,
 
-    comments,
     listStyle,
     header,
     isOwn = false,
     canComment = true,
 
-    hasNextPage = false,
-    isLoading = false,
-    isFirstLoading = false,
-    fetchNextPage = () => {},
-    fetchReplies,
     isRefreshing = false,
     handleRefresh,
 }: CommentSectionProps, ref?: React.ForwardedRef<CommentSectionRef>) => {
@@ -89,6 +85,7 @@ const CommentSection = forwardRef(({
     const isProgrammaticScroll = useRef(false);
     const highlightIdx = useRef<number|null>(null);
     const hightlightTimeout = useRef<any>(null);
+    const initPageFetchCount = useRef(0);
 
     const [ isHighlighting, setHighlighting ] = useState(false);
 
@@ -96,7 +93,120 @@ const CommentSection = forwardRef(({
     // (if not all replies are revealed, a "Show More Replies" button will be shown)
     const [ replyRevealMap, setReplyRevealMap ] = useState<Record<number, number>>({});
 
-    const handleAddComment = () => {
+
+    let enabled = true;
+    if (type === 'user' && !objectName) enabled = false;
+    if (type === 'project' && (!objectId || !author)) enabled = false;
+
+    const comments = useComments({
+        type,
+        objectId: type === 'user' ? undefined : objectId,
+        objectName: type === 'user' ? objectName : undefined,
+        author,
+        highlightedComment,
+        enabled,
+    });
+
+    useImperativeHandle(ref, () => ({
+        refresh: () => {
+            comments.refresh();
+        },
+    }));
+
+    const scrollToIndex = (index: number) => {
+        const commentAtIndex = comments.data[index];
+        if (!commentAtIndex) return;
+        if (commentAtIndex.isReply) revealRepliesUntil(commentAtIndex.parent, commentAtIndex.replyIdx);
+
+        try {
+            index++;
+            highlightIdx.current = index;
+            isProgrammaticScroll.current = true;
+            listRef.current?.scrollToIndex({ 
+                index, 
+                animated: true,
+                viewPosition: 0.4,
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const scrollToComment = (commentId: number|string, data?: FlattenedComment[]) => {
+        if (!data) data = comments.data;
+
+        const comment = data.find(c => c.id === Number(commentId));
+        if (comment) {
+            const targetIdx = data.indexOf(comment);
+            setTimeout(() => scrollToIndex(targetIdx), 0);
+            return true;
+        }
+        return false;
+    }
+
+    // initial fetch
+    useEffect(() => {
+        enabled && comments.refresh();
+    }, [enabled]);
+
+    // scroll to target comment, if commentId param was provided
+    useEffect(() => {
+        if (comments.isFirstLoading) return;
+
+        if (highlightedComment) {
+            if (comments.flags.highlightsComments) {
+                if (comments.highlightLoaded) scrollToComment(highlightedComment);
+            } else {
+                if (comments.data.length && !comments.isFirstLoading) {
+                    // if has comment with provided id, resolve
+                    const found = scrollToComment(highlightedComment);
+                    if (found) return;
+        
+                    // if not, fetch comments until comment with provided id is found
+                    // limit at 40 pages max
+                    if (comments.hasNextPage && initPageFetchCount.current < 40) {
+                        comments.fetchNextPage();
+                        initPageFetchCount.current++;
+                    }
+                }
+            }
+        }
+    }, [comments.highlightLoaded, comments.data, highlightedComment, comments.isFirstLoading]);
+
+
+    // insert comments directly when recieved event
+    const onAddComment = useCallback((comment?: Comment) => {
+        if (!comment) return;
+        let newData = comments.addCommentDirectly(comment);
+        
+        setTimeout(() => {
+            if (comment.isReply || comments.flags.isOptimistic)
+                scrollToComment(comment.id, newData);
+            else
+                scrollToIndex(0);
+        }, 100);
+    }, [comments.data]);
+
+    const onDeleteComment = useCallback((comment: Comment) => {
+        comments.deleteCommentDirectly(comment);
+    }, [comments]);
+
+    const onReplaceComment = useCallback((comment: Comment) => {
+        comments.replaceCommentDirectly(comment);
+    }, [comments]);
+
+    useFocusEffect(() => {
+        on('add-comment', onAddComment);
+        on('delete-comment', onDeleteComment);
+        on('replace-comment', onReplaceComment);
+        return () => {
+            off('add-comment', onAddComment);
+            off('delete-comment', onDeleteComment);
+            off('replace-comment', onReplaceComment);
+        };
+    });
+
+    const handleAddRootComment = () => {
         sheet.push<AddCommentMenuProps>('addComment', {
             isReply: false,
             type,
@@ -135,6 +245,30 @@ const CommentSection = forwardRef(({
         });
     }
 
+
+    // reply revealing
+
+    const getReplyRevealCount = (parentId: number) => {
+        return replyRevealMap[parentId] ?? DEFAULT_REPLY_COUNT;
+    }
+    const revealMoreReplies = (parentId: number) => {
+        setReplyRevealMap(prev => ({
+            ...prev,
+            [parentId]: (prev[parentId] ?? DEFAULT_REPLY_COUNT) + REPLY_INCREMENT_COUNT,
+        }));
+    }
+    const revealRepliesUntil = (parentId: number, index: number) => {
+        setReplyRevealMap(prev => ({
+            ...prev,
+            [parentId]: index+2,
+        }));
+    }
+    const resetRevealedReplies = () => {
+        setReplyRevealMap({});
+    }
+
+
+
     const stickyHeader = <View style={[{
         marginTop: 50,
     }]}>
@@ -143,7 +277,7 @@ const CommentSection = forwardRef(({
             <Pressable
                 onPress={() => {
                     if (!canComment) return;
-                    handleAddComment();
+                    handleAddRootComment();
                 }}
                 style={styles.addCommentWrap}
                 android_ripple={ canComment 
@@ -168,53 +302,9 @@ const CommentSection = forwardRef(({
         </View>
     </View>;
 
-    const getReplyRevealCount = (parentId: number) => {
-        return replyRevealMap[parentId] ?? DEFAULT_REPLY_COUNT;
-    }
-
-    const revealMoreReplies = (parentId: number) => {
-        setReplyRevealMap(prev => ({
-            ...prev,
-            [parentId]: (prev[parentId] ?? DEFAULT_REPLY_COUNT) + REPLY_INCREMENT_COUNT,
-        }));
-    }
-
-    const revealRepliesUntil = (parentId: number, index: number) => {
-        setReplyRevealMap(prev => ({
-            ...prev,
-            [parentId]: index+2,
-        }));
-    }
-
-    const resetRevealedReplies = () => {
-        setReplyRevealMap({});
-    }
-
-
-    useImperativeHandle(ref, () => ({
-        scrollToIndex: (index: number) => {
-            const commentAtIndex = comments[index];
-            if (commentAtIndex.isReply) revealRepliesUntil(commentAtIndex.parent, commentAtIndex.replyIdx);
-
-            try {
-                index++;
-                highlightIdx.current = index;
-                isProgrammaticScroll.current = true;
-                listRef.current?.scrollToIndex({ 
-                    index, 
-                    animated: true,
-                    viewPosition: 0.4,
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        },
-        revealRepliesUntil: revealRepliesUntil,
-    }));
-
     return (<View style={styles.container}>
         <FlatList
-            data={[ null, ...comments ]}
+            data={[ null, ...comments.data ]}
             renderItem={({ item, index }: {
                 item: FlattenedComment|null;
                 index: number;
@@ -232,8 +322,8 @@ const CommentSection = forwardRef(({
                         isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
                         onShowMore={async () => {
                             if (item.isReply) {
-                                if (fetchReplies) {
-                                    await fetchReplies(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
+                                if (comments.flags.fetchesReplies) {
+                                    await comments.fetchRepliesFor(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
                                     await sleep(0);
                                 }
                                 revealMoreReplies(item.parent);
@@ -252,12 +342,12 @@ const CommentSection = forwardRef(({
             stickyHeaderIndices={[1]}
 
             ListHeaderComponent={header}
-            ListFooterComponent={isFirstLoading 
+            ListFooterComponent={comments.isFirstLoading 
                 ? <ListLoading />
                 : <ListLoadMore
-                    hasNextPage={hasNextPage}
-                    isLoading={isLoading}
-                    fetchNextPage={fetchNextPage}
+                    hasNextPage={comments.hasNextPage}
+                    isLoading={comments.isLoading}
+                    fetchNextPage={comments.fetchNextPage}
                 />
             }
             refreshControl={<RefreshControl
@@ -282,6 +372,7 @@ const CommentSection = forwardRef(({
                     animated: true,
                 });
                 setTimeout(() => {
+                    if (info.index >= comments.data.length) return;
                     listRef.current?.scrollToIndex({ 
                         index: info.index, 
                         animated: true, 

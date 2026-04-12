@@ -104,16 +104,6 @@ export const addOrReplace = (arr: any[], item: any, idx: number) => {
         arr[idx] = item;
 }
 
-export const scrollCommentSectionToId = (listRef: CommentSectionRef|null|undefined, comments: FlattenedComment[], commentId: number|string) => {
-    const comment = comments.find(c => c.id === Number(commentId));
-    if (comment) {
-        const targetIdx = comments.indexOf(comment);
-        setTimeout(() => listRef?.scrollToIndex(targetIdx), 0);
-        return true;
-    }
-    return false;
-}
-
 export const buildMenu = (def: PartialSheetMenuDefinition): SheetMenuDefinition => ({
     ...def,
     detents: def.detents ?? ['auto'],

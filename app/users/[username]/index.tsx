@@ -1,18 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { lightTap, scrollCommentSectionToId } from '@/util/functions';
+import { lightTap } from '@/util/functions';
 import { refreshCacheForUser } from '@/util/thumbnailCaching';
-import { off, on } from '@/util/eventBus';
-import type { Comment } from '@/util/types/comments.types';
 
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
-import { useComments } from '@/hooks/queries/useComments';
 import { useUser } from '@/hooks/queries/useUser';
 import { useFollowUser } from '@/hooks/mutations/useFollowUser';
 
@@ -40,12 +37,6 @@ const UserPage = () => {
     } = useUser(username);
 
     const isOwn = session?.user?.username === username;
-
-    const comments = useComments({
-        type: 'user',
-        objectName: username,
-        enabled: !!username,
-    });
 
     const followAction = useFollowUser({
         username,
@@ -78,8 +69,7 @@ const UserPage = () => {
     const [ isRefreshing, setIsRefreshing ] = useState(false);
     const [ headerRerender, setHeaderRerender ] = useState(0);
 
-    const listRef = useRef<CommentSectionRef>(null);
-    const initPageFetchCount = useRef(0);
+    const commentSectionRef = useRef<CommentSectionRef>(null);
 
     useChangeAppStateOnFocus({
         footerVisible: false,
@@ -87,68 +77,6 @@ const UserPage = () => {
     });
 
     const insets = useSafeAreaInsets();
-
-
-    // initial fetch
-    useEffect(() => {
-        comments.refresh();
-    }, []);
-
-    // scroll to target comment, if commentId param was provided
-    useEffect(() => {
-        if (commentId && comments.data.length && !comments.isFirstLoading) {
-            // if has comment with provided id, resolve
-            const found = scrollCommentSectionToId(
-                listRef.current, 
-                comments.data, 
-                commentId
-            );
-            if (found) return;
-
-            // if not, fetch comments until comment with provided id is found
-            // limit at 40 pages max
-            if (comments.hasNextPage && initPageFetchCount.current < 40) {
-                comments.fetchNextPage();
-                initPageFetchCount.current++;
-            }
-        }
-    }, [comments, comments.data, commentId]);
-
-
-    // insert comments directly when recieved event
-
-    const handleAddComment = useCallback((comment?: Comment) => {
-        if (!comment) return;
-
-        const newData = comments.addCommentDirectly(comment);
-        setTimeout(() => {
-            scrollCommentSectionToId(
-                listRef.current, 
-                newData, 
-                comment.id,
-            );
-        }, 100);
-    }, [comments.data]);
-
-    const handleDeleteComment = useCallback((comment: Comment) => {
-        comments.deleteCommentDirectly(comment);
-    }, [comments]);
-
-    const handleReplaceComment = useCallback((comment: Comment) => {
-        comments.replaceCommentDirectly(comment);
-    }, [comments]);
-
-    useFocusEffect(() => {
-        on('add-comment', handleAddComment);
-        on('delete-comment', handleDeleteComment);
-        on('replace-comment', handleReplaceComment);
-        return () => {
-            off('add-comment', handleAddComment);
-            off('delete-comment', handleDeleteComment);
-            off('replace-comment', handleReplaceComment);
-        };
-    });
-
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
@@ -161,7 +89,7 @@ const UserPage = () => {
     const fetchAll = async () => {
         await Promise.all([
             user.refetch(),
-            comments.refresh(),
+            commentSectionRef.current?.refresh(),
         ]);
     };
 
@@ -183,9 +111,10 @@ const UserPage = () => {
             type='user'
             objectId={user.data.id}
             objectName={username}
-            comments={comments.data} 
+            highlightedComment={commentId ? Number(commentId) : undefined}
             isOwn={isOwn}
             canComment={user.data.canComment}
+
             header={<UserPageHeader 
                 data={user.data} 
                 username={username}
@@ -197,13 +126,9 @@ const UserPage = () => {
                 }}
                 handleUserOptions={handleUserOptions}
             />}
-            hasNextPage={comments.hasNextPage}
-            isLoading={comments.isLoading}
-            isFirstLoading={comments.isFirstLoading}
-            fetchNextPage={comments.fetchNextPage}
             isRefreshing={isRefreshing}
             handleRefresh={handleRefresh}
-            ref={listRef}
+            ref={commentSectionRef}
         />
         </View>
     </>);

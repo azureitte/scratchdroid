@@ -18,7 +18,7 @@ import { useApi } from "../useApi";
 import { useSession } from "../useSession";
 
 type UseCommentsProps = {
-    type: 'project'|'user';
+    type: 'project'|'user'|'studio';
     objectId?: number;
     objectName?: string;
     author?: string;
@@ -416,12 +416,13 @@ export const useComments = ({
 
     return { 
         data: flatData,
+        flags,
 
         isLoading: 
             commentsQuery.isRefetching || 
             commentsQuery.isFetchingNextPage ||
             !highlightLoaded, 
-        highlightLoaded,
+        highlightLoaded: highlightLoaded && !!highlight,
         isFirstLoading: commentsQuery.isLoading,
         isSuccess: commentsQuery.isSuccess,
         isFetchingNextPage: commentsQuery.isFetchingNextPage,

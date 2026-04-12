@@ -7,8 +7,7 @@ import { emit } from '@/util/eventBus';
 
 import { useSheet } from '@/hooks/useSheet';
 import { useSession } from '@/hooks/useSession';
-import { useAddUserComment } from '@/hooks/mutations/useAddUserComment';
-import { useAddModernComment } from '@/hooks/mutations/useAddModernComment';
+import { useAddComment } from '@/hooks/mutations/useAddComment';
 
 import Button from '@/components/general/Button';
 import TextArea from '@/components/general/TextArea';
@@ -46,8 +45,10 @@ const AddCommentMenu = ({
     const [ commentText, setCommentText ] = useState('');
     const [ errorMessage, setErrorMessage ] = useState('');
 
-    const userAction = useAddUserComment({
-        username: objectName!,
+    const action = useAddComment({
+        type,
+        objectId,
+        objectName,
         onSuccess: (comment) => {
             setErrorMessage('');
             emit('add-comment', comment);
@@ -57,24 +58,6 @@ const AddCommentMenu = ({
             setErrorMessage(error);
         },
     });
-
-    const projectAction = useAddModernComment({
-        type: 'project',
-        objectId: Number(objectId),
-        onSuccess: (comment) => {
-            setErrorMessage('');
-            emit('add-comment', comment);
-            sheet.pop();
-        },
-        onError: (error) => {
-            setErrorMessage(error);
-        },
-    });
-
-    const action = 
-        type === 'user' ? userAction :
-        type === 'project' ? projectAction :
-        undefined;
 
     return (
         <View style={[styles.container]}>
