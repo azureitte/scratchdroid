@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import { useLocalSearchParams } from 'expo-router';
 
 import { ActivityUnit } from '@/util/types/activity.types';
 
@@ -17,11 +18,14 @@ const HEADER_HEIGHT = 131;
 const HEADER_STICK = 105;
 
 
-const FollowingActivityPage = () => {
+const UserActivityPage = () => {
 
+    const { username } = useLocalSearchParams<{ 
+        username: string,
+    }>();
     const insets = useSafeAreaInsets();
 
-    const activity = useInfiniteActivity({ type: 'following' });
+    const activity = useInfiniteActivity({ type: 'user', username });
 
     const [isRefreshing, setIsRefreshing] = useState(true);
     const listRef = useRef<FlatList<any>>(null);
@@ -39,7 +43,7 @@ const FollowingActivityPage = () => {
 
     useChangeAppStateOnFocus({
         headerVisible: true,
-        footerVisible: true,
+        footerVisible: false,
         primaryColor: 'regular',
     });
 
@@ -53,7 +57,7 @@ const FollowingActivityPage = () => {
         index: number;
     }) => (<ActivityRow
         unit={item}
-        showAvatars
+        linkActor={false}
         variation="full"
     />), []);
 
@@ -61,12 +65,12 @@ const FollowingActivityPage = () => {
         <View style={styles.container}>
             <View style={[
                 styles.activityContainer,
-                { marginBottom: insets.bottom + 60 },
+                { marginBottom: insets.bottom },
             ]}>
                 <ScrollablePageHeader
                     scrollY={scrollY}
                     headerStick={HEADER_STICK}
-                    title="What's Happening"
+                    title={`@${username}'s Activity`}
                 />
 
                 <Animated.FlatList
@@ -100,7 +104,7 @@ const FollowingActivityPage = () => {
     
 };
 
-export default FollowingActivityPage;
+export default UserActivityPage;
 
 const styles = StyleSheet.create({
     container: {

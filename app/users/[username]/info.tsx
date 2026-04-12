@@ -48,7 +48,6 @@ const UserInfoPage = () => {
                 paddingBottom: insets.bottom,
             }]}
         >
-            
             <InfoCard
                 sections={[
                     { title: 'About Me', text: data.bio },

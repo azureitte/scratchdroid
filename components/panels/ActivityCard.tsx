@@ -11,6 +11,8 @@ type ActivityCardProps = {
     title?: string;
     variation?: 'regular'|'full';
     showAvatars?: boolean;
+    linkActor?: boolean;
+    expandHeight?: boolean;
     href?: string;
     onPress?: () => void;
 }
@@ -20,6 +22,8 @@ const ActivityCard = ({
     title,
     variation = 'regular',
     showAvatars = false,
+    linkActor = true,
+    expandHeight = false,
     href,
     onPress,
 }: ActivityCardProps) => {
@@ -29,6 +33,7 @@ const ActivityCard = ({
         <View style={[
             styles.contentCard, 
             variation === 'full' && styles.contentCardFull,
+            expandHeight && styles.contentCardExpand,
         ]}>
 
             { title && <Text style={[
@@ -39,7 +44,13 @@ const ActivityCard = ({
             </Text> }
 
             <View style={styles.itemsWrapper}>
-                { activity.map(unit => <ActivityRow key={unit.id} unit={unit} showAvatars={showAvatars} />) }
+                { activity.map(unit => <ActivityRow 
+                    key={unit.id} 
+                    unit={unit} 
+                    showAvatars={showAvatars} 
+                    linkActor={linkActor}
+                    variation={variation}
+                />) }
             </View>
 
             <View style={styles.footer}>
@@ -71,6 +82,9 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         backgroundColor: '#0000',
     },
+    contentCardExpand: {
+        height: '100%',
+    },
 
     contentCardTitle: {
         paddingHorizontal: 16,
@@ -88,6 +102,7 @@ const styles = StyleSheet.create({
 
     itemsWrapper: {
         flex: 1,
+        overflow: 'hidden',
     },
 
     footer: {

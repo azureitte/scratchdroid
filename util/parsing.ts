@@ -189,3 +189,43 @@ export function parseMultilineRichText (text: string) {
         }];
     }, [] as CommentContentNode[]).slice(0, -1);
 }
+
+export function parseRelativeDateString (input: string): Date {
+    const now = new Date();
+
+    const units: Record<string, number> = {
+        second: 1000,
+        seconds: 1000,
+        minute: 60 * 1000,
+        minutes: 60 * 1000,
+        hour: 60 * 60 * 1000,
+        hours: 60 * 60 * 1000,
+        day: 24 * 60 * 60 * 1000,
+        days: 24 * 60 * 60 * 1000,
+        week: 7 * 24 * 60 * 60 * 1000,
+        weeks: 7 * 24 * 60 * 60 * 1000,
+        month: 30 * 24 * 60 * 60 * 1000,
+        months: 30 * 24 * 60 * 60 * 1000,
+        year: 365 * 24 * 60 * 60 * 1000,
+        years: 365 * 24 * 60 * 60 * 1000,
+    };
+
+    let totalMs = 0;
+
+    // Remove "ago" and split by comma
+    const parts = input.replace("ago", "").split(",");
+
+    for (const part of parts) {
+        const match = part.trim().match(/(\d+)\s+(\w+)/);
+        if (!match) continue;
+
+        const value = parseInt(match[1], 10);
+        const unit = match[2].toLowerCase();
+
+        if (units[unit]) {
+            totalMs += value * units[unit];
+        }
+    }
+
+    return new Date(now.getTime() - totalMs);
+}

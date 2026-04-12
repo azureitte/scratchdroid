@@ -7,10 +7,23 @@ import { useApi } from "../useApi";
 
 const ITEMS_PER_PAGE = 20;
 
-export const useInfiniteActivity = () => {
+type InfiniteActivityOptions = {
+    type?: 'following'|'user';
+    username?: string;
+}
+
+export const useInfiniteActivity = ({
+    type = 'following',
+    username,
+}: InfiniteActivityOptions) => {
     const queryClient = useQueryClient();
     const { session } = useSession();
-    const { q: { getFollowingActivity } } = useApi();
+    const { q: { 
+        getFollowingActivity,
+        getUserActivity,
+    } } = useApi();
+
+    const queryKey = ['activity', type, username] as const;
 
     const { 
         data, 
@@ -23,13 +36,19 @@ export const useInfiniteActivity = () => {
     } = useInfiniteQuery<
         ActivityUnit[], Error, 
         InfiniteData<ActivityUnit[]>, 
-        ['activity'], 
+        typeof queryKey, 
         number
     >({
-        queryKey: ['activity'],
+        queryKey,
         queryFn: async ({ pageParam }) => {
-            if (!session?.user) return [];
+            if (type === 'user')
+                return getUserActivity({
+                    username: username!,
+                    from: pageParam * ITEMS_PER_PAGE,
+                    limit: ITEMS_PER_PAGE,
+                });
 
+            if (!session?.user) return [];
             return getFollowingActivity(session, pageParam * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
         },
         getNextPageParam: (currentPage, allPages) => currentPage.length < ITEMS_PER_PAGE 
@@ -44,7 +63,7 @@ export const useInfiniteActivity = () => {
     });
 
     const resetToFirstPage = () => {
-        queryClient.setQueryData(['activity'], (data: InfiniteData<ActivityUnit[]>) => {
+        queryClient.setQueryData(queryKey, (data: InfiniteData<ActivityUnit[]>) => {
             if (!data) return undefined;
             return {
                 pages: [data.pages[0]], // Keep only the first page
@@ -56,7 +75,7 @@ export const useInfiniteActivity = () => {
     const refresh = () => {
         resetToFirstPage();
         queryClient.invalidateQueries({
-            queryKey: ['activity'],
+            queryKey,
         });
     }
 

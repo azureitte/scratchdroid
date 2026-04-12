@@ -27,17 +27,28 @@ const getIcon = (unit: ActivityUnit) => {
 type ActivityRowProps = {
     unit: ActivityUnit;
     showAvatars?: boolean;
+    linkActor?: boolean;
+    variation?: 'regular'|'full';
 };
 
 const MessageRow = memo(({
     unit,
     showAvatars = false,
+    linkActor = true,
+    variation = 'regular',
 }: ActivityRowProps) => {
 
     const Icon = getIcon(unit);
 
+    const actor = linkActor
+        ? <Link href={`/users/${unit.actor.username}`} style={styles.linkText}>{unit.actor.username}</Link>
+        : <Text style={styles.bold}>{unit.actor.username}</Text>;
+
     return (
-        <View style={styles.container}>
+        <View style={[
+            styles.container,
+            (variation === 'full' || showAvatars) && styles.containerFull,
+        ]}>
             { showAvatars 
                 ? <Image 
                     source={{ 
@@ -53,9 +64,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.FOLLOW_USER && 
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> is now following <Link style={styles.linkText} href={`/users/${unit.followee.username}`}>
+                            { actor } is now following <Link style={styles.linkText} href={`/users/${unit.followee.username}`}>
                                 {unit.followee.username}
                             </Link>
                         </Text> 
@@ -63,9 +72,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.FOLLOW_STUDIO && 
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> is now following <Link style={styles.linkText} href={`/users/${unit.studio.id}`}>
+                            { actor } is now following <Link style={styles.linkText} href={`/users/${unit.studio.id}`}>
                                 {unit.studio.title}
                             </Link>
                         </Text> 
@@ -73,9 +80,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.SHARE_PROJECT && 
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> shared the project <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                            { actor } shared the project <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
                                 {unit.project.title}
                             </Link>
                         </Text> 
@@ -83,9 +88,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.LOVE_PROJECT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> loved <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                            { actor } loved <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
                                 {unit.project.title}
                             </Link>
                         </Text> 
@@ -93,9 +96,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.FAVORITE_PROJECT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> favorited <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                            { actor } favorited <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
                                 {unit.project.title}
                             </Link>
                         </Text>
@@ -103,9 +104,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.REMIX_PROJECT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> remixed <Link style={styles.linkText} href={`/projects/${unit.parent.id}`}>
+                            { actor } remixed <Link style={styles.linkText} href={`/projects/${unit.parent.id}`}>
                                 {unit.parent.title}
                             </Link> as <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
                                 {unit.project.title}
@@ -115,9 +114,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.BECOME_CURATOR &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> became a curator of <Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
+                            { actor } became a curator of <Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
                                 {unit.studio.title}
                             </Link>
                         </Text>
@@ -125,9 +122,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.BECOME_MANAGER &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> was promoted to manager of <Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
+                            { actor } was promoted to manager of <Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
                                 {unit.studio.title}
                             </Link>
                         </Text>
@@ -135,9 +130,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.ADD_PROJECT && 
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> added <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                            { actor } added <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
                                 {unit.project.title}
                             </Link> to the studio <Link style={styles.linkText} href={`/projects/${unit.studio.id}`}>
                                 {unit.studio.title}
@@ -147,9 +140,7 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.USER_JOIN &&
                         <Text style={styles.text}>
-                             <Link style={styles.linkText} href={`/users/${unit.actor.username}`}>
-                                {unit.actor.username}
-                            </Link> joined Scratch 
+                            { actor } joined Scratch 
                         </Text>
                     }
 
@@ -167,13 +158,21 @@ export default MessageRow;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flex: 0,
         flexDirection: "row",
         alignItems: "flex-start",
-        padding: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: "#262626",
         gap: 16,
+        flexShrink: 0,
+        flexGrow: 0,
+        minHeight: 42,
+        width: '100%',
+    },
+    containerFull: {
+        paddingVertical: 16,
     },
 
     icon: {
@@ -182,16 +181,17 @@ const styles = StyleSheet.create({
     avatar: {
         width: 32,
         height: 32,
-        margin: -4,
+        margin: -6,
         marginLeft: -2,
+        marginRight: -4,
         borderRadius: 6,
     },
 
     contentWrapper: {
         flex: 1,
+        maxWidth: '100%',
         flexDirection: "column",
         gap: 12,
-        height: '100%',
         justifyContent: 'center',
     },
 
@@ -209,6 +209,9 @@ const styles = StyleSheet.create({
     },
     linkText: {
         color: "#93C0FF",
+        fontWeight: 600,
+    },
+    bold: {
         fontWeight: 600,
     },
 

@@ -1,9 +1,10 @@
+import React, { forwardRef, useMemo } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { truncateText } from '@/util/functions';
 import { parseMultilineRichText } from '@/util/parsing';
 import { useRouter } from 'expo-router';
-import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
 import CommentContent from './CommentContent';
 import { CommentContentNode } from '@/util/types/comments.types';
 
@@ -23,9 +24,10 @@ type InfoCardProps = {
     maxLength?: number;
     lengthBehavior?: 'distribute'|'duplicate';
     variation?: 'regular'|'full';
+    expandHeight?: boolean;
 }
 
-const InfoCard = ({
+const InfoCard = forwardRef(({
     sections,
     childTitle,
     children,
@@ -36,7 +38,8 @@ const InfoCard = ({
     maxLength = 800,
     lengthBehavior = 'distribute',
     variation = 'regular',
-}: InfoCardProps) => {
+    expandHeight = false,
+}: InfoCardProps, ref?: React.ForwardedRef<View>|null) => {
     
     const router = useRouter();
 
@@ -62,12 +65,14 @@ const InfoCard = ({
             style={[
                 styles.contentCard, 
                 variation === 'full' && styles.contentCardFull,
+                expandHeight && styles.contentCardExpand,
             ]}
             onPress={() => {
                 if (href) router.push(href);
                 if (onPress) onPress();
             }}
             android_ripple={href ? DEFAULT_RIPPLE_CONFIG : undefined}
+            ref={ref}
         >
             { nonEmptySections.map((section, idx) => {
                 const [content, isTruncated] = formattedContents[idx];
@@ -98,7 +103,7 @@ const InfoCard = ({
             </Text> }
         </Pressable>
     );
-};
+});
 
 export default InfoCard;
 
@@ -116,6 +121,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 16,
         backgroundColor: '#0000',
+    },
+    contentCardExpand: {
+        minHeight: 240,
     },
 
     contentCardTitle: {

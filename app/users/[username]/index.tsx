@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
@@ -11,6 +11,7 @@ import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
 import { useUser } from '@/hooks/queries/useUser';
+import { useInfiniteActivity } from '@/hooks/queries/useInfiniteActivity';
 import { useFollowUser } from '@/hooks/mutations/useFollowUser';
 
 import CommentSection, { CommentSectionRef } from '@/components/panels/CommentSection';
@@ -18,6 +19,8 @@ import ListLoading from '@/components/panels/ListLoading';
 import UserPageHeader from '@/components/panels/UserPageHeader';
 
 import type { UserOptionsMenuProps } from '@/app-menus/user/options.menu';
+import { ActivityUnit } from '@/util/types/activity.types';
+import { useApi } from '@/hooks/useApi';
 
 
 const UserPage = () => {
@@ -29,12 +32,28 @@ const UserPage = () => {
 
     const { session } = useSession();
     const sheet = useSheet();
+    const { q: { getUserActivity } } = useApi();
 
     const { 
         user, 
         setIsFollowingDirectly,
         setCommentsAllowedDirectly,
     } = useUser(username);
+    
+    const [ activity, setActivity ] = useState<ActivityUnit[]>([]);
+
+    const fetchActivity = useCallback(async () => {
+        const res = await getUserActivity({
+            username,
+            from: 0,
+            limit: 6,
+        });
+        setActivity(res);
+    }, []);
+
+    useEffect(() => {
+        fetchActivity();
+    }, []);
 
     const isOwn = session?.user?.username === username;
 
@@ -90,6 +109,7 @@ const UserPage = () => {
         await Promise.all([
             user.refetch(),
             commentSectionRef.current?.refresh(),
+            fetchActivity(),
         ]);
     };
 
@@ -116,7 +136,8 @@ const UserPage = () => {
             canComment={user.data.canComment}
 
             header={<UserPageHeader 
-                data={user.data} 
+                user={user.data} 
+                activity={activity}
                 username={username}
                 rerender={headerRerender}
                 isOwn={isOwn}

@@ -1,8 +1,9 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useRef } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import CountryFlag from "react-native-country-flag";
+import type { Route } from 'react-native-tab-view';
 
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
@@ -10,6 +11,7 @@ import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { countryToCode } from '@/util/countries';
 
 import type { ProfileClassroom, CarouselProject, CarouselStudio, CarouselUser, User } from '@/util/types/users.types';
+import type { ActivityUnit } from '@/util/types/activity.types';
 
 import Carousel from '@/components/panels/Carousel';
 import ProjectCard from '@/components/panels/ProjectCard';
@@ -17,10 +19,13 @@ import UserCard from '@/components/panels/UserCard';
 import StudioCard from './StudioCard';
 import InfoCard from './InfoCard';
 import Button from '../general/Button';
+import Swiper from '../general/Swiper';
+import ActivityCard from './ActivityCard';
 
 
 type UserPageHeaderProps = {
-    data: User;
+    user: User;
+    activity?: ActivityUnit[];
     username: string;
     isOwn?: boolean;
     followAction: {
@@ -32,7 +37,8 @@ type UserPageHeaderProps = {
 }
 
 const UserPageHeader = memo(({
-    data: user,
+    user,
+    activity = [],
     username: myUsername,
     isOwn = false,
     followAction,
@@ -41,6 +47,8 @@ const UserPageHeader = memo(({
 }: UserPageHeaderProps) => {
 
     const router = useRouter();
+
+    const infoRef = useRef<View>(null);
     
     const renderProject = useCallback((project: CarouselProject) => <ProjectCard
         id={project.id}
@@ -70,6 +78,33 @@ const UserPageHeader = memo(({
         title={classroom.title}
         isClassroom
     />, []);
+
+    const renderInfoScene = useCallback(({ route }: { route: Route }) => {
+        switch (route.key) {
+            case 'info': return <View style={{ minHeight: 200 }}>
+                <InfoCard
+                    key="info"
+                    sections={[
+                        { title: 'About Me', text: user.bio },
+                        { title: 'What I\'m working on', text: user.status },
+                    ]}
+                    href={`/users/${myUsername}/info`}
+                    ref={infoRef}
+                    expandHeight
+                />
+            </View>;
+            case 'activity': return <View style={{ minHeight: 200 }}>
+                <ActivityCard
+                    key="activity"
+                    activity={activity}
+                    title="Recent Activity"
+                    href={`/users/${myUsername}/activity`}
+                    expandHeight linkActor={false}
+                />
+            </View>;
+        }
+        return <View />
+    }, [myUsername, activity]);
 
     const shouldRenderClassrooms = user.classrooms.length > 0;
     const shouldRenderStudiosFollowing = user.studiosFollowing.length > 0;
@@ -155,12 +190,13 @@ const UserPageHeader = memo(({
             </View>
         </View>
 
-        <InfoCard
-            sections={[
-                { title: 'About Me', text: user.bio },
-                { title: 'What I\'m working on', text: user.status },
+        <Swiper 
+            routes={[
+                { key: 'info', title: 'Info' },
+                { key: 'activity', title: 'Activity' },
             ]}
-            href={`/users/${myUsername}/info`}
+            renderScene={renderInfoScene}
+            childRef={infoRef}
         />
 
         <View style={styles.carousels}>

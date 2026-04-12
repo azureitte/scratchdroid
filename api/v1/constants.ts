@@ -11,16 +11,22 @@ export const API_MODERN_ENDPOINT: ApiEndpoint = {
     path: '',
 }
 
+export const API_PROJECTS_ENDPOINT: ApiEndpoint = {
+    name: 'projects',
+    host: 'https://projects.scratch.mit.edu',
+    path: '',
+}
+
 export const API_LEGACY_ENDPOINT: ApiEndpoint = {
     name: 'legacy',
     host: WEBSITE_URL,
     path: '/site-api',
 }
 
-export const API_PROJECTS_ENDPOINT: ApiEndpoint = {
-    name: 'projects',
-    host: 'https://projects.scratch.mit.edu',
-    path: '',
+export const API_LEGACY_AJAX_ENDPOINT: ApiEndpoint = {
+    name: 'legacy-ajax',
+    host: WEBSITE_URL,
+    path: '/messages/ajax',
 }
 
 export const SCRATCH_EMOJI_CODES: Record<string, string> = {
