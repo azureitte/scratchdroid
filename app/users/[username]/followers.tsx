@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ProfileUser } from '@/util/types/app/users.types';
+import type { CarouselUser } from '@/util/types/users.types';
 
 import { useUser } from '@/hooks/queries/useUser';
 import ListLoading from '@/components/panels/ListLoading';
@@ -23,7 +23,7 @@ const UserFollowersPage = () => {
     const data = user.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
-    const render = useCallback((user: ProfileUser, columns: number) => <UserCard
+    const render = useCallback((user: CarouselUser, columns: number) => <UserCard
         id={user.id}
         username={user.username}
         gridColumns={columns}

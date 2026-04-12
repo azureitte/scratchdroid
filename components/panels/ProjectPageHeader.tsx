@@ -10,8 +10,7 @@ import WebView from 'react-native-webview';
 import {  Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { ScratchExtension, ScratchProject } from '@/util/types/api/project.types';
-import { addPrefixUrl, shortDate } from '@/util/functions';
+import { addPrefixUrl, shortNumber } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
@@ -19,19 +18,17 @@ import { ICONS } from '@/util/assets';
 import Heading from '@/components/general/Heading';
 import Button from '@/components/general/Button';
 import ScrollableText from '@/components/general/ScrollableText';
-import ExtensionChip from '@/components/panels/ExtensionChip';
-import InfoCard from '@/components/panels/InfoCard';
 import LoveFavButton, { type StatProp } from '@/components/panels/LoveFavButton';
+import { Project } from '@/util/types/projects.types';
+import ProjectInfoCard from './ProjectInfoCard';
 
 type ProjectPageHeaderProps = {
-    project: ScratchProject;
+    project: Project;
     projectId: number;
-    extensions?: ScratchExtension[];
-    isCloud?: boolean;
 
     loves: StatProp;
     favs: StatProp;
-    remixes: ScratchProject[];
+    remixes: Project[];
     studios: any[],
     isOwn?: boolean;
     webviewActive?: boolean;
@@ -43,8 +40,6 @@ type ProjectPageHeaderProps = {
 const ProjectPageHeader = ({
     project,
     projectId,
-    extensions = [],
-    isCloud = false,
     loves,
     favs,
     remixes,
@@ -72,17 +67,12 @@ const ProjectPageHeader = ({
     const IconRemix = ICONS.remix;
     const IconView = ICONS.view;
 
-    const publishedStr = shortDate(new Date(project.history.shared));
-    const modifiedStr = shortDate(new Date(project.history.modified));
-
-    const publishedEqModified = publishedStr === modifiedStr;
-
     return (<View style={[styles.content]}>
         <View style={styles.titleSection}>
             <Link href={`/users/${project.author.username}`} style={styles.authorAvatarWrap}>
                 <Image
                     source={{ uri: $u(
-                        project.author.profile.images['60x60'],
+                        project.author.images.large,
                         project.author.username,
                         project.author.id,
                     ) }}
@@ -128,13 +118,13 @@ const ProjectPageHeader = ({
                 <View style={styles.stat}>
                     <IconRemix style={styles.statIcon} />
                     <Text style={styles.statText}>
-                        { project.stats.remixes }
+                        { shortNumber(project.stats.remixes) }
                     </Text>
                 </View>
                 <View style={styles.stat}>
                     <IconView style={styles.statIcon} />
                     <Text style={styles.statText}>
-                        { project.stats.views }
+                        { shortNumber(project.stats.views) }
                     </Text>
                 </View>
             </View>
@@ -145,36 +135,11 @@ const ProjectPageHeader = ({
             />
         </View>
 
-        <InfoCard
-            sections={[
-                { title: 'Instructions', text: project.instructions },
-                { title: 'Notes & Credits', text: project.description },
-            ]}
-            childTitle={extensions.length > 0 && 'Extensions'}
-            subtext={
-                `Published on ${publishedStr}` 
-                + (!publishedEqModified ? ` • Modified on ${modifiedStr}` : '')
-            }
-            href={`/projects/${projectId}/info`}
+        <ProjectInfoCard
+            project={project}
+            projectId={projectId}
             onPress={onInfoPress}
-        >
-            { extensions.length > 0 && <View style={styles.extensionsBar}>
-                { extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
-                { extensions.includes('videoSensing') && <ExtensionChip extension="videoSensing" /> }
-                { extensions.includes('faceSensing') && <ExtensionChip extension="faceSensing" /> }
-                { extensions.includes('pen') && <ExtensionChip extension="pen" /> }
-                { extensions.includes('music') && <ExtensionChip extension="music" /> }
-                { extensions.includes('translate') && <ExtensionChip extension="translate" /> }
-                { extensions.includes('makeymakey') && <ExtensionChip extension="makeymakey" /> }
-                { extensions.includes('microbit') && <ExtensionChip extension="microbit" /> }
-                { extensions.includes('gdxfor') && <ExtensionChip extension="gdxfor" /> }
-                { extensions.includes('ev3') && <ExtensionChip extension="ev3" /> }
-                { extensions.includes('wedo2') && <ExtensionChip extension="wedo2" /> }
-                { isCloud && <ExtensionChip extension="cloud" /> }
-            </View> }
-        </InfoCard>
-
-        
+        /> 
 
         { (!!remixes.length || !!studios.length) && <View style={styles.footer}>
             { !!remixes.length && <Pressable 
@@ -189,7 +154,7 @@ const ProjectPageHeader = ({
                     { remixes.map((remix) => <Image
                         key={remix.id}
                         style={[styles.footerThumbnail, styles.footerThumbnailProject]}
-                        source={{ uri: addPrefixUrl(remix.images['100x80']) }}
+                        source={{ uri: addPrefixUrl(remix.images.tiny) }}
                     />) }
                 </View>
                 { footerSectionGradient }
@@ -303,13 +268,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 500,
         color: '#fff',
-    },
-
-    extensionsBar: {
-        flexDirection: 'row',
-        gap: 8,
-        marginHorizontal: -2,
-        flexWrap: 'wrap',
     },
 
     footer: {

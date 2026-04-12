@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { apiReq } from "@/util/api";
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 type FollowUserOptions = {
     username: string;
@@ -19,26 +19,19 @@ export const useFollowUser = ({
     onSuccess,
     onError,
 }: FollowUserOptions) => {
+
     const { session } = useSession();
+    const { a: { followUser } } = useApi();
 
     const action = useMutation({
         mutationKey: ['follow-user', username],
         mutationFn: async ({ from, to }: FollowUserPayload): Promise<boolean> => {
-            if (!session?.user) return false;
-
-            const actionType = to ? 'add' : 'remove';
-            const res = await apiReq({
-                path: `/site-api/users/followers/${username}/${actionType}/`,
-                params: { usernames: session.user.username },
-                method: 'PUT',
-                responseType: 'json',
-                useCrsf: true,
+            return followUser({
+                username,
+                from,
+                to,
+                session,
             });
-
-            if (!res.success || res.status > 299) 
-                return from; // used to rollback optimistic update
-
-            return to; // confirm new state
         },
         onSuccess: (data) => {
             onSuccess?.(data);

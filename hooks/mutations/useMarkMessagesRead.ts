@@ -1,23 +1,17 @@
 import { useMutation } from "@tanstack/react-query";
 
-import { apiReq } from "../../util/api";
 import { useSession } from "../useSession";
+import { useApi } from "../useApi";
 
 export const useMarkMessagesRead = () => {
-    const { isLoading: isSessionLoading, session } = useSession();
+    const { session } = useSession();
+    const { a: { markMessagesRead } } = useApi();
 
     const { mutate } = useMutation<void, Error, void>({
         mutationKey: ['messages', 'mark-read'],
         mutationFn: async () => {
-            if (isSessionLoading || !session.user) return;
-
-            const markRes = await apiReq<number>({
-                path: `/site-api/messages/messages-clear/`,
-                method: 'POST',
-                useCrsf: true,
-                responseType: 'json',
-            });
-            if (!markRes.success) throw new Error(markRes.error);
+            if (!session?.user) return;
+            await markMessagesRead();
         },
     });
 

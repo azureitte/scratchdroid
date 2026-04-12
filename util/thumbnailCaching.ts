@@ -18,7 +18,6 @@ export function cacheForUser (username?: string, id?: number) {
 }
 
 export function refreshCacheForUser (username: string) {
-    console.log('refreshing cache for', username);
     userCacheTable.delete(username);
 }
 

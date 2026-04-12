@@ -1,8 +1,9 @@
 import { Image, Pressable, StyleSheet, Text } from 'react-native';
 import { useRouter } from 'expo-router';
 
-import { DEFAULT_PFP_URL, DEFAULT_RIPPLE_CONFIG, USER_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
+import { DEFAULT_RIPPLE_CONFIG, USER_CARD_THUMBNAIL_HEIGHT } from '@/util/constants';
 import { $u } from '@/util/thumbnailCaching';
+import { useApi } from '@/hooks/useApi';
 
 type UserCardProps = {
     id: number;
@@ -20,10 +21,11 @@ const UserCard = ({
     onPress,
 }: UserCardProps) => {
     const router = useRouter();
+    const api = useApi();
 
     const pfp = image ?? (id 
         ? `https://cdn2.scratch.mit.edu/get_image/user/${id}_60x60.png`
-        : DEFAULT_PFP_URL);
+        : api.config.defaultPfpUrl);
 
     return (
         <Pressable 

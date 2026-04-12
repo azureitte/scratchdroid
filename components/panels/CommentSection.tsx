@@ -3,7 +3,6 @@ import React, {
     ReactElement,
     useImperativeHandle, 
     useRef, 
-    useState 
 } from 'react';
 import { 
     StyleSheet, 
@@ -18,8 +17,8 @@ import {
 
 import { longTap, sleep } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
-import { DEFAULT_REPLY_COUNT, DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
-import type { FlattenedComment } from '@/util/types/app/comments.types';
+import { DEFAULT_RIPPLE_CONFIG, REPLY_INCREMENT_COUNT } from '@/util/constants';
+import type { FlattenedComment } from '@/util/types/comments.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
@@ -31,11 +30,11 @@ import CommentItem from '@/components/panels/CommentItem';
 
 import type { AddCommentMenuProps } from '@/app-menus/comments/add.menu';
 import type { CommentOptionsMenuProps } from '@/app-menus/comments/options.menu';
+import { useCommentSection } from '@/hooks/useCommentSection';
 
 
 export type CommentSectionRef = {
-    scrollToIndex: (index: number) => void;
-    revealRepliesUntil: (parentId: number, index: number) => void;
+    refresh: () => void;
 };
 
 type CommentSectionProps = {
@@ -45,18 +44,14 @@ type CommentSectionProps = {
         | 'studio';
     objectId: number;
     objectName?: string;
-
-    comments: FlattenedComment[];
-    listStyle?: ViewStyle;
-    header?: ReactElement;
+    author?: string;
+    highlightedComment?: number;
     isOwn?: boolean;
     canComment?: boolean;
 
-    hasNextPage?: boolean;
-    isLoading?: boolean;
-    isFirstLoading?: boolean;
-    fetchNextPage?: () => void;
-    fetchReplies?: (parentId: number, from: number, limit: number) => void;
+    listStyle?: ViewStyle;
+    header?: ReactElement;
+
     isRefreshing?: boolean;
     handleRefresh?: () => void;
 }
@@ -65,18 +60,14 @@ const CommentSection = forwardRef(({
     type = 'user',
     objectId,
     objectName,
+    author,
+    highlightedComment,
 
-    comments,
     listStyle,
     header,
     isOwn = false,
     canComment = true,
 
-    hasNextPage = false,
-    isLoading = false,
-    isFirstLoading = false,
-    fetchNextPage = () => {},
-    fetchReplies,
     isRefreshing = false,
     handleRefresh,
 }: CommentSectionProps, ref?: React.ForwardedRef<CommentSectionRef>) => {
@@ -84,19 +75,31 @@ const CommentSection = forwardRef(({
     const { session } = useSession();
     const sheet = useSheet();
 
-    const listRef = useRef<FlatList<any>>(null);
+    const {
+        comments,
+        isHighlighting,
+        highlightIdx,
+        refresh,
+        getReplyRevealCount,
+        revealMoreReplies,
+        resetRevealedReplies,
+        listRef,
+        onListScrollEnd,
+        onListScrollFail,
+    } = useCommentSection({
+        type,
+        objectId,
+        objectName,
+        author,
+        highlightedComment,
+    });
 
-    const isProgrammaticScroll = useRef(false);
-    const highlightIdx = useRef<number|null>(null);
-    const hightlightTimeout = useRef<any>(null);
 
-    const [ isHighlighting, setHighlighting ] = useState(false);
+    useImperativeHandle(ref, () => ({
+        refresh,
+    }));
 
-    // map between parent comment ID and how much replies have been revealed visually
-    // (if not all replies are revealed, a "Show More Replies" button will be shown)
-    const [ replyRevealMap, setReplyRevealMap ] = useState<Record<number, number>>({});
-
-    const handleAddComment = () => {
+    const handleAddRootComment = () => {
         sheet.push<AddCommentMenuProps>('addComment', {
             isReply: false,
             type,
@@ -135,6 +138,7 @@ const CommentSection = forwardRef(({
         });
     }
 
+
     const stickyHeader = <View style={[{
         marginTop: 50,
     }]}>
@@ -143,7 +147,7 @@ const CommentSection = forwardRef(({
             <Pressable
                 onPress={() => {
                     if (!canComment) return;
-                    handleAddComment();
+                    handleAddRootComment();
                 }}
                 style={styles.addCommentWrap}
                 android_ripple={ canComment 
@@ -167,54 +171,11 @@ const CommentSection = forwardRef(({
             </Pressable>
         </View>
     </View>;
-
-    const getReplyRevealCount = (parentId: number) => {
-        return replyRevealMap[parentId] ?? DEFAULT_REPLY_COUNT;
-    }
-
-    const revealMoreReplies = (parentId: number) => {
-        setReplyRevealMap(prev => ({
-            ...prev,
-            [parentId]: (prev[parentId] ?? DEFAULT_REPLY_COUNT) + REPLY_INCREMENT_COUNT,
-        }));
-    }
-
-    const revealRepliesUntil = (parentId: number, index: number) => {
-        setReplyRevealMap(prev => ({
-            ...prev,
-            [parentId]: index+2,
-        }));
-    }
-
-    const resetRevealedReplies = () => {
-        setReplyRevealMap({});
-    }
-
-
-    useImperativeHandle(ref, () => ({
-        scrollToIndex: (index: number) => {
-            const commentAtIndex = comments[index];
-            if (commentAtIndex.isReply) revealRepliesUntil(commentAtIndex.parent, commentAtIndex.replyIdx);
-
-            try {
-                index++;
-                highlightIdx.current = index;
-                isProgrammaticScroll.current = true;
-                listRef.current?.scrollToIndex({ 
-                    index, 
-                    animated: true,
-                    viewPosition: 0.4,
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        },
-        revealRepliesUntil: revealRepliesUntil,
-    }));
+    
 
     return (<View style={styles.container}>
         <FlatList
-            data={[ null, ...comments ]}
+            data={[ null, ...comments.data ]}
             renderItem={({ item, index }: {
                 item: FlattenedComment|null;
                 index: number;
@@ -228,12 +189,12 @@ const CommentSection = forwardRef(({
                 >
                     <CommentItem 
                         comment={item!} 
-                        isHighlighted={index === highlightIdx.current && isHighlighting}
+                        isHighlighted={index === highlightIdx && isHighlighting}
                         isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
                         onShowMore={async () => {
                             if (item.isReply) {
-                                if (fetchReplies) {
-                                    await fetchReplies(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
+                                if (comments.flags.fetchesReplies) {
+                                    await comments.fetchRepliesFor(item.parent, item.replyIdx + 1, REPLY_INCREMENT_COUNT);
                                     await sleep(0);
                                 }
                                 revealMoreReplies(item.parent);
@@ -252,12 +213,12 @@ const CommentSection = forwardRef(({
             stickyHeaderIndices={[1]}
 
             ListHeaderComponent={header}
-            ListFooterComponent={isFirstLoading 
+            ListFooterComponent={comments.isFirstLoading 
                 ? <ListLoading />
                 : <ListLoadMore
-                    hasNextPage={hasNextPage}
-                    isLoading={isLoading}
-                    fetchNextPage={fetchNextPage}
+                    hasNextPage={comments.hasNextPage}
+                    isLoading={comments.isLoading}
+                    fetchNextPage={comments.fetchNextPage}
                 />
             }
             refreshControl={<RefreshControl
@@ -277,30 +238,9 @@ const CommentSection = forwardRef(({
             ref={listRef}
 
             onScrollToIndexFailed={(info) => {
-                listRef.current?.scrollToOffset({
-                    offset: info.averageItemLength * info.index,
-                    animated: true,
-                });
-                setTimeout(() => {
-                    listRef.current?.scrollToIndex({ 
-                        index: info.index, 
-                        animated: true, 
-                        viewPosition: 0.4,
-                    });
-                }, 100);
+                onListScrollFail(info.index, info.averageItemLength);
             }}
-
-            onMomentumScrollEnd={() => {
-                if (isProgrammaticScroll.current) {
-                    setHighlighting(true);
-                    if (hightlightTimeout.current) clearTimeout(hightlightTimeout.current);
-                    hightlightTimeout.current = setTimeout(() => {
-                        setHighlighting(false);
-                        hightlightTimeout.current = null;
-                        isProgrammaticScroll.current = false;
-                    }, 1000);
-                }
-            }}
+            onMomentumScrollEnd={onListScrollEnd}
         />
     </View>);
 });

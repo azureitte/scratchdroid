@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import type { ScratchProject } from '@/util/types/api/project.types';
+import type { Project } from '@/util/types/projects.types';
 
 import { useProject } from '@/hooks/queries/useProject';
 import ListLoading from '@/components/panels/ListLoading';
@@ -23,7 +23,7 @@ const ProjectRemixesPage = () => {
     const data = project.data;
     const [ isRefreshing, setIsRefreshing ] = useState(false);
 
-    const render = useCallback((project: ScratchProject, columns: number) => <ProjectCard
+    const render = useCallback((project: Project, columns: number) => <ProjectCard
         id={project.id}
         title={project.title}
         author={project.author.username}

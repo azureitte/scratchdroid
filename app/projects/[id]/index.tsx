@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
     StyleSheet,
     Text,
@@ -10,16 +10,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { lightTap, scrollCommentSectionToId } from '@/util/functions';
-import { projectHasCloudVariables } from '@/util/parsing/projects';
-import { off, on } from '@/util/eventBus';
-import type { Comment } from '@/util/types/app/comments.types';
+import { lightTap } from '@/util/functions';
 
 import { useSession } from '@/hooks/useSession';
 import { useSheet } from '@/hooks/useSheet';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useProject } from '@/hooks/queries/useProject';
-import { useProjectComments } from '@/hooks/queries/useProjectComments';
 import { useLoveProject } from '@/hooks/mutations/useLoveProject';
 import { useFavProject } from '@/hooks/mutations/useFavProject';
 
@@ -46,16 +42,9 @@ const ProjectPage = () => {
         setLovedByMeDirectly, 
         setFavedByMeDirectly,
         setCommentsAllowedDirectly,
-    } = useProject(Number(id));
+    } = useProject(projectId);
     const data = project.data;
-    const isOwn = !!data && data.project.author.username !== session?.user?.username;
-
-    const comments = useProjectComments({
-        project: Number(id),
-        author: data?.project.author.username ?? '',
-        highlightedComment: commentId ? Number(commentId) : undefined,
-        enabled: !!id && !!data?.project,
-    });
+    const isOwn = data?.project.author.username === session?.user?.username;
 
     const loveAction = useLoveProject({
         projectId,
@@ -98,7 +87,7 @@ const ProjectPage = () => {
             projectTitle: data.project.title,
             canRemix: !isOwn,
             canReport: !isOwn,
-            canComment: data.project.comments_allowed ?? true,
+            canComment: data.project.canComment,
             canToggleCommenting: isOwn,
             setCommentsAllowed: setCommentsAllowedDirectly,
         });
@@ -108,7 +97,7 @@ const ProjectPage = () => {
     const [ webviewActive, setWebviewActive ] = useState(false);
 
     const ignoreProjectUnload = useRef(false);
-    const listRef = useRef<CommentSectionRef>(null);
+    const commentSectionRef = useRef<CommentSectionRef>(null);
 
     useChangeAppStateOnFocus({
         footerVisible: false,
@@ -136,58 +125,6 @@ const ProjectPage = () => {
     }, []);
     useFocusEffect(handleFocusEffect);
 
-    // initial fetch
-    useEffect(() => {
-        comments.refresh();
-    }, []);
-
-    // scroll to target comment, if commentId param was provided
-    useEffect(() => {
-        if (commentId && comments.highlightLoaded)
-            scrollCommentSectionToId(
-                listRef.current, 
-                comments.data, 
-                commentId
-            );
-    }, [comments.highlightLoaded, commentId]);
-
-    // insert comments directly when recieved event
-    
-    const handleAddComment = useCallback((comment?: Comment) => {
-        if (!comment) return;
-        let newData = comments.addCommentDirectly(comment);
-        
-        setTimeout(() => {
-            if (comment.isReply)
-                scrollCommentSectionToId(
-                    listRef.current, 
-                    newData, 
-                    comment.id,
-                );
-            else
-                listRef.current?.scrollToIndex(0);
-        }, 100);
-    }, [comments.data]);
-
-    const handleDeleteComment = useCallback((comment: Comment) => {
-        comments.deleteCommentDirectly(comment);
-    }, [comments]);
-
-    const handleReplaceComment = useCallback((comment: Comment) => {
-        comments.replaceCommentDirectly(comment);
-    }, [comments]);
-
-    useFocusEffect(() => {
-        on('add-comment', handleAddComment);
-        on('delete-comment', handleDeleteComment);
-        on('replace-comment', handleReplaceComment);
-        return () => {
-            off('add-comment', handleAddComment);
-            off('delete-comment', handleDeleteComment);
-            off('replace-comment', handleReplaceComment);
-        };
-    });
-
     const handleRefresh = async () => {
         setIsRefreshing(true);
         await fetchAll();
@@ -197,11 +134,9 @@ const ProjectPage = () => {
     const fetchAll = async () => {
         await Promise.all([
             project.refetch(),
-            comments.refresh(),
+            commentSectionRef.current?.refresh(),
         ]);
     };
-
-    const hasCloudData = useMemo(() => projectHasCloudVariables(data?.file), [data]);
 
     if (project.isError) return <Text>{project.error.message}</Text>;
     if (project.isLoading || !data) return <ListLoading marginTop={insets.top + 60} />;
@@ -218,14 +153,14 @@ const ProjectPage = () => {
             <CommentSection 
                 type='project'
                 objectId={Number(id)}
-                comments={comments.data}
-                isOwn={session?.user?.username === data?.project.author.username}
-                canComment={data.project.comments_allowed ?? true}
+                author={data?.project.author.username}
+                highlightedComment={commentId ? Number(commentId) : undefined}
+                isOwn={isOwn}
+                canComment={data.project.canComment}
+
                 header={<ProjectPageHeader 
                     project={data.project}
                     projectId={Number(id)}
-                    extensions={data.file?.extensions ?? []}
-                    isCloud={hasCloudData}
                     loves={{
                         count: data.project.stats.loves ?? 0,
                         active: data.lovedByMe,
@@ -245,14 +180,9 @@ const ProjectPage = () => {
                     handleProjectOptions={handleProjectOptions}
                     onInfoPress={() => ignoreProjectUnload.current = true}
                 />}
-                hasNextPage={comments.hasNextPage}
-                isLoading={comments.isLoading}
-                isFirstLoading={comments.isFirstLoading}
-                fetchNextPage={comments.fetchNextPage}
-                fetchReplies={comments.fetchRepliesFor}
                 isRefreshing={isRefreshing}
                 handleRefresh={handleRefresh}
-                ref={listRef}
+                ref={commentSectionRef}
             />
         </View>
     </>);

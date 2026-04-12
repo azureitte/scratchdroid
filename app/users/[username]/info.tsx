@@ -51,8 +51,8 @@ const UserInfoPage = () => {
             
             <InfoCard
                 sections={[
-                    { title: 'About Me', text: data.user.profile.bio },
-                    { title: 'What I\'m working on', text: data.user.profile.status },
+                    { title: 'About Me', text: data.bio },
+                    { title: 'What I\'m working on', text: data.status },
                 ]}
                 maxLength={Infinity}
                 variation='full'

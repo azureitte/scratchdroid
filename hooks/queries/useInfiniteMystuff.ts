@@ -1,25 +1,20 @@
 import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 
-import { apiReq } from "@/util/api";
-import type { ScratchMystuffItem } from "@/util/types/api/account.types";
-
 import { useSession } from "../useSession";
-
-const PROJECTS_PER_PAGE = 40;
-const STUDIOS_PER_PAGE = 40;
+import { useApi } from "../useApi";
 
 type InfiniteMystuffProps = {
     enabled?: boolean;
 }&({
     type: 'projects';
-    subtype: 'all'|'shared'|'notshared'|'trashed';
+    subtype: 'all'|'public'|'private'|'trash';
     ascsort?: 'title';
-    descsort?: 'title'|'view_count'|'remixers_count'|'love_count';
+    descsort?: 'title'|'views'|'remixes'|'loves';
 }|{
     type: 'studios';
     subtype: 'all'|'owned'|'curated';
     ascsort?: 'title';
-    descsort?: 'title'|'projecters_count';
+    descsort?: 'title'|'projects';
 })
 
 export const useInfiniteMystuff = ({
@@ -29,10 +24,13 @@ export const useInfiniteMystuff = ({
     descsort,
     enabled = true,
 }: InfiniteMystuffProps) => {
-    const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
     const queryClient = useQueryClient();
+    const { session } = useSession();
+    const { q: { getMystuff, getMystuffItemsPerPage } } = useApi();
 
-    const ITEMS_PER_PAGE = type === 'projects' ? PROJECTS_PER_PAGE : STUDIOS_PER_PAGE;
+    const ITEMS_PER_PAGE = type === 'projects' 
+        ? getMystuffItemsPerPage('projects') 
+        : getMystuffItemsPerPage('studios');
 
     const queryKey = ['mystuff', type, subtype, ascsort, descsort] as const;
 
@@ -44,51 +42,43 @@ export const useInfiniteMystuff = ({
         hasNextPage, 
         isSuccess, 
         isLoading 
-    } = useInfiniteQuery<
-        ScratchMystuffItem[], Error, 
-        InfiniteData<ScratchMystuffItem[]>, 
-        typeof queryKey,
-        number
-    >({
+    } = useInfiniteQuery({
         queryKey,
         queryFn: async ({ pageParam }) => {
-            if (isSessionLoading || !session.user) return [];
+            if (!session?.user) return [];
 
-            const path = '/site-api/'
-                + (type === 'projects' ? 'projects' : 'galleries') + '/'
-                + subtype + '/';
-
-            const mystuffRes = await apiReq<ScratchMystuffItem[]>({
-                path: path,
-                params: { 
+            if (type === 'projects')
+                return await getMystuff({
+                    type: 'projects',
+                    subtype,
+                    ascsort,
+                    descsort,
                     page: pageParam,
-                    ascsort: ascsort ?? '',
-                    descsort: descsort ?? '',
-                },
-                useCrsf: true,
-                responseType: 'json',
-            });
-
-            if (!mystuffRes.success) throw new Error(mystuffRes.error);
-            if (mystuffRes.status === 404) return [];
-
-            return mystuffRes.data;
+                });
+            else
+                return await getMystuff({
+                    type: 'studios',
+                    subtype,
+                    ascsort,
+                    descsort,
+                    page: pageParam,
+                });
         },
         getNextPageParam: (currentPage, allPages) => currentPage.length < ITEMS_PER_PAGE 
             ? undefined 
-            : allPages.indexOf(currentPage) + 2,
-        getPreviousPageParam: (currentPage, allPages) => allPages.indexOf(currentPage),
-        initialPageParam: 1,
+            : allPages.indexOf(currentPage) + 1,
+        getPreviousPageParam: (currentPage, allPages) => allPages.indexOf(currentPage) - 1,
+        initialPageParam: 0,
 
         staleTime: 60 * 60 * 1000, // 1 hour
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
 
-        enabled: enabled && !isSessionLoading && isLoggedIn,
+        enabled,
     });
 
     const resetToFirstPage = () => {
-        queryClient.setQueryData(queryKey, (data: InfiniteData<ScratchMystuffItem[]>) => {
+        queryClient.setQueryData(queryKey, (data: InfiniteData<any[]>) => {
             if (!data) return undefined;
             return {
                 pages: [data.pages[0]], // Keep only the first page

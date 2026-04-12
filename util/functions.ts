@@ -1,17 +1,13 @@
 import { formatDistanceToNow, format } from 'date-fns';
 import * as Haptics from 'expo-haptics';
+import { Cookies } from '@preeternal/react-native-cookie-manager';
 
-import type { 
-    FlattenedComment, 
-} from "@/util/types/app/comments.types";
 import type { 
     PartialSheetMenuDefinition, 
     SheetMenuDefinition 
-} from "@/util/types/app/misc.types";
+} from "@/util/types/misc.types";
+import type { Session } from '@/util/types/accounts.types';
 
-import type { CommentSectionRef } from "@/components/panels/CommentSection";
-import { Cookies } from '@preeternal/react-native-cookie-manager';
-import { ScratchSession } from './types/api/account.types';
 import { PROJECT_CARD_THUMBNAIL_HEIGHT, USER_CARD_THUMBNAIL_HEIGHT } from './constants';
 
 type Falsy = false | 0 | "" | null | undefined | 0n;
@@ -58,11 +54,6 @@ export function relativeDate (date: Date) {
     return formatDistanceToNow(date, { addSuffix: true });
 }
 
-export function muteStatusDateToString (expiresAt: number) {
-    const futureDate = new Date(expiresAt * 1000);
-    return formatDistanceToNow(futureDate, { addSuffix: true });
-}
-
 const shortNumberFormatter = new Intl.NumberFormat('en-US', {
   notation: 'compact',
   compactDisplay: 'short',
@@ -107,16 +98,6 @@ export const addOrReplace = (arr: any[], item: any, idx: number) => {
         arr.push(item);
     else 
         arr[idx] = item;
-}
-
-export const scrollCommentSectionToId = (listRef: CommentSectionRef|null|undefined, comments: FlattenedComment[], commentId: number|string) => {
-    const comment = comments.find(c => c.id === Number(commentId));
-    if (comment) {
-        const targetIdx = comments.indexOf(comment);
-        setTimeout(() => listRef?.scrollToIndex(targetIdx), 0);
-        return true;
-    }
-    return false;
 }
 
 export const buildMenu = (def: PartialSheetMenuDefinition): SheetMenuDefinition => ({
@@ -172,14 +153,14 @@ export function cookieObjToRequestHeader (cookies: Cookies) {
         .join('; ');
 }
 
-export function getRoleNameFromSession (session: ScratchSession) {
-    if (!session.permissions) return 'Anonymous';
-    if (session.permissions.admin) return 'Scratch Team';
-    if (session.permissions.educator) return 'Teacher Account';
-    if (session.permissions.educator_invitee) return 'Teacher Account (Pending)';
-    if (session.permissions.invited_scratcher) return 'Invited Scratcher';
-    if (session.permissions.student) return 'Student';
-    if (session.permissions.new_scratcher) return 'New Scratcher';
+export function getRoleNameFromSession (session: Session) {
+    if (!session.user?.permissions) return 'Anonymous';
+    if (session.user.permissions.admin) return 'Scratch Team';
+    if (session.user.permissions.educator) return 'Teacher Account';
+    if (session.user.permissions.educatorInvitee) return 'Teacher Account (Pending)';
+    if (session.user.permissions.invitedScratcher) return 'Invited Scratcher';
+    if (session.user.permissions.student) return 'Student';
+    if (session.user.permissions.newScratcher) return 'New Scratcher';
     return 'Scratcher';
 }
 

@@ -3,16 +3,16 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { addPrefixUrl, relativeDate } from '@/util/functions';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
-import type { ScratchMystuffProjectItem, ScratchMystuffStudioItem } from '@/util/types/api/account.types';
+import type { MystuffProject, MystuffStudio } from '@/util/types/mystuff.types';
 
 type MystuffRowProps = {
     type: 'project';
-    item: ScratchMystuffProjectItem;
+    item: MystuffProject;
     myUsername?: string;
     onPress?: () => void;
 }|{
     type: 'studio';
-    item: ScratchMystuffStudioItem;
+    item: MystuffStudio;
     myUsername?: string;
     onPress?: () => void;
 };
@@ -31,16 +31,16 @@ const MystuffRow = memo(({
         >
             { type === 'project' ? <>
                 <Image 
-                    source={{ uri: addPrefixUrl(item.fields.uncached_thumbnail_url) }} 
+                    source={{ uri: addPrefixUrl(item.thumbnailUrl) }} 
                     style={[styles.thumbnail, styles.projectThumbnail]} 
                 />
                 <View style={styles.content}>
-                    <Text style={styles.title}>{item.fields.title}</Text>
+                    <Text style={styles.title}>{item.title}</Text>
                     <Text style={styles.subtext}>
                         { 
-                            item.fields.isPublished ? 'Public' : 'Private' 
+                            item.isPublished ? 'Public' : 'Private' 
                         } • Modified { 
-                            relativeDate(new Date(item.fields.datetime_modified)) 
+                            relativeDate(item.history.modified) 
                         }
                     </Text>
                 </View>
@@ -48,16 +48,16 @@ const MystuffRow = memo(({
 
             : <>
                 <Image 
-                    source={{ uri: addPrefixUrl(item.fields.thumbnail_url) }} 
+                    source={{ uri: addPrefixUrl(item.thumbnailUrl) }} 
                     style={[styles.thumbnail, styles.studioThumbnail]} 
                 />
                 <View style={styles.content}>
-                    <Text style={styles.title}>{item.fields.title}</Text>
+                    <Text style={styles.title}>{item.title}</Text>
                     <Text style={styles.subtext}>
                         { 
-                            item.fields.owner.username === myUsername ? 'Host' : 'Curator' 
+                            item.author.username === myUsername ? 'Host' : 'Curator' 
                         } • Created { 
-                            (new Date(item.fields.datetime_created)).toDateString() 
+                            (item.history.created).toDateString() 
                         }
                     </Text>
                 </View>
