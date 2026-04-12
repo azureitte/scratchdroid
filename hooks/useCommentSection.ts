@@ -199,10 +199,10 @@ export const useCommentSection = ({
         }, 100);
     }
 
-
     return {
         comments,
         isHighlighting,
+        highlightIdx: highlightIdx.current ?? -1,
         refresh: comments.refresh,
         getReplyRevealCount,
         revealMoreReplies,

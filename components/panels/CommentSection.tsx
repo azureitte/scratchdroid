@@ -78,6 +78,7 @@ const CommentSection = forwardRef(({
     const {
         comments,
         isHighlighting,
+        highlightIdx,
         refresh,
         getReplyRevealCount,
         revealMoreReplies,
@@ -92,8 +93,6 @@ const CommentSection = forwardRef(({
         author,
         highlightedComment,
     });
-
-    const highlightIdx = useRef<number|null>(null);
 
 
     useImperativeHandle(ref, () => ({
@@ -173,6 +172,10 @@ const CommentSection = forwardRef(({
         </View>
     </View>;
 
+    
+
+    console.log('isHighlighting', isHighlighting);
+
     return (<View style={styles.container}>
         <FlatList
             data={[ null, ...comments.data ]}
@@ -189,7 +192,7 @@ const CommentSection = forwardRef(({
                 >
                     <CommentItem 
                         comment={item!} 
-                        isHighlighted={index === highlightIdx.current && isHighlighting}
+                        isHighlighted={index === highlightIdx && isHighlighting}
                         isShowMore={item.isReply && getReplyRevealCount(item.parent) === item.replyIdx + 1}
                         onShowMore={async () => {
                             if (item.isReply) {
