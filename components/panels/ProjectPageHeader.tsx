@@ -10,8 +10,7 @@ import WebView from 'react-native-webview';
 import {  Link, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { ScratchExtension } from '@/util/types/projects.types';
-import { addPrefixUrl, shortDate, shortNumber } from '@/util/functions';
+import { addPrefixUrl, shortNumber } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
 import { DEFAULT_RIPPLE_CONFIG } from '@/util/constants';
 import { ICONS } from '@/util/assets';
@@ -19,10 +18,9 @@ import { ICONS } from '@/util/assets';
 import Heading from '@/components/general/Heading';
 import Button from '@/components/general/Button';
 import ScrollableText from '@/components/general/ScrollableText';
-import ExtensionChip from '@/components/panels/ExtensionChip';
-import InfoCard from '@/components/panels/InfoCard';
 import LoveFavButton, { type StatProp } from '@/components/panels/LoveFavButton';
 import { Project } from '@/util/types/projects.types';
+import ProjectInfoCard from './ProjectInfoCard';
 
 type ProjectPageHeaderProps = {
     project: Project;
@@ -68,13 +66,6 @@ const ProjectPageHeader = ({
     const IconViewMore = ICONS.cardViewMore;
     const IconRemix = ICONS.remix;
     const IconView = ICONS.view;
-
-    const publishedStr = shortDate(project.history.shared);
-    const modifiedStr = shortDate(project.history.modified);
-
-    const publishedEqModified = publishedStr === modifiedStr;
-
-    const hasExtensionsOrCloud = project.extensions.length > 0 || project.hasCloudData;
 
     return (<View style={[styles.content]}>
         <View style={styles.titleSection}>
@@ -144,36 +135,11 @@ const ProjectPageHeader = ({
             />
         </View>
 
-        <InfoCard
-            sections={[
-                { title: 'Instructions', text: project.instructions },
-                { title: 'Notes & Credits', text: project.description },
-            ]}
-            childTitle={hasExtensionsOrCloud && 'Extensions'}
-            subtext={
-                `Published on ${publishedStr}` 
-                + (!publishedEqModified ? ` • Modified on ${modifiedStr}` : '')
-            }
-            href={`/projects/${projectId}/info`}
+        <ProjectInfoCard
+            project={project}
+            projectId={projectId}
             onPress={onInfoPress}
-        >
-            { hasExtensionsOrCloud && <View style={styles.extensionsBar}>
-                { project.extensions.includes('text2speech') && <ExtensionChip extension="text2speech" /> }
-                { project.extensions.includes('videoSensing') && <ExtensionChip extension="videoSensing" /> }
-                { project.extensions.includes('faceSensing') && <ExtensionChip extension="faceSensing" /> }
-                { project.extensions.includes('pen') && <ExtensionChip extension="pen" /> }
-                { project.extensions.includes('music') && <ExtensionChip extension="music" /> }
-                { project.extensions.includes('translate') && <ExtensionChip extension="translate" /> }
-                { project.extensions.includes('makeymakey') && <ExtensionChip extension="makeymakey" /> }
-                { project.extensions.includes('microbit') && <ExtensionChip extension="microbit" /> }
-                { project.extensions.includes('gdxfor') && <ExtensionChip extension="gdxfor" /> }
-                { project.extensions.includes('ev3') && <ExtensionChip extension="ev3" /> }
-                { project.extensions.includes('wedo2') && <ExtensionChip extension="wedo2" /> }
-                { project.hasCloudData && <ExtensionChip extension="cloud" /> }
-            </View> }
-        </InfoCard>
-
-        
+        /> 
 
         { (!!remixes.length || !!studios.length) && <View style={styles.footer}>
             { !!remixes.length && <Pressable 
@@ -302,13 +268,6 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 500,
         color: '#fff',
-    },
-
-    extensionsBar: {
-        flexDirection: 'row',
-        gap: 8,
-        marginHorizontal: -2,
-        flexWrap: 'wrap',
     },
 
     footer: {
