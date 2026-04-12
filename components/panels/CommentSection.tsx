@@ -171,10 +171,7 @@ const CommentSection = forwardRef(({
             </Pressable>
         </View>
     </View>;
-
     
-
-    console.log('isHighlighting', isHighlighting);
 
     return (<View style={styles.container}>
         <FlatList

@@ -180,7 +180,6 @@ export function parseRichText (text: string) {
 }
 
 export function parseMultilineRichText (text: string) {
-    console.log('formatting multiline text');
     const lineNodes = text.split('\n').map(parseRichText);
     return lineNodes.reduce((acc, lineNodes) => {
         return [...acc, ...lineNodes, { 
