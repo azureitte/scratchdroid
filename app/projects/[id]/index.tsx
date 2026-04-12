@@ -45,7 +45,7 @@ const ProjectPage = () => {
         setCommentsAllowedDirectly,
     } = useProject(projectId);
     const data = project.data;
-    const isOwn = !!data && data.project.author.username !== session?.user?.username;
+    const isOwn = data?.project.author.username === session?.user?.username;
 
     const loveAction = useLoveProject({
         projectId,
@@ -158,7 +158,7 @@ const ProjectPage = () => {
                 objectId={Number(id)}
                 author={data?.project.author.username}
                 highlightedComment={commentId ? Number(commentId) : undefined}
-                isOwn={session?.user?.username === data?.project.author.username}
+                isOwn={isOwn}
                 canComment={data.project.canComment}
 
                 header={<ProjectPageHeader 

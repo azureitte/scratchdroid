@@ -14,7 +14,7 @@ import type { MessageQueryItem } from '@/util/types/projects.types';
 
 import { useSession } from '@/hooks/useSession';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
-import { useUnreadMessages } from '@/hooks/queries/useUnreadMessages';
+import { useUnreadCount } from '@/hooks/queries/useUnreadCount';
 import { useInfiniteMessages } from '@/hooks/queries/useInfiniteMessages';
 import { useMarkMessagesRead } from '@/hooks/mutations/useMarkMessagesRead';
 import { useDeleteMessage } from '@/hooks/mutations/useDeleteMessage';
@@ -34,7 +34,7 @@ const MessagesPage = () => {
     const isFocused = useIsFocused();
 
     const messages = useInfiniteMessages();
-    const unreadCount = useUnreadMessages(true);
+    const unreadCount = useUnreadCount(true);
     const markRead = useMarkMessagesRead();
     const deleteMessage = useDeleteMessage();
 

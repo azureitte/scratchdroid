@@ -5,7 +5,7 @@ import { buildMenu } from '@/util/functions';
 import { WEBSITE_URL } from '@/util/constants';
 
 import { useSheet } from '@/hooks/useSheet';
-import { useToggleProjectComments } from '@/hooks/mutations/useToggleProjectComments';
+import { useToggleComments } from '@/hooks/mutations/useToggleComments';
 
 import ContextMenu, { ContextMenuItem } from '@/components/general/ContextMenu';
 import ScrollableText from '@/components/general/ScrollableText';
@@ -32,8 +32,9 @@ const ProjectOptionsMenu = ({
 
     const sheet = useSheet();
 
-    const toggleCommentsAction = useToggleProjectComments({
-        projectId: projectId,
+    const toggleCommentsAction = useToggleComments({
+        type: 'project',
+        objectId: projectId,
         onSuccess: (commentsAllowed) => {
             setCommentsAllowed?.(commentsAllowed);
         },

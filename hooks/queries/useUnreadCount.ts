@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSession } from "../useSession";
 import { useApi } from "../useApi";
 
-export const useUnreadMessages = (persist: boolean = false) => {
+export const useUnreadCount = (persist: boolean = false) => {
     const { isLoading: isSessionLoading, session, isLoggedIn } = useSession();
     const { q: { getUnreadCount } } = useApi();
 
