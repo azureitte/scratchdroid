@@ -14,3 +14,9 @@ export const REPLY_INCREMENT_COUNT = 10;
 export const EMOJI_CONTAIN_CODES = [
     '_camera_', '_map_', '_pizza_', '_meow_',
 ];
+
+export const CUSTOM_EMOJIS: Record<string, string> = {
+    '_smekta_': 'https://cdn.kanava.ucrash.fun/scratchdroid/furryzheka.png',
+    '_dog_': 'https://cdn.kanava.ucrash.fun/scratchdroid/dog.png',
+    '_60_': 'https://cdn.kanava.ucrash.fun/scratchdroid/60.webp',
+}

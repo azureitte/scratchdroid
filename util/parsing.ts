@@ -9,6 +9,7 @@ import type {
     FlattenedComment, 
     RootComment,
 } from "@/util/types/comments.types";
+import { CUSTOM_EMOJIS } from "./constants";
 
 
 /**
@@ -130,8 +131,9 @@ export function parseRichText (text: string) {
     for (const word of textSpl) {
         const [isMention, mention, rest] = parseMention(word);
         const isUrl = urlRegex.test(word);
+        const isEmoji = !!CUSTOM_EMOJIS[word];
 
-        if (isMention || isUrl) {
+        if (isMention || isUrl || isEmoji) {
             if (acc.length > 0) {
                 nodes.push({
                     type: 'text',
@@ -140,7 +142,15 @@ export function parseRichText (text: string) {
                 });
             }
             acc = ' ';
-            if (isMention) {
+
+            if (isEmoji) {
+                nodes.push({
+                    type: 'emoji',
+                    text: word,
+                    imageUrl: CUSTOM_EMOJIS[word],
+                    key: randstr(8),
+                });
+            } else if (isMention) {
                 nodes.push({
                     type: 'mention',
                     text: mention,
