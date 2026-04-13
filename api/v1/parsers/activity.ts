@@ -61,7 +61,7 @@ export function getActivityFromR2 (root: HTMLElement): ActivityUnit[] {
         if (!stringNode) continue;
         const stringText = stringNode.innerText.trim();
 
-        const matchIdx = STRING_SEARCHES.findIndex(s => stringText.startsWith(s));
+        const matchIdx = STRING_SEARCHES.findLastIndex(s => stringText.startsWith(s));
         const type = STRING_MATCHES[matchIdx];
         if (!type) continue;
 
