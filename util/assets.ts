@@ -64,6 +64,7 @@ import pngProjectMakeymakey from "../assets/svgs/project/extension-makeymakey.pn
 import pngProjectWedo2 from "../assets/svgs/project/extension-wedo2.png";
 
 import pngArtWateringCan from "../assets/art/wateringcan.png";
+import pngArtScratchNews from "../assets/art/scratchnews.png";
 
 export const ICONS = {
     home: icHome,
@@ -109,6 +110,7 @@ export const IMAGES = {
     logo: require("../assets/logo_sm.png"),
     art: {
         wateringCan: pngArtWateringCan,
+        scratchNews: pngArtScratchNews,
     },
 } as const;
 
