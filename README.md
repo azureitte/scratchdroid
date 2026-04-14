@@ -56,7 +56,22 @@ This project is currently in development and is incomplete. Here is where it's c
    - ✖️ Report users
    - ✖️ Edit own profile
 
-- ✖️ Studio management
+- 🟡 Studio management
+   - 🟡 View studio info
+   - ✖️ View studio projects
+   - ✖️ View studio comments
+   - ✖️ View studio curators/managers
+   - ✖️ View studio activity
+   - ✖️ Follow/unfollow studios
+   - ✖️ Post/delete/report studio comments
+   - ✖️ Toggle studio commenting
+   - ✖️ Edit studio info
+   - ✖️ Leave studios
+   - ✖️ Manage studio projects
+   - ✖️ Toggle anyone can add projects
+   - ✖️ Manage studio curators/managers / invite curators / promote managers
+   - ✖️ Accept invites
+   - ✖️ Report studios
 
 - 🟡 Messages
     - ✅ View messages

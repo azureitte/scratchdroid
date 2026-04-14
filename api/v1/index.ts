@@ -13,6 +13,7 @@ import { getUnreadCount } from "./queries/getUnreadCount";
 import { getUser } from "./queries/getUser";
 import { getUserActivity } from "./queries/getUserActivity";
 import { getUserCommentFlags, getUserCommentHighlight, getUserReplies, getUserRootComments } from "./queries/getUserComments";
+import { getStudio } from "./queries/getStudio";
 
 import { addProjectComment } from "./actions/addProjectComment";
 import { addUserComment } from "./actions/addUserComment";
@@ -73,6 +74,8 @@ export default {
         getProjectReplies,
         getProjectCommentHighlight,
         getProjectCommentFlags,
+
+        getStudio,
     },
 
     a: {
