@@ -123,6 +123,18 @@ const Drawer = () => {
             },
         },
     ];
+
+    const settingsMenu: ContextMenuItem[] = [
+        {
+            key: 'settings',
+            label: 'App Settings',
+            icon: 'settings',
+            onPress: () => {
+                drawer.current?.closeDrawer();
+                router.push('/settings');
+            },
+        },
+    ];
     
     
     const navigationView = () => (
@@ -162,6 +174,8 @@ const Drawer = () => {
             <ContextMenu items={accountSwitcherMenu} />
             <View />
             <ContextMenu items={currentAccountMenu} />
+            <View />
+            <ContextMenu items={settingsMenu} />
         </View>
     );
 

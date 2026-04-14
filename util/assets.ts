@@ -35,6 +35,7 @@ import icFavInactive from "../assets/icons/ic-fav-inactive.svg";
 import icFavActive from "../assets/icons/ic-fav-active.svg";
 import icRemix from "../assets/icons/ic-remix.svg";
 import icView from "../assets/icons/ic-view.svg";
+import icSettings from "../assets/icons/ic-settings.svg";
 
 import svgMessageComment from "../assets/svgs/messages/comment.svg";
 import svgMessageLove from "../assets/svgs/messages/love.svg";
@@ -95,6 +96,7 @@ export const ICONS = {
     download: icDownload,
     follow: icFollow,
     comments: icComments,
+    settings: icSettings,
 
     statView: icStatView,
     statLove: icStatLove,

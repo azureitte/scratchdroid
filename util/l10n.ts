@@ -1,4 +1,5 @@
 import messagesEn from '@/assets/l10n/en.json';
+import languages from '@/assets/l10n/languages.json';
 
 const L10N_CDN_URL = 'https://cdn.kanava.ucrash.fun/scratchdroid/l10n';
 
@@ -16,3 +17,5 @@ export async function updateMessages(locale: string) {
     const data = await res.json();
     messages[locale] = data;
 }
+
+export const getLanguages = () => languages;
