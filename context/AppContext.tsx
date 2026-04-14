@@ -1,4 +1,8 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
+import { Alert } from 'react-native';
+import { checkForUpdateAsync, fetchUpdateAsync, reloadAsync } from 'expo-updates';
+
+import { IS_DEV } from '@/util/constants';
 
 type AppPrimaryColor =
     | 'regular'
@@ -34,6 +38,27 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [ headerVisible, setHeaderVisible ] = useState(false);
     const [ footerVisible, setFooterVisible ] = useState(false);
     const [ primaryColor, setPrimaryColor ] = useState<AppPrimaryColor>('regular');
+
+    const downloadUpdate = useCallback(async () => {
+        await fetchUpdateAsync();
+        reloadAsync();
+    }, []);
+
+    const checkForUpdates = useCallback(async () => {
+        const update = await checkForUpdateAsync();
+        if (update.isAvailable) {
+            Alert.alert('Updates Available!',
+                `A new version of the app is ready. Update now?`,
+                [ 
+                    { text: "Later", style: "cancel" },
+                    { text: "Update", onPress: downloadUpdate },
+                ]);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!IS_DEV) checkForUpdates();
+    }, []);
 
     return (
         <AppContext.Provider value={{
