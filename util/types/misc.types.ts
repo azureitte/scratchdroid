@@ -7,6 +7,7 @@ export type SheetMenuDefinition = {
     detents: SheetDetent[];
     dismissible: boolean;
     isDark?: boolean;
+    scrollable?: boolean;
 }
 
 export type PartialSheetMenuDefinition = {
