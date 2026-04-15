@@ -1,7 +1,7 @@
 {
   "cli": {
     "version": ">= 18.4.0",
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -20,9 +20,9 @@
       "channel": "preview"
     },
     "production": {
-      "autoIncrement": true,
+      "autoIncrement": false,
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
       },
       "env": {
         "APP_VARIANT": "production"

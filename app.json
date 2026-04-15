@@ -26,7 +26,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.azureitte.scratchdroid"
+      "package": "com.azureitte.scratchdroid",
+      "versionCode": 12
     },
     "plugins": [
       [
@@ -54,6 +55,9 @@
     "runtimeVersion": {
       "policy": "appVersion"
     },
-    "platforms": ["android", "ios"]
+    "platforms": [
+      "android",
+      "ios"
+    ]
   }
 }
