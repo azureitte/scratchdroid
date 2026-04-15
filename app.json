@@ -3,7 +3,7 @@
     "scheme": "scratch",
     "name": "Scratch",
     "slug": "scratchdroid",
-    "version": "1.0.0",
+    "version": "0.0.12",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
