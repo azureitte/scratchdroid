@@ -1,12 +1,13 @@
 import { memo, forwardRef, useState, useEffect, JSX, ForwardedRef, useCallback, RefObject } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated, { Extrapolate, interpolate, SharedValue, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Route } from 'react-native-tab-view';
 
+import Tabs from '../general/Tabs';
 import ListLoading from './ListLoading';
 import ListLoadMore from './ListLoadMore';
-import { Route } from 'react-native-tab-view';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Tabs from '../general/Tabs';
+import { useL10n } from '@/hooks/useL10n';
 
 const LIST_GAP = 16;
 
@@ -129,8 +130,14 @@ export type TabListRenderScene = {
     ref?: RefObject<FlatList<any>|null>;
 }
 
+type TabListRoute = {
+    key: string;
+    title: string;
+    translate?: boolean;
+}
+
 type TabListProps = {
-    routes: Route[];
+    routes: TabListRoute[];
     currentTab: number;
     onTabChange: (index: number) => void;
     onTabBecomeActive?: (newScrollY: number) => void;
@@ -151,6 +158,7 @@ const TabList = ({
     scrollStick = 50,
 }: TabListProps) => {
     const insets = useSafeAreaInsets();
+    const { t } = useL10n();
 
     const trueRenderScene = ({ route }: { route: Route }) => {
         for (let i = 0; i < routes.length; i++) {
@@ -181,7 +189,12 @@ const TabList = ({
     };
 
     return <Tabs 
-        routes={routes}
+        routes={routes.map(route => ({ 
+            key: route.key,
+            title: route.translate
+                ? t(route.title)
+                : route.title,
+        }))}
         currentTab={currentTab}
         onTabChange={onTabChange}
         renderScene={trueRenderScene}

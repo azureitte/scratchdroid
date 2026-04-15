@@ -12,6 +12,7 @@ import { off, on } from '@/util/eventBus';
 import type { MystuffProject, MystuffStudio } from '@/util/types/mystuff.types';
 
 import { useSession } from '@/hooks/useSession';
+import { useL10n } from '@/hooks/useL10n';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useInfiniteMystuff } from '@/hooks/queries/useInfiniteMystuff';
 import { useGlobalScroll } from '@/hooks/useGlobalScroll';
@@ -22,8 +23,8 @@ import ScrollablePageHeader from '@/components/panels/ScrollablePageHeader';
 import TabList, { TabListRenderScene } from '@/components/panels/TabList';
 
 const TAB_ROUTES = [
-    { key: 'projects', title: 'Projects' },
-    { key: 'studios', title: 'Studios' },
+    { key: 'projects', title: 'general.projects', translate: true },
+    { key: 'studios', title: 'general.studios', translate: true },
     { key: 'trash', title: 'Trash' },
 ];
 
@@ -34,6 +35,7 @@ const MyStuffPage = () => {
     const insets = useSafeAreaInsets();
     const router = useRouter();
     const { session } = useSession();
+    const { t } = useL10n();
 
     const [tabIndex, setTabIndex] = useState(0);
 
@@ -150,7 +152,7 @@ const MyStuffPage = () => {
             <ScrollablePageHeader
                 scrollY={globalScroll}
                 headerStick={HEADER_STICK}
-                title="My Stuff"
+                title={t('general.myStuff')}
             />
 
             <TabList

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, ScrollView, RefreshControl } from 'react-native';
+import { FormattedMessage } from 'react-intl';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -12,6 +13,7 @@ import type { ActivityUnit } from '@/util/types/activity.types';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useSession } from '@/hooks/useSession';
 import { useApi } from '@/hooks/useApi';
+import { useL10n } from '@/hooks/useL10n';
 
 import ProjectCard from '@/components/panels/ProjectCard';
 import Carousel from '@/components/panels/Carousel';
@@ -23,6 +25,7 @@ import ActivityCard from '@/components/panels/ActivityCard';
 const HomePage = () => {
 
     const insets = useSafeAreaInsets();
+    const { t } = useL10n();
     const { isLoading, session } = useSession();
     const { q: { getFeatured, getFollowingActivity, getFollowingLoves } } = useApi();
 
@@ -163,7 +166,9 @@ const HomePage = () => {
             opacity: isFirstFetch ? 0 : 1,
         }]}>
             <View style={styles.card}>
-                <Heading style={styles.cardTitle}>What's Happening</Heading>
+                <Heading style={styles.cardTitle}>
+                    <FormattedMessage id="general.whatsHappening" />
+                </Heading>
                 <ActivityCard
                     activity={activity}
                     href="/activity"
@@ -178,13 +183,13 @@ const HomePage = () => {
             />
 
             <Carousel 
-                title="Featured Projects"
+                title={t('splash.featuredProjects')}
                 items={featuredTab.featuredProjects}
                 render={renderFeaturedProject} 
             />
 
             <Carousel 
-                title="Featured Studios"
+                title={t('splash.featuredStudios')}
                 items={featuredTab.featuredStudios}
                 render={renderFeaturedStudio}
             />
@@ -197,7 +202,7 @@ const HomePage = () => {
 
             <Carousel 
                 title={sdsName ?? '...'} 
-                subtitle="Scratch Design Studio"
+                subtitle={t('splash.scratchDesignStudioTitle')}
                 items={featuredTab.designStudio}
                 render={renderFeaturedProject}
             />

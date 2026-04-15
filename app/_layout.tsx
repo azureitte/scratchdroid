@@ -18,6 +18,7 @@ enableFreeze(true);
 import { IS_DEV } from "@/util/constants";
 import { SessionProvider } from "@/context/SessionContext";
 import { AppProvider } from "@/context/AppContext";
+import { L10nProvider } from "@/context/L10nContext";
 
 import Header from "@/components/app/Header";
 import TabBar from "@/components/app/TabBar";
@@ -42,6 +43,7 @@ onlineManager.setEventListener((setOnline) => {
 });
 
 export default function RootLayout() {
+
     const onAppStateChange = useCallback((status: AppStateStatus) => {
         focusManager.setFocused(status === "active");
     }, []);
@@ -58,32 +60,34 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
             <SessionProvider>
             <AppProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
+            <L10nProvider>
+                <GestureHandlerRootView style={{ flex: 1 }}>
 
-                <TabBar />
-                <Header />
-                <Drawer />
-                
-                <Stack
-                    screenOptions={{
-                        headerShown: false,
-                        contentStyle: {
-                            backgroundColor: '#121212',
-                        },
-                        animation: 'fade_from_bottom',
-                        animationDuration: 300,
-                    }}
-                >
-                    <Stack.Screen name="index" />
-                    <Stack.Screen name="account/login" />
-                    <Stack.Screen name="(tabs)" />
+                    <TabBar />
+                    <Header />
+                    <Drawer />
+                    
+                    <Stack
+                        screenOptions={{
+                            headerShown: false,
+                            contentStyle: {
+                                backgroundColor: '#121212',
+                            },
+                            animation: 'fade_from_bottom',
+                            animationDuration: 300,
+                        }}
+                    >
+                        <Stack.Screen name="index" />
+                        <Stack.Screen name="account/login" />
+                        <Stack.Screen name="(tabs)" />
 
-                    <Stack.Screen name="users/[username]/index" />
-                    <Stack.Screen name="projects/[id]/index" />
-                </Stack>
+                        <Stack.Screen name="users/[username]/index" />
+                        <Stack.Screen name="projects/[id]/index" />
+                    </Stack>
 
-                <Sheet />
-            </GestureHandlerRootView>
+                    <Sheet />
+                </GestureHandlerRootView>
+            </L10nProvider>
             </AppProvider>
             </SessionProvider>
             { IS_DEV && <DevToolsBubble

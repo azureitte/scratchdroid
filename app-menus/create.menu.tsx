@@ -21,7 +21,7 @@ const CreateMenu = () => {
 };
 
 export default buildMenu({
-    title: 'Create',
+    title: 'general.create',
     render: () => <CreateMenu />,
 });
 

@@ -18,5 +18,13 @@ export const useSheet = () => {
         emit('sheet-clear');
     };
 
-    return { push, pop, replace, clear };
+    const block = () => {
+        emit('sheet-block');
+    };
+
+    const unblock = () => {
+        emit('sheet-unblock');
+    };
+
+    return { push, pop, replace, clear, block, unblock };
 };

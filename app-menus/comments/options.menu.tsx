@@ -8,6 +8,7 @@ import type { FlattenedComment } from '@/util/types/comments.types';
 
 import { useSheet } from '@/hooks/useSheet';
 import { useApi } from '@/hooks/useApi';
+import { useL10n } from '@/hooks/useL10n';
 import { useDeleteComment } from '@/hooks/mutations/useDeleteComment';
 import { useReportComment } from '@/hooks/mutations/useReportComment';
 
@@ -42,6 +43,7 @@ const CommentOptionsMenu = ({
 }: CommentOptionsMenuProps) => {
     const sheet = useSheet();
     const api = useApi();
+    const { t } = useL10n();
 
     const displayDeleteError = (error: string) => {
         sheet.pop();
@@ -67,7 +69,7 @@ const CommentOptionsMenu = ({
         sheet.pop();
         Alert.alert(
             'Done!',
-            'The comment has been reported, and the Scratch Team has been notified.',
+            t('comments.reportModal.reported'),
             [{ text: 'OK' }],
             { cancelable: true }
         );
@@ -128,10 +130,10 @@ const CommentOptionsMenu = ({
 
     const handleDelete = () => {
         const buttons: AlertButton[] = [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Delete', onPress: deleteComment, style: 'destructive' },
+            { text: t('general.cancel'), style: 'cancel' },
+            { text: t('comments.delete'), onPress: deleteComment, style: 'destructive' },
         ]
-        if (canReport) buttons.splice(1, 0, { text: 'Report', onPress: () => reportComment });
+        if (canReport) buttons.splice(1, 0, { text: t('general.report'), onPress: () => reportComment });
 
         let description = 'Are you sure you want to delete this comment?';
         if (canReport) description += ' If the comment is mean or disrespectful, please click report instead, to let the Scratch Team know about it.';
@@ -148,10 +150,10 @@ const CommentOptionsMenu = ({
         sheet.pop();
         Alert.alert(
             'Report Comment?',
-            'Are you sure you want to report this comment?',
+            t('comments.reportModal.prompt'),
             [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Report', onPress: reportComment, style: 'destructive' },
+                { text: t('general.cancel'), style: 'cancel' },
+                { text: t('general.report'), onPress: reportComment, style: 'destructive' },
             ],
             { cancelable: true }
         );
@@ -171,13 +173,13 @@ const CommentOptionsMenu = ({
 
     const menu1: ContextMenuItem[] = [
         { key: 'copy', label: 'Copy text', onPress: handleCopy, icon: 'copy' },
-        { key: 'share', label: 'Share', onPress: handleShare, icon: 'share' },
+        { key: 'share', label: t('project.share.shareButton'), onPress: handleShare, icon: 'share' },
     ];
 
     const menu2: ContextMenuItem[] = [];
     if (canReply) menu2.push({ key: 'reply', label: 'Reply', onPress: handleReply, icon: 'replyAlt' });
-    if (canDelete) menu2.push({ key: 'delete', label: 'Delete', onPress: handleDelete, isDanger: true, icon: 'delete' });
-    if (canReport) menu2.push({ key: 'report', label: 'Report', onPress: handleReport, isDanger: true, icon: 'report' });
+    if (canDelete) menu2.push({ key: 'delete', label: t('comments.delete'), onPress: handleDelete, isDanger: true, icon: 'delete' });
+    if (canReport) menu2.push({ key: 'report', label: t('general.report'), onPress: handleReport, isDanger: true, icon: 'report' });
 
     return (
         <View style={styles.container}>

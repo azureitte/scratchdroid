@@ -1,5 +1,6 @@
 import { JSX } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FormattedMessage } from 'react-intl';
 
 import { useFonts } from '@expo-google-fonts/dela-gothic-one/useFonts';
 import { DelaGothicOne_400Regular } from '@expo-google-fonts/dela-gothic-one/400Regular';
@@ -38,7 +39,7 @@ const Carousel = ({
         </View>
         { !!subtitle && <Text style={styles.subtitle}>{subtitle}</Text> }
         { !!href && <Link href={href} style={styles.link}>
-            View all
+            <FormattedMessage id="project.viewAllInList" />
         </Link> }
         <FlatList 
             data={items}

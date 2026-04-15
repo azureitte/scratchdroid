@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Image, StyleSheet, Text, View, Dimensions } from "react-native";
+import { FormattedMessage } from "react-intl";
 import { Link } from "expo-router";
 
 import { SVGS } from "@/util/assets";
@@ -42,6 +43,10 @@ const MessageRow = memo(({
 
     const Icon = getIcon(message);
 
+    const actor = (<Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+        {message.actor.username}
+    </Link>);
+
     return (
         <View style={[styles.container, isUnread && styles.unread]}>
             <Icon style={styles.icon} />
@@ -50,9 +55,12 @@ const MessageRow = memo(({
 
                     { message.type === MessageType.FOLLOW_USER && 
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
-                                {message.actor.username}
-                            </Link> is now following you
+                            <FormattedMessage
+                                id="messages.followText"
+                                values={{
+                                    profileLink: actor,
+                                }}
+                            />
                         </Text> 
                     }
 
@@ -78,39 +86,45 @@ const MessageRow = memo(({
 
                     { message.type === MessageType.ADD_COMMENT &&
                         <Text style={styles.text}>
-                            <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
-                                {message.actor.username}
-                            </Link>
-
-                            { message.comment.type === 'project' && <>
-                                    { !!message.commentee 
-                                        ? ' replied to your comment on ' 
-                                        : ' commented on your project ' }
-                                    <Link style={styles.linkText} href={`/projects/${message.object.id}?commentId=${message.comment.id}`}>
-                                         {message.object.title }
-                                    </Link>
-                                </>
+                            { message.comment.type === 'project' && 
+                                <FormattedMessage
+                                    id={ !!message.commentee 
+                                        ? 'messages.commentReply' 
+                                        : 'messages.projectComment' }
+                                    values={{
+                                        profileLink: actor,
+                                        commentLink: (<Link style={styles.linkText} href={`/projects/${message.object.id}?commentId=${message.comment.id}`}>
+                                            { message.object.title }
+                                        </Link>),
+                                    }}
+                                />
                             }
-                            { message.comment.type === 'user' && <>
-                                    { !!message.commentee 
-                                        ? ' replied to your comment on ' 
-                                        : ' commented on ' }
-                                    <Link style={styles.linkText} href={`/users/${message.object.title}?commentId=${message.comment.id}`}>
-                                        { message.object.title === myUsername
-                                            ? 'your profile'
-                                            : `${message.object.title}'s profile`
-                                        }
-                                    </Link>
-                                </>
+                            { message.comment.type === 'user' && 
+                                <FormattedMessage
+                                    id={ !!message.commentee 
+                                        ? 'messages.commentReply' 
+                                        : 'messages.profileComment' }
+                                    values={{
+                                        profileLink: actor,
+                                        commentLink: (<Link style={styles.linkText} href={`/users/${message.object.title}?commentId=${message.comment.id}`}>
+                                            { message.object.title === myUsername
+                                                ? <FormattedMessage id="messages.profileSelf" />
+                                                : <FormattedMessage id="messages.profileOther" values={{ username: message.object.title }} />
+                                            }
+                                        </Link>),
+                                    }}
+                                />
                             }
-                            { message.comment.type === 'studio' && <>
-                                    { !!message.commentee 
-                                        ? ' replied to your comment in ' 
-                                        : ' commented in studio ' }
-                                    <Link style={styles.linkText} href={`/studios/${message.object.id}?commentId=${message.comment.id}`}>
-                                        {message.object.title}
-                                    </Link>
-                                </>
+                            { message.comment.type === 'studio' && 
+                                <FormattedMessage
+                                    id="messages.studioCommentReply" 
+                                    values={{
+                                        profileLink: actor,
+                                        commentLink: (<Link style={styles.linkText} href={`/studios/${message.object.id}?commentId=${message.comment.id}`}>
+                                            { message.object.title }
+                                        </Link>),
+                                    }}
+                                />
                             }
                         </Text>
                     }
@@ -145,9 +159,11 @@ const MessageRow = memo(({
 
                     { message.type === MessageType.FORUM_POST &&
                         <Text style={styles.text}>
-                            There are new posts in the forum thread: <Link style={styles.linkText} href={`https://scratch.mit.edu/discuss/topic/${message.topic.id}`}>
-                                {message.topic.title}
-                            </Link>
+                            <FormattedMessage id="messages.forumPostText" values={{
+                                topicLink: (<Link style={styles.linkText} href={`https://scratch.mit.edu/discuss/topic/${message.topic.id}`}>
+                                    {message.topic.title}
+                                </Link>),
+                            }} />
                         </Text>
                     }
 
@@ -163,17 +179,28 @@ const MessageRow = memo(({
 
                     { message.type === MessageType.BECOME_HOST_STUDIO &&
                         <Text style={styles.text}>
-                            { message.actorIsAdmin ? 'A Scratch Team member' : <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
-                                {message.actor.username}
-                            </Link> } made you the host of the studio <Link style={styles.linkText} href={`/studios/${message.studio.id}`}>
-                                {message.studio.title}
-                            </Link>. As host, you now have the ability to edit the studio title, thumbnail, and description. Go say hello in the studio!
+                            <FormattedMessage id="messages.becomeHostText" values={{
+                                usernameOrScratchTeam: (message.actorIsAdmin
+                                    ? <FormattedMessage id="messages.becomeHostScratchTeam" />
+                                    : <Link style={styles.linkText} href={`/users/${message.actor.username}`}>
+                                        {message.actor.username}
+                                    </Link>),
+                                studio: (<Link style={styles.linkText} href={`/studios/${message.studio.id}`}>
+                                    {message.studio.title}
+                                </Link>),
+                            }} />
                         </Text>
                     }
 
                     { message.type === MessageType.USER_JOIN &&
                         <Text style={styles.text}>
-                            Welcome to Scratch! After you make projects and comments, you'll get messages about them here. Go explore or create.
+                            <FormattedMessage 
+                                id="messages.userJoinText" 
+                                values={{
+                                    exploreLink: <FormattedMessage id="general.explore" />,
+                                    makeProjectLink: <FormattedMessage id="messages.userJoinMakeProject" />,
+                                }}
+                            />
                         </Text>
                     }
 

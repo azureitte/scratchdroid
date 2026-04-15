@@ -5,6 +5,7 @@ import { buildMenu } from '@/util/functions';
 
 import { useSheet } from '@/hooks/useSheet';
 import { useApi } from '@/hooks/useApi';
+import { useL10n } from '@/hooks/useL10n';
 import { useToggleComments } from '@/hooks/mutations/useToggleComments';
 
 import ContextMenu, { ContextMenuItem } from '@/components/general/ContextMenu';
@@ -32,6 +33,7 @@ const ProjectOptionsMenu = ({
 
     const sheet = useSheet();
     const api = useApi();
+    const { t } = useL10n();
 
     const toggleCommentsAction = useToggleComments({
         type: 'project',
@@ -70,16 +72,16 @@ const ProjectOptionsMenu = ({
     const handleDefault = () => sheet.pop();
 
     const menu1: ContextMenuItem[] = [
-        { key: 'copy', label: 'Copy link', onPress: handleCopy, icon: 'link' },
-        { key: 'share', label: 'Share', onPress: handleShare, icon: 'share' },
-        { key: 'download', label: 'Download', onPress: handleDefault, icon: 'download' },
+        { key: 'copy', label: t('social.copyLinkLinkText'), onPress: handleCopy, icon: 'link' },
+        { key: 'share', label: t('project.share.shareButton'), onPress: handleShare, icon: 'share' },
+        { key: 'download', label: t('download.download'), onPress: handleDefault, icon: 'download' },
     ];
 
     const menu2: ContextMenuItem[] = [
-        { key: 'add-studio', label: 'Add to studio', onPress: handleDefault, icon: 'add' },
+        { key: 'add-studio', label: t('addToStudio.title'), onPress: handleDefault, icon: 'add' }, // L10N-NOTE: This should be "Add to studio" (lowercase)
     ];
     if (canRemix) 
-        menu2.push({ key: 'remix', label: 'Remix', onPress: handleDefault, icon: 'remix' });
+        menu2.push({ key: 'remix', label: t('project.remixButton'), onPress: handleDefault, icon: 'remix' });
     if (canToggleCommenting) 
         menu2.push({ 
             key: 'toggle-commenting', 
@@ -87,7 +89,7 @@ const ProjectOptionsMenu = ({
             onPress: handleToggleCommenting, icon: 'comments' 
         });
     if (canReport) 
-        menu2.push({ key: 'report', label: 'Report', onPress: handleDefault, isDanger: true, icon: 'report' });
+        menu2.push({ key: 'report', label: t('general.report'), onPress: handleDefault, isDanger: true, icon: 'report' });
 
     return (
         <View style={styles.container}>
