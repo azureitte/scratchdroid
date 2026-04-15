@@ -2,7 +2,6 @@ import React, {
     forwardRef, 
     ReactElement,
     useImperativeHandle, 
-    useRef, 
 } from 'react';
 import { 
     StyleSheet, 
@@ -14,6 +13,7 @@ import {
     RefreshControl, 
     Pressable,
 } from 'react-native';
+import { FormattedMessage } from 'react-intl';
 
 import { longTap, sleep } from '@/util/functions';
 import { $u } from '@/util/thumbnailCaching';
@@ -143,7 +143,9 @@ const CommentSection = forwardRef(({
         marginTop: 50,
     }]}>
         <View style={styles.header}>
-            <Heading style={styles.headerTitle}>Comments</Heading>
+            <Heading style={styles.headerTitle}>
+                <FormattedMessage id="project.comments.header" />
+            </Heading>
             <Pressable
                 onPress={() => {
                     if (!canComment) return;

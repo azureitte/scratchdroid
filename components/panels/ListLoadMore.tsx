@@ -13,9 +13,9 @@ const ListLoadMore = ({
 }) => (
     <View style={[styles.pageEnd]}>
         { hasNextPage && <Button
-            text="Load More"
+            text="general.loadMore"
             role="primary"
-            fullWidth
+            fullWidth translate
             isLoading={isLoading}
             onPress={fetchNextPage}
         /> }

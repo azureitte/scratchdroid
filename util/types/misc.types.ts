@@ -8,6 +8,7 @@ export type SheetMenuDefinition = {
     dismissible: boolean;
     isDark?: boolean;
     scrollable?: boolean;
+    translate?: boolean;
 }
 
 export type PartialSheetMenuDefinition = {

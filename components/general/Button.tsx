@@ -2,6 +2,7 @@ import { Pressable, StyleProp, Text, StyleSheet, ViewStyle, ActivityIndicator } 
 
 import { DEFAULT_RIPPLE_CONFIG } from "@/util/constants";
 import { ICONS } from "@/util/assets";
+import { FormattedMessage } from "react-intl";
 
 export type ButtonProps = {
     role?: 'primary' | 'secondary' | 'danger';
@@ -9,6 +10,7 @@ export type ButtonProps = {
     isLoading?: boolean;
     isDisabled?: boolean;
     fullWidth?: boolean;
+    translate?: boolean;
     square?: boolean;
     style?: StyleProp<ViewStyle>,
     text?: string;
@@ -23,6 +25,7 @@ const Button = ({
     isDisabled = false,
     fullWidth = false,
     square = false,
+    translate = false,
     style,
     text,
     icon,
@@ -53,7 +56,9 @@ const Button = ({
                         styles.buttonText,
                         styles[`${variation}Text`],
                     ]}>
-                        {text}
+                        { translate
+                            ? <FormattedMessage id={text} />
+                            : text }
                     </Text> }
                 </> }
         </Pressable>

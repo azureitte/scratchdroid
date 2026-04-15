@@ -6,6 +6,7 @@ import { SVGS } from "@/util/assets";
 import { shortRelativeDate } from "@/util/functions";
 import { ActivityType, type ActivityUnit } from "@/util/types/activity.types";
 import { $u } from "@/util/thumbnailCaching";
+import { FormattedMessage } from "react-intl";
 
 const getIcon = (unit: ActivityUnit) => {
     switch (unit.type) {
@@ -64,67 +65,116 @@ const MessageRow = memo(({
 
                     { unit.type === ActivityType.FOLLOW_USER && 
                         <Text style={styles.text}>
-                            { actor } is now following <Link style={styles.linkText} href={`/users/${unit.followee.username}`}>
-                                {unit.followee.username}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.followProfileText"
+                                values={{
+                                    profileLink: actor,
+                                    followeeLink: (<Link style={styles.linkText} href={`/users/${unit.followee.username}`}>
+                                        {unit.followee.username}
+                                    </Link>),
+                                }}
+                            />
                         </Text> 
                     }
 
                     { unit.type === ActivityType.FOLLOW_STUDIO && 
                         <Text style={styles.text}>
-                            { actor } is now following <Link style={styles.linkText} href={`/users/${unit.studio.id}`}>
-                                {unit.studio.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.followStudioText"
+                                values={{
+                                    profileLink: actor,
+                                    studioLink: (<Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
+                                        {unit.studio.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text> 
                     }
 
                     { unit.type === ActivityType.SHARE_PROJECT && 
                         <Text style={styles.text}>
-                            { actor } shared the project <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
-                                {unit.project.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.shareText"
+                                values={{
+                                    profileLink: actor,
+                                    projectLink: (<Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                                        {unit.project.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text> 
                     }
 
                     { unit.type === ActivityType.LOVE_PROJECT &&
                         <Text style={styles.text}>
-                            { actor } loved <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
-                                {unit.project.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.loveText"
+                                values={{
+                                    profileLink: actor,
+                                    projectLink: (<Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                                        {unit.project.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text> 
                     }
 
                     { unit.type === ActivityType.FAVORITE_PROJECT &&
                         <Text style={styles.text}>
-                            { actor } favorited <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
-                                {unit.project.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.favoriteText"
+                                values={{
+                                    profileLink: actor,
+                                    projectLink: (<Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                                        {unit.project.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text>
                     }
 
                     { unit.type === ActivityType.REMIX_PROJECT &&
                         <Text style={styles.text}>
-                            { actor } remixed <Link style={styles.linkText} href={`/projects/${unit.parent.id}`}>
-                                {unit.parent.title}
-                            </Link> as <Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
-                                {unit.project.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.remixText"
+                                values={{
+                                    profileLink: actor,
+                                    remixedProjectLink: (<Link style={styles.linkText} href={`/projects/${unit.parent.id}`}>
+                                        {unit.parent.title}
+                                    </Link>),
+                                    projectLink: (<Link style={styles.linkText} href={`/projects/${unit.project.id}`}>
+                                        {unit.project.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text>
                     }
 
                     { unit.type === ActivityType.BECOME_CURATOR &&
                         <Text style={styles.text}>
-                            { actor } became a curator of <Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
-                                {unit.studio.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.becomeCuratorText"
+                                values={{
+                                    username: actor,
+                                    studio: (<Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
+                                        {unit.studio.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text>
                     }
 
                     { unit.type === ActivityType.BECOME_MANAGER &&
                         <Text style={styles.text}>
-                            { actor } was promoted to manager of <Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
-                                {unit.studio.title}
-                            </Link>
+                            <FormattedMessage
+                                id="messages.becomeManagerText"
+                                values={{
+                                    username: actor,
+                                    studio: (<Link style={styles.linkText} href={`/studios/${unit.studio.id}`}>
+                                        {unit.studio.title}
+                                    </Link>),
+                                }}
+                            />
                         </Text>
                     }
 

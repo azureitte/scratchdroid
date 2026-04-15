@@ -12,6 +12,7 @@ import { $u } from '@/util/thumbnailCaching';
 import { AppContext } from '@/context/AppContext';
 import { useSession } from '@/hooks/useSession';
 import { useAccountStorage } from '@/hooks/queries/useAccountStorage';
+import { useL10n } from '@/hooks/useL10n';
 import ContextMenu, { ContextMenuItem } from '../general/ContextMenu';
 
 type DrawerState = 'Dragging' | 'Idle' | 'Settling';
@@ -26,6 +27,7 @@ const Drawer = () => {
     const { headerVisible } = useContext(AppContext);
     const { session, logout, logoutAll, switchAccount } = useSession();
     const { accounts } = useAccountStorage();
+    const { t } = useL10n();
 
     const drawer = useRef<DrawerLayoutAndroid>(null);
     const drawerOpened = useRef(false);
@@ -105,7 +107,7 @@ const Drawer = () => {
     const currentAccountMenu: ContextMenuItem[] = [
         {
             key: 'account-settings',
-            label: 'Account settings',
+            label: t('general.accountSettings'),
             icon: 'accountSettings',
             onPress: () => {
                 drawer.current?.closeDrawer();

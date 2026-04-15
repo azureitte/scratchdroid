@@ -13,6 +13,7 @@ import { off, on } from '@/util/eventBus';
 import type { MessageQueryItem } from '@/util/types/messages.types';
 
 import { useSession } from '@/hooks/useSession';
+import { useL10n } from '@/hooks/useL10n';
 import { useChangeAppStateOnFocus } from '@/hooks/useChangeAppStateOnFocus';
 import { useUnreadCount } from '@/hooks/queries/useUnreadCount';
 import { useInfiniteMessages } from '@/hooks/queries/useInfiniteMessages';
@@ -39,6 +40,7 @@ const MessagesPage = () => {
     const deleteMessage = useDeleteMessage();
 
     const { session } = useSession();
+    const { t } = useL10n();
 
     const [isRefreshing, setIsRefreshing] = useState(true);
     const listRef = useRef<FlatList<any>>(null);
@@ -116,7 +118,7 @@ const MessagesPage = () => {
                 <ScrollablePageHeader
                     scrollY={scrollY}
                     headerStick={HEADER_STICK}
-                    title="Messages"
+                    title={t('messages.messageTitle')}
                 />
 
                 <Animated.FlatList

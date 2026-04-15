@@ -15,6 +15,7 @@ import Animated, {
     useDerivedValue, 
     withTiming 
 } from 'react-native-reanimated';
+import { FormattedMessage } from 'react-intl';
 import { Link } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -120,7 +121,9 @@ const CommentItem = memo(({
                         onPress={onReply}
                         style={styles.commentReplyBtn}
                     >
-                        <Text style={styles.commentReplyBtnText}>reply</Text>
+                        <Text style={styles.commentReplyBtnText}>
+                            <FormattedMessage id="comments.reply" />
+                        </Text>
                         <ReplyIcon style={styles.commentReplyBtnIcon} height={16} />
                     </Pressable> }
                 </View>

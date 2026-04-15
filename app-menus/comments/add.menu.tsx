@@ -81,7 +81,8 @@ const AddCommentMenu = ({
             { errorMessage && <Text style={styles.errorText}>{errorMessage}</Text> }
             <View style={styles.buttonRow}>
                 <Button 
-                    text={isReply ? 'Reply' : 'Post'}
+                    text={isReply ? 'Reply' : 'comments.post'}
+                    translate={!isReply}
                     onPress={() => {
                         setErrorMessage('');
                         action?.mutate({ 

@@ -3,6 +3,7 @@ import { BackHandler, Keyboard, StyleSheet, View } from 'react-native';
 import { TrueSheet } from '@lodev09/react-native-true-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useKeyboard } from "react-native-use-keyboard";
+import { FormattedMessage } from 'react-intl';
 
 import { off, on } from '@/util/eventBus';
 import { useStack } from '@/hooks/useStack';
@@ -164,7 +165,12 @@ const Sheet = () => {
                     ? (-insets.bottom)
                     : 0,
             }]}>
-                { !!(currentMenuDef?.title) && <Heading style={styles.heading}>{currentMenuDef?.title}</Heading> }
+                { !!(currentMenuDef?.title) && <Heading style={styles.heading}>
+                    
+                    {currentMenuDef.translate
+                        ? <FormattedMessage id={currentMenuDef.title} />
+                        : currentMenuDef.title }
+                </Heading> }
                 { stack.stack.map((menu, index) => (
                     <Activity
                         key={`${index}_${menu.name}`}
