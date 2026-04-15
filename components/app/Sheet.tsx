@@ -57,6 +57,7 @@ const Sheet = () => {
     
     const handleSheetPush = <T extends any>(name: SheetMenuName, props?: T) => {
         Keyboard.dismiss();
+        setIsBlocked(false);
         stack.push({
             name,
             props,
@@ -65,12 +66,14 @@ const Sheet = () => {
 
     const handleSheetPop = () => {
         Keyboard.dismiss();
+        setIsBlocked(false);
         if (isLast) sheetRef.current?.dismiss().then(() => stack.clear());
         else stack.pop();
     };
 
     const handleSheetReplace = <T extends any>(name: SheetMenuName, props?: T) => {
         Keyboard.dismiss();
+        setIsBlocked(false);
         stack.replace({
             name,
             props,
@@ -87,6 +90,7 @@ const Sheet = () => {
 
     const handleSheetClear = () => {
         Keyboard.dismiss();
+        setIsBlocked(false);
         if (sheetRef.current && isSheetOpen.current) sheetRef.current.dismiss().then(() => stack.clear());
         else stack.clear();
     };
