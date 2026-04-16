@@ -3,7 +3,7 @@
     "scheme": "scratch",
     "name": "Scratch",
     "slug": "scratchdroid",
-    "version": "0.0.12",
+    "version": "0.0.13",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -52,9 +52,7 @@
       "url": "https://u.expo.dev/0320a4d8-92ce-4c4f-9896-1a374e11a1da"
     },
     "owner": "gducrash",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "0.1.0",
     "platforms": [
       "android",
       "ios"

@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { checkForUpdateAsync, fetchUpdateAsync, reloadAsync } from 'expo-updates';
+import * as Updates from 'expo-updates';
 
 import { IS_DEV } from '@/util/constants';
 
@@ -22,6 +22,8 @@ type AppContextType = {
 
     primaryColor: AppPrimaryColor;
     setPrimaryColor: (color: AppPrimaryColor) => void;
+
+    checkForUpdates: () => Promise<void>;
 };
 
 export const AppContext = createContext<AppContextType>({
@@ -32,6 +34,8 @@ export const AppContext = createContext<AppContextType>({
 
     primaryColor: 'regular',
     setPrimaryColor: () => {},
+
+    checkForUpdates: async () => {},
 });
 
 export const AppProvider = ({ children }: { children: React.ReactNode }) => {
@@ -40,12 +44,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const [ primaryColor, setPrimaryColor ] = useState<AppPrimaryColor>('regular');
 
     const downloadUpdate = useCallback(async () => {
-        await fetchUpdateAsync();
-        reloadAsync();
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
     }, []);
 
     const checkForUpdates = useCallback(async () => {
-        const update = await checkForUpdateAsync();
+        const update = await Updates.checkForUpdateAsync();
         if (update.isAvailable) {
             Alert.alert('Updates Available!',
                 `A new version of the app is ready. Update now?`,
@@ -69,6 +73,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
             primaryColor,
             setPrimaryColor,
+
+            checkForUpdates,
         }}>
             {children}
         </AppContext.Provider>

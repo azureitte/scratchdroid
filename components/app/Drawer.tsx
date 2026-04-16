@@ -1,7 +1,9 @@
 import { Activity, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, DrawerLayoutAndroid, Text, Image, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Application from 'expo-application';
 import { useRouter } from 'expo-router';
+import { useUpdates } from 'expo-updates';
 
 import {  off, on } from '@/util/eventBus';
 import { IMAGES } from '@/util/assets';
@@ -23,8 +25,9 @@ const Drawer = () => {
 
     const insets = useSafeAreaInsets();
     const router = useRouter();
+    const updates = useUpdates();
 
-    const { headerVisible } = useContext(AppContext);
+    const { headerVisible, checkForUpdates } = useContext(AppContext);
     const { session, logout, logoutAll, switchAccount } = useSession();
     const { accounts } = useAccountStorage();
     const { t } = useL10n();
@@ -136,7 +139,23 @@ const Drawer = () => {
                 router.push('/settings');
             },
         },
+        {
+            key: 'check-for-updates',
+            label: 'Check for updates',
+            icon: 'refresh',
+            onPress: () => {
+                checkForUpdates();
+            },
+        },
     ];
+
+
+    const updateState = 
+        updates.isUpdateAvailable ? 'update-available' :
+        updates.isChecking ? 'checking' :
+        updates.isUpdatePending ? 'update-pending' :
+        updates.currentlyRunning.isEmbeddedLaunch ? 'embedded-launch' :
+        'up-to-date';
     
     
     const navigationView = () => (
@@ -178,6 +197,17 @@ const Drawer = () => {
             <ContextMenu items={currentAccountMenu} />
             <View />
             <ContextMenu items={settingsMenu} />
+            <View style={{ flex: 1 }} />
+
+            { updates.checkError && <Text style={[styles.footerText]}>
+                { updates.checkError.message }
+            </Text> }
+
+            <Text style={[styles.footerText, {
+                marginBottom: insets.bottom,
+            }]}>
+                ScratchDroid v{ Application.nativeApplicationVersion } | { updateState } | { updates.currentlyRunning.channel } v{ updates.currentlyRunning.runtimeVersion }
+            </Text>
         </View>
     );
 
@@ -284,5 +314,11 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 500,
         color: '#7488B8',
+    },
+
+    footerText: {
+        fontSize: 14,
+        paddingHorizontal: 12,
+        color: '#888',
     },
 });

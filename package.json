@@ -1,6 +1,6 @@
 {
   "name": "scratchdroid",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -25,6 +25,7 @@
     "domutils": "^4.0.2",
     "entities": "^8.0.0",
     "expo": "~55.0.8",
+    "expo-application": "~55.0.14",
     "expo-clipboard": "~55.0.9",
     "expo-constants": "~55.0.9",
     "expo-dev-client": "~55.0.18",
