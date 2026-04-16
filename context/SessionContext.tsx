@@ -17,6 +17,7 @@ import type { ErrorSession, Session } from '@/util/types/accounts.types';
 
 import { useAccountStorage } from '@/hooks/queries/useAccountStorage';
 import { useApi } from '@/hooks/useApi';
+import { useSettings } from '@/hooks/useSettings';
 
 type SessionContextType = 
 ({
@@ -63,6 +64,7 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
 
     const api = useApi();
     const { refresh } = useAccountStorage();
+    const { settings } = useSettings();
 
     const [ session, setSession ] = useState<Session|undefined>(undefined);
     const [ transitionState, setTransitionState ] = useState<TransitionState>('logging-in');
@@ -114,6 +116,14 @@ export const SessionProvider = ({ children }: { children: React.ReactNode }) => 
         if (transitionState === '503') {
             if (pathname !== '/503') router.replace('/503');
         } else if (transitionState === 'logged-in') {
+            // TODO: remove this //
+            if (!settings.flag_hasSeenTestersOnboarding) {
+                if (pathname !== '/testers/onboarding') {
+                    router.replace('/testers/onboarding');
+                }
+            } else
+            // END TODO //
+                
             if (pathname !== '/home') {
                 router.replace('/home');
                 emit('tab-navigate', 'home');

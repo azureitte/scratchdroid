@@ -6,6 +6,8 @@ import type { AppSettings } from "@/util/types/app.types";
 const DEFAULT_SETTINGS: AppSettings = {
     language: 'en',
     theme: 'dark',
+
+    flag_hasSeenTestersOnboarding: false,
 };
 
 export const useSettings = () => {
