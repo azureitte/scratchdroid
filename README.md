@@ -7,13 +7,15 @@ An unofficial mobile client for the Scratch website and (in the future) editor.
 After cloning the repo, run:
 ```bash
 npm install
-eas build --platform android --profile development
 ```
-> Note: Make sure you have expo eas-cli installed
 
-Download the development build to your device and run:
+To build a development build of the app, run:
 ```bash
-npx expo start --dev-client
+./build.sh --dev
+```
+or
+```bash
+./build.ps1 -Dev
 ```
 > Note: The app does not work with Expo Go
 
